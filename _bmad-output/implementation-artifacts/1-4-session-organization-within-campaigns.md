@@ -1,6 +1,6 @@
 # Story 1.4: Session Organization Within Campaigns
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -48,6 +48,13 @@ So that I can track my session history at a glance.
   - [x] 5.1 Verify that deleting a session removes it from the campaign's sessions array (SwiftData relationship)
   - [x] 5.2 Verify that deleting a campaign cascades and removes all child sessions (already implemented in Campaign model)
   - [x] 5.3 Verify auto-numbering handles gaps correctly (e.g., if session 2 is deleted, next session is still max+1, not gap-filling)
+
+### Review Findings
+
+- [x] [Review][Patch] `sessionToDelete` not cleared on dialog dismissal — stale reference retained [CampaignDetailScreen.swift:76] — **fixed**
+- [x] [Review][Patch] Campaign delete while session edit sheet is open crashes on deleted model [CampaignDetailScreen.swift:59] — **fixed**
+- [x] [Review][Defer] `formatDuration` does not guard against negative `TimeInterval` values [SessionListRow.swift:44] — deferred, pre-existing/impossible input
+- [x] [Review][Defer] `DateFormatter` locale not set explicitly in `SessionListRow` [SessionListRow.swift:8] — deferred, pre-existing pattern from CampaignRowView
 
 ## Dev Notes
 

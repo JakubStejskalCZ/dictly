@@ -14,3 +14,8 @@
 ## Deferred from: code review of 1-3-campaign-management (2026-04-01)
 
 - `campaign.sessions.count` in `CampaignRowView` triggers a lazy relationship fault on every row render. With many campaigns this causes N relationship faults during list scroll. Consider prefetching or a denormalized session count property when scaling.
+
+## Deferred from: code review of 1-4-session-organization-within-campaigns (2026-04-01)
+
+- `formatDuration` in `SessionListRow` does not guard against negative `TimeInterval` values. Currently impossible (duration set to 0 on creation, real values from recording engine in Story 2.x), but add a `max(0, duration)` clamp when recording engine is implemented.
+- `SessionListRow.dateFormatter` uses system locale without explicit locale setting — pre-existing pattern from `CampaignRowView`. May produce unexpected date formats on non-Gregorian calendars. Consider standardizing locale handling across all formatters.

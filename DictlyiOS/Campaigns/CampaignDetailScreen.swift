@@ -55,6 +55,8 @@ struct CampaignDetailScreen: View {
             titleVisibility: .visible
         ) {
             Button("Delete", role: .destructive) {
+                sessionToEdit = nil
+                sessionToDelete = nil
                 modelContext.delete(campaign)
                 dismiss()
             }
@@ -73,7 +75,9 @@ struct CampaignDetailScreen: View {
                     sessionToDelete = nil
                 }
             }
-            Button("Cancel", role: .cancel) {}
+            Button("Cancel", role: .cancel) {
+                sessionToDelete = nil
+            }
         } message: {
             Text("This will permanently delete the session.")
         }
