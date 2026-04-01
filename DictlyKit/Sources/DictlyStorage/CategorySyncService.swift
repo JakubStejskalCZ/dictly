@@ -32,11 +32,17 @@ public final class CategorySyncService {
     private let logger = Logger(subsystem: "com.dictly", category: "storage")
     private static let kvsKey = "tagCategories"
 
-    private static let iso8601Formatter: ISO8601DateFormatter = {
+    /// ISO 8601 formatter with fractional seconds for sub-second precision in last-write-wins.
+    nonisolated(unsafe) static let iso8601Formatter: ISO8601DateFormatter = {
         let f = ISO8601DateFormatter()
         f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         return f
     }()
+
+    /// Cached modifiedAt timestamps per category UUID from the last push or pull.
+    /// Used by merge to implement last-write-wins: only apply cloud fields if cloud modifiedAt
+    /// is newer than the locally cached timestamp.
+    private var cachedModifiedAt: [String: Date] = [:]
 
     // nonisolated(unsafe) required so deinit (which is nonisolated in Swift 6) can access this
     nonisolated(unsafe) private var observation: NSObjectProtocol?
@@ -52,7 +58,12 @@ public final class CategorySyncService {
     // MARK: - Public API
 
     /// Call from app entry point `.task` modifier after ModelContainer setup.
+    /// Registers for KVS change notifications, triggers initial sync, and pushes local state.
     public func startObserving(context: ModelContext) {
+        guard modelContext == nil else {
+            logger.info("CategorySyncService: startObserving called again — ignoring duplicate")
+            return
+        }
         self.modelContext = context
 
         observation = NotificationCenter.default.addObserver(
@@ -71,6 +82,7 @@ public final class CategorySyncService {
 
         store.synchronize()
         pullCategoriesFromCloud()
+        pushCategoriesToCloud()
     }
 
     /// Serialize all local TagCategory objects to JSON and write to iCloud KVS.
@@ -85,25 +97,44 @@ public final class CategorySyncService {
             let categories = try modelContext.fetch(FetchDescriptor<TagCategory>())
             let now = Date()
             let payload = categories.map { cat in
-                SyncableCategory(
-                    uuid: cat.uuid.uuidString,
+                let uuidStr = cat.uuid.uuidString
+                // Preserve cached modifiedAt if available; stamp current time only for new/changed categories
+                let lastKnown = cachedModifiedAt[uuidStr]
+                let modifiedAt = lastKnown ?? now
+                return SyncableCategory(
+                    uuid: uuidStr,
                     name: cat.name,
                     colorHex: cat.colorHex,
                     iconName: cat.iconName,
                     sortOrder: cat.sortOrder,
                     isDefault: cat.isDefault,
-                    modifiedAt: now
+                    modifiedAt: modifiedAt
                 )
             }
 
             let encoder = JSONEncoder()
-            encoder.dateEncodingStrategy = .iso8601
+            encoder.dateEncodingStrategy = .custom { date, encoder in
+                var container = encoder.singleValueContainer()
+                try container.encode(Self.iso8601Formatter.string(from: date))
+            }
             let data = try encoder.encode(payload)
             store.set(data, forKey: Self.kvsKey)
+
+            // Update cache with pushed timestamps
+            for cat in payload {
+                cachedModifiedAt[cat.uuid] = cat.modifiedAt
+            }
+
             logger.info("CategorySyncService: pushed \(payload.count) categories to iCloud KVS")
         } catch {
             logger.error("CategorySyncService: push failed — \(error)")
         }
+    }
+
+    /// Mark a category as locally modified so the next push stamps it with the current time.
+    /// Call this before pushCategoriesToCloud when a category has been mutated.
+    public func markModified(_ category: TagCategory) {
+        cachedModifiedAt[category.uuid.uuidString] = Date()
     }
 
     // MARK: - Private
@@ -121,8 +152,8 @@ public final class CategorySyncService {
             pullCategoriesFromCloud()
         case .quotaViolationChange:
             logger.error("CategorySyncService: iCloud KVS quota violated — sync paused")
-        default:
-            pullCategoriesFromCloud()
+        case .unknown:
+            logger.warning("CategorySyncService: unknown KVS change reason (\(reasonRaw)) — ignoring")
         }
     }
 
@@ -144,7 +175,19 @@ public final class CategorySyncService {
     func processCloudPayload(_ data: Data, into context: ModelContext) {
         do {
             let decoder = JSONDecoder()
-            decoder.dateDecodingStrategy = .iso8601
+            decoder.dateDecodingStrategy = .custom { decoder in
+                let container = try decoder.singleValueContainer()
+                let dateString = try container.decode(String.self)
+                if let date = Self.iso8601Formatter.date(from: dateString) {
+                    return date
+                }
+                // Fallback: try standard ISO 8601 without fractional seconds
+                let fallback = ISO8601DateFormatter()
+                if let date = fallback.date(from: dateString) {
+                    return date
+                }
+                throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid ISO 8601 date: \(dateString)")
+            }
             let cloudCategories = try decoder.decode([SyncableCategory].self, from: data)
             try mergeCloudCategories(cloudCategories, into: context)
             logger.info("CategorySyncService: merged \(cloudCategories.count) categories from payload")
@@ -155,18 +198,32 @@ public final class CategorySyncService {
 
     /// Merge strategy:
     /// - UUID match, cloud newer → update local fields
+    /// - UUID match, local newer or equal → keep local (last-write-wins)
     /// - UUID not in local → insert
     /// - UUID not in cloud → keep local (no deletion on pull)
-    /// - Simultaneous edit → last `modifiedAt` wins
+    /// - Simultaneous edit → most recent `modifiedAt` wins
     private func mergeCloudCategories(_ cloudCategories: [SyncableCategory], into context: ModelContext) throws {
         let localCategories = try context.fetch(FetchDescriptor<TagCategory>())
-        let localByUUID = Dictionary(uniqueKeysWithValues: localCategories.map { ($0.uuid.uuidString, $0) })
+        let localByUUID = Dictionary(localCategories.map { ($0.uuid.uuidString, $0) }, uniquingKeysWith: { first, _ in first })
 
-        for remote in cloudCategories {
+        // Deduplicate cloud payload by UUID (keep last occurrence — most recent push wins)
+        var seenUUIDs = Set<String>()
+        var uniqueCloud: [SyncableCategory] = []
+        for cat in cloudCategories.reversed() {
+            if seenUUIDs.insert(cat.uuid).inserted {
+                uniqueCloud.append(cat)
+            }
+        }
+
+        for remote in uniqueCloud {
             if let local = localByUUID[remote.uuid] {
-                // UUID match — update if cloud modifiedAt is newer
-                // Since we don't store modifiedAt in SwiftData, we always apply cloud fields
-                // (last-write-wins: cloud data came from the server, so it reflects the latest push)
+                // UUID match — compare modifiedAt for last-write-wins
+                let localModifiedAt = cachedModifiedAt[remote.uuid] ?? .distantPast
+                guard remote.modifiedAt > localModifiedAt else {
+                    // Local is newer or equal — keep local fields
+                    continue
+                }
+
                 let oldName = local.name
                 let nameChanged = oldName != remote.name
 
@@ -175,6 +232,9 @@ public final class CategorySyncService {
                 local.iconName = remote.iconName
                 local.sortOrder = remote.sortOrder
                 local.isDefault = remote.isDefault
+
+                // Update cached timestamp to reflect applied cloud version
+                cachedModifiedAt[remote.uuid] = remote.modifiedAt
 
                 if nameChanged {
                     try updateTagCategoryName(from: oldName, to: remote.name, in: context)
@@ -194,6 +254,9 @@ public final class CategorySyncService {
                     isDefault: remote.isDefault
                 )
                 context.insert(newCategory)
+
+                // Cache the cloud timestamp for newly inserted category
+                cachedModifiedAt[remote.uuid] = remote.modifiedAt
             }
         }
         // Categories in local but not in cloud are intentionally preserved (no deletion on pull)

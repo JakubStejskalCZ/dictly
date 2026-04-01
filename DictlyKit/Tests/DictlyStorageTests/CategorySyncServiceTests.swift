@@ -7,9 +7,9 @@ import SwiftData
 
 final class SyncableCategoryTests: XCTestCase {
 
-    // 7.1 — Round-trip encoding/decoding
+    // 7.1 — Round-trip encoding/decoding with fractional-second ISO 8601
     func testSyncableCategoryEncodingDecodingRoundTrip() throws {
-        let date = Date(timeIntervalSince1970: 1_700_000_000)
+        let date = Date(timeIntervalSince1970: 1_700_000_000.123)
         let original = SyncableCategory(
             uuid: "550e8400-e29b-41d4-a716-446655440000",
             name: "Combat",
@@ -29,7 +29,7 @@ final class SyncableCategoryTests: XCTestCase {
         XCTAssertEqual(decoded.iconName, original.iconName)
         XCTAssertEqual(decoded.sortOrder, original.sortOrder)
         XCTAssertEqual(decoded.isDefault, original.isDefault)
-        XCTAssertEqual(decoded.modifiedAt.timeIntervalSince1970, original.modifiedAt.timeIntervalSince1970, accuracy: 1.0)
+        XCTAssertEqual(decoded.modifiedAt.timeIntervalSince1970, original.modifiedAt.timeIntervalSince1970, accuracy: 0.01)
     }
 
     // 7.3 — Payload contains ONLY category metadata fields (no session/tag/audio references)
@@ -105,13 +105,23 @@ final class SyncableCategoryTests: XCTestCase {
 
     private func encode<T: Encodable>(_ value: T) throws -> Data {
         let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .iso8601
+        encoder.dateEncodingStrategy = .custom { date, encoder in
+            var container = encoder.singleValueContainer()
+            try container.encode(CategorySyncService.iso8601Formatter.string(from: date))
+        }
         return try encoder.encode(value)
     }
 
     private func decode<T: Decodable>(_ type: T.Type, from data: Data) throws -> T {
         let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
+        decoder.dateDecodingStrategy = .custom { decoder in
+            let container = try decoder.singleValueContainer()
+            let dateString = try container.decode(String.self)
+            guard let date = CategorySyncService.iso8601Formatter.date(from: dateString) else {
+                throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid date: \(dateString)")
+            }
+            return date
+        }
         return try decoder.decode(type, from: data)
     }
 }
@@ -157,15 +167,21 @@ final class CategorySyncMergeTests: XCTestCase {
         XCTAssertEqual(localAfter[0].uuid, cloudUUID)
     }
 
-    // 7.2 — Update existing category when cloud has same UUID
-    func testMergeUpdatesExistingCategory() throws {
+    // 7.2 — Update existing category when cloud has newer modifiedAt
+    func testMergeUpdatesExistingCategoryWhenCloudIsNewer() throws {
         let sharedUUID = UUID()
         let local = TagCategory(uuid: sharedUUID, name: "Old Name", colorHex: "#000000", iconName: "tag", sortOrder: 0, isDefault: false)
         context.insert(local)
         try context.save()
 
+        // Cache a past timestamp for local (simulating a previous push)
+        let pastDate = Date(timeIntervalSinceNow: -60)
+        service.markModified(local)
+
+        // Cloud payload has a future timestamp — should win
+        let futureDate = Date(timeIntervalSinceNow: 60)
         let payload = makePayload([
-            makeSyncable(uuid: sharedUUID, name: "New Name", colorHex: "#DC2626", iconName: "shield", sortOrder: 0)
+            makeSyncable(uuid: sharedUUID, name: "New Name", colorHex: "#DC2626", iconName: "shield", sortOrder: 0, modifiedAt: futureDate)
         ])
         service.processCloudPayload(payload, into: context)
 
@@ -173,6 +189,30 @@ final class CategorySyncMergeTests: XCTestCase {
         XCTAssertEqual(categories.count, 1)
         XCTAssertEqual(categories[0].name, "New Name")
         XCTAssertEqual(categories[0].colorHex, "#DC2626")
+    }
+
+    // 7.2 — Local category NOT updated when cloud has older modifiedAt (last-write-wins)
+    func testMergeKeepsLocalWhenCloudIsOlder() throws {
+        let sharedUUID = UUID()
+        let local = TagCategory(uuid: sharedUUID, name: "Local Name", colorHex: "#DC2626", iconName: "shield", sortOrder: 0, isDefault: false)
+        context.insert(local)
+        try context.save()
+
+        // Mark local as recently modified (current time)
+        service.markModified(local)
+
+        // Cloud payload has a past timestamp — should NOT overwrite local
+        let pastDate = Date(timeIntervalSinceNow: -120)
+        let payload = makePayload([
+            makeSyncable(uuid: sharedUUID, name: "Stale Cloud Name", colorHex: "#000000", iconName: "tag", sortOrder: 5, modifiedAt: pastDate)
+        ])
+        service.processCloudPayload(payload, into: context)
+
+        let categories = try context.fetch(FetchDescriptor<TagCategory>())
+        XCTAssertEqual(categories.count, 1)
+        XCTAssertEqual(categories[0].name, "Local Name", "Local should be preserved when cloud modifiedAt is older")
+        XCTAssertEqual(categories[0].colorHex, "#DC2626")
+        XCTAssertEqual(categories[0].sortOrder, 0)
     }
 
     // 7.2 — Local category absent from cloud is preserved (no deletion on pull)
@@ -194,13 +234,14 @@ final class CategorySyncMergeTests: XCTestCase {
         XCTAssertTrue(names.contains("Cloud Only"))
     }
 
-    // 7.2 — Last-write-wins: cloud update replaces local fields
-    func testMergeAppliesCloudFieldsOnUUIDMatch() throws {
+    // 7.2 — Cloud update replaces local fields when cloud is newer
+    func testMergeAppliesCloudFieldsOnUUIDMatchWhenNewer() throws {
         let sharedUUID = UUID()
         let local = TagCategory(uuid: sharedUUID, name: "Original", colorHex: "#000000", iconName: "tag", sortOrder: 0, isDefault: false)
         context.insert(local)
         try context.save()
 
+        // No cached timestamp = distantPast, so any cloud timestamp wins
         let payload = makePayload([
             makeSyncable(uuid: sharedUUID, name: "Cloud Updated", colorHex: "#7C3AED", iconName: "wand.and.stars", sortOrder: 0, isDefault: true)
         ])
@@ -222,6 +263,7 @@ final class CategorySyncMergeTests: XCTestCase {
         context.insert(tag)
         try context.save()
 
+        // No cached timestamp — cloud wins
         let payload = makePayload([
             makeSyncable(uuid: sharedUUID, name: "NewCat", colorHex: "#000000", iconName: "tag", sortOrder: 0)
         ])
@@ -247,6 +289,19 @@ final class CategorySyncMergeTests: XCTestCase {
         }
     }
 
+    // Duplicate UUIDs in cloud payload do not crash
+    func testMergeSurvivesDuplicateUUIDsInCloudPayload() throws {
+        let sharedUUID = UUID()
+        let payload = makePayload([
+            makeSyncable(uuid: sharedUUID, name: "First", colorHex: "#000000", iconName: "tag", sortOrder: 0),
+            makeSyncable(uuid: sharedUUID, name: "Second", colorHex: "#DC2626", iconName: "shield", sortOrder: 1)
+        ])
+        service.processCloudPayload(payload, into: context)
+
+        let categories = try context.fetch(FetchDescriptor<TagCategory>())
+        XCTAssertEqual(categories.count, 1, "Duplicate UUID should result in a single category")
+    }
+
     // MARK: - Helpers
 
     private func makeSyncable(
@@ -255,7 +310,8 @@ final class CategorySyncMergeTests: XCTestCase {
         colorHex: String = "#D97706",
         iconName: String = "tag",
         sortOrder: Int = 0,
-        isDefault: Bool = false
+        isDefault: Bool = false,
+        modifiedAt: Date = Date()
     ) -> SyncableCategory {
         SyncableCategory(
             uuid: uuid.uuidString,
@@ -264,13 +320,16 @@ final class CategorySyncMergeTests: XCTestCase {
             iconName: iconName,
             sortOrder: sortOrder,
             isDefault: isDefault,
-            modifiedAt: Date()
+            modifiedAt: modifiedAt
         )
     }
 
     private func makePayload(_ categories: [SyncableCategory]) -> Data {
         let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .iso8601
+        encoder.dateEncodingStrategy = .custom { date, encoder in
+            var container = encoder.singleValueContainer()
+            try container.encode(CategorySyncService.iso8601Formatter.string(from: date))
+        }
         return try! encoder.encode(categories)
     }
 }

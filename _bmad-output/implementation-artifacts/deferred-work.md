@@ -23,3 +23,8 @@
 ## Deferred from: code review of 1-5-tag-category-and-tag-management (2026-04-01)
 
 - `DefaultTagSeeder.seedIfNeeded` performs a read-then-write (`fetchCount` → insert loop) with no transaction lock. In multi-window scenarios, concurrent calls could both observe `existingCount == 0` and insert duplicate defaults. Extremely unlikely in single-window iOS app but should be addressed if multi-window support is added.
+
+## Deferred from: code review of 1-6-tag-category-sync-via-icloud-key-value-store (2026-04-01)
+
+- iCloud KVS 1 MB total store limit is not checked before `store.set(data:forKey:)`. Unit test validates 200 categories fit easily, but no runtime guard exists. Consider adding a size check before writing if category volume may grow significantly.
+- Tag↔category linkage uses `categoryName` string rather than UUID. Rename cascades work (both local and sync), but concurrent renames on different devices can orphan tags on the losing device. Pre-existing architectural decision from Story 1.5 — address if cross-device rename conflicts become a user issue.

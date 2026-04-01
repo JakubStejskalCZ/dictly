@@ -88,6 +88,7 @@ struct TagCategoryFormSheet: View {
                     }
                 }
             }
+            syncService.markModified(existing)
         } else {
             let existingCategories = (try? modelContext.fetch(FetchDescriptor<TagCategory>())) ?? []
             let nextSortOrder = (existingCategories.map(\.sortOrder).max() ?? -1) + 1
@@ -99,6 +100,7 @@ struct TagCategoryFormSheet: View {
                 isDefault: false
             )
             modelContext.insert(newCategory)
+            syncService.markModified(newCategory)
         }
         syncService.pushCategoriesToCloud()
         dismiss()

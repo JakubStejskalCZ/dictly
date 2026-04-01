@@ -61,12 +61,14 @@ public enum DictlyError: Error, LocalizedError {
         case diskFull
         case permissionDenied
         case fileNotFound
+        case syncFailed(String)
 
         public var errorDescription: String? {
             switch self {
             case .diskFull: return "Not enough disk space."
             case .permissionDenied: return "Storage permission denied."
             case .fileNotFound: return "File not found."
+            case .syncFailed(let detail): return "Sync failed: \(detail)"
             }
         }
     }

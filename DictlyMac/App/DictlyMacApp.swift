@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import OSLog
 import DictlyModels
 import DictlyStorage
 
@@ -22,10 +23,16 @@ struct DictlyMacApp: App {
             ContentView()
                 .environment(syncService)
                 .task {
+                    do {
+                        try DefaultTagSeeder.seedIfNeeded(context: container.mainContext)
+                    } catch {
+                        logger.error("Failed to seed default tags: \(error)")
+                    }
                     syncService.startObserving(context: container.mainContext)
-                    syncService.pushCategoriesToCloud()
                 }
         }
         .modelContainer(container)
     }
 }
+
+private let logger = Logger(subsystem: "com.dictly.mac", category: "tagging")

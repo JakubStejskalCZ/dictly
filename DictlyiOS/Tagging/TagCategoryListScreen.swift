@@ -117,6 +117,7 @@ struct TagCategoryListScreen: View {
                 isDefault: false
             )
             modelContext.insert(fallback)
+            syncService.markModified(fallback)
         }
 
         // Reassign tags to "Uncategorized"
@@ -139,6 +140,7 @@ struct TagCategoryListScreen: View {
         reordered.move(fromOffsets: source, toOffset: destination)
         for (index, category) in reordered.enumerated() {
             category.sortOrder = index
+            syncService.markModified(category)
         }
         syncService.pushCategoriesToCloud()
     }

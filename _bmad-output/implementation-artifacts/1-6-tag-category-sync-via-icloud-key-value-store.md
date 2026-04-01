@@ -1,6 +1,6 @@
 # Story 1.6: Tag Category Sync via iCloud Key-Value Store
 
-Status: review
+Status: done
 
 ## Story
 
@@ -337,6 +337,22 @@ claude-sonnet-4-6
 - DictlyiOS/DictlyiOS.xcodeproj (REGENERATED via xcodegen)
 - DictlyMac/DictlyMac.xcodeproj (REGENERATED via xcodegen)
 
+### Review Findings
+
+- [x] [Review][Patch] mergeCloudCategories ignores modifiedAt — always overwrites local (AC#3 violation) [CategorySyncService.swift:161-199] — FIXED: added cachedModifiedAt dictionary + timestamp comparison in merge
+- [x] [Review][Patch] pushCategoriesToCloud stamps all categories with Date() — destroys real timestamps [CategorySyncService.swift:86-97] — FIXED: preserves cached modifiedAt, only stamps new time via markModified()
+- [x] [Review][Patch] Startup push fires immediately after pull, can overwrite cloud state [DictlyiOSApp.swift, DictlyMacApp.swift] — FIXED: moved push into startObserving (after pull), removed duplicate push from .task
+- [x] [Review][Patch] Mac app omits DefaultTagSeeder — fresh Mac can push empty array [DictlyMacApp.swift] — FIXED: added DefaultTagSeeder.seedIfNeeded before startObserving
+- [x] [Review][Patch] startObserving called multiple times registers duplicate observers [CategorySyncService.swift:55] — FIXED: added guard modelContext == nil check
+- [x] [Review][Patch] Dictionary(uniqueKeysWithValues:) crashes on duplicate UUIDs in cloud payload [CategorySyncService.swift:163] — FIXED: used uniquingKeysWith + cloud payload deduplication
+- [x] [Review][Patch] Unknown ChangeReason triggers pull instead of logging [CategorySyncService.swift:125] — FIXED: .unknown case logs warning and returns
+- [x] [Review][Patch] .iso8601 date encoder loses sub-second precision [CategorySyncService.swift:100] — FIXED: custom encoder/decoder using ISO8601DateFormatter with fractionalSeconds
+- [x] [Review][Patch] No test for "local newer → reject cloud update" (AC#3 gap) [CategorySyncServiceTests.swift] — FIXED: added testMergeKeepsLocalWhenCloudIsOlder
+- [x] [Review][Patch] Existing LWW test only validates unconditional overwrite [CategorySyncServiceTests.swift] — FIXED: test now uses modifiedAt comparison + added duplicate UUID test
+- [x] [Review][Defer] KVS 1MB pre-write size check — deferred, not actionable now (test validates 200 categories fit)
+- [x] [Review][Defer] Tag↔category linkage by name not UUID — deferred, pre-existing architectural decision from Story 1.5
+
 ## Change Log
 
 - 2026-04-01: Implemented iCloud Key-Value Store tag category sync — CategorySyncService, SyncableCategory, iOS/Mac integration, push on mutation, iCloud entitlements, 10 unit tests (Story 1.6)
+- 2026-04-01: Code review fixes — modifiedAt comparison for last-write-wins (AC#3), startup race fix, duplicate observer guard, cloud payload deduplication, ISO8601 fractional seconds, Mac DefaultTagSeeder, 2 new tests (12 total)

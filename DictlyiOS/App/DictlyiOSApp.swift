@@ -29,7 +29,6 @@ struct DictlyiOSApp: App {
                         logger.error("Failed to seed default tags: \(error)")
                     }
                     syncService.startObserving(context: container.mainContext)
-                    syncService.pushCategoriesToCloud()
                 }
         }
         .modelContainer(container)
