@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import DictlyModels
+import DictlyStorage
 import DictlyTheme
 
 struct TagCategoryFormSheet: View {
@@ -8,6 +9,7 @@ struct TagCategoryFormSheet: View {
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Environment(CategorySyncService.self) private var syncService
 
     @State private var name: String
     @State private var selectedColorHex: String
@@ -98,6 +100,7 @@ struct TagCategoryFormSheet: View {
             )
             modelContext.insert(newCategory)
         }
+        syncService.pushCategoriesToCloud()
         dismiss()
     }
 }
@@ -195,4 +198,5 @@ extension Color {
 #Preview("Create") {
     TagCategoryFormSheet(category: nil)
         .modelContainer(for: TagCategory.self, inMemory: true)
+        .environment(CategorySyncService())
 }

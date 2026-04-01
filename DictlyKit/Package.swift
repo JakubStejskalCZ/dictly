@@ -24,6 +24,7 @@ let package = Package(
         ),
         .target(
             name: "DictlyStorage",
+            dependencies: ["DictlyModels"],
             path: "Sources/DictlyStorage"
         ),
         .target(
@@ -39,6 +40,11 @@ let package = Package(
             name: "DictlyThemeTests",
             dependencies: ["DictlyTheme"],
             path: "Tests/DictlyThemeTests"
+        ),
+        .testTarget(
+            name: "DictlyStorageTests",
+            dependencies: ["DictlyStorage"],
+            path: "Tests/DictlyStorageTests"
         )
     ]
 )

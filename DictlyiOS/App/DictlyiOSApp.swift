@@ -2,6 +2,7 @@ import SwiftUI
 import SwiftData
 import OSLog
 import DictlyModels
+import DictlyStorage
 
 @main
 struct DictlyiOSApp: App {
@@ -15,15 +16,20 @@ struct DictlyiOSApp: App {
         }
     }()
 
+    @State private var syncService = CategorySyncService()
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(syncService)
                 .task {
                     do {
                         try DefaultTagSeeder.seedIfNeeded(context: container.mainContext)
                     } catch {
                         logger.error("Failed to seed default tags: \(error)")
                     }
+                    syncService.startObserving(context: container.mainContext)
+                    syncService.pushCategoriesToCloud()
                 }
         }
         .modelContainer(container)

@@ -2,12 +2,14 @@ import SwiftUI
 import SwiftData
 import OSLog
 import DictlyModels
+import DictlyStorage
 import DictlyTheme
 
 private let logger = Logger(subsystem: "com.dictly.ios", category: "tagging")
 
 struct TagCategoryListScreen: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(CategorySyncService.self) private var syncService
     @Query(sort: \TagCategory.sortOrder) private var categories: [TagCategory]
 
     @State private var isShowingCreateSheet = false
@@ -126,6 +128,7 @@ struct TagCategoryListScreen: View {
                 tag.categoryName = uncategorizedName
             }
             modelContext.delete(category)
+            syncService.pushCategoriesToCloud()
         } catch {
             logger.error("Failed to reassign tags — category not deleted: \(error)")
         }
@@ -137,6 +140,7 @@ struct TagCategoryListScreen: View {
         for (index, category) in reordered.enumerated() {
             category.sortOrder = index
         }
+        syncService.pushCategoriesToCloud()
     }
 }
 
@@ -176,4 +180,5 @@ private struct CategoryRowView: View {
         TagCategoryListScreen()
     }
     .modelContainer(container)
+    .environment(CategorySyncService())
 }

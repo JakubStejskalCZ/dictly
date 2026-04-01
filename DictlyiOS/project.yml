@@ -29,12 +29,17 @@ targets:
       - path: Tagging
     resources:
       - path: Resources
+    entitlements:
+      path: Resources/DictlyiOS.entitlements
+      properties:
+        com.apple.developer.ubiquity-kvstore-identifier: $(TeamIdentifierPrefix)com.dictly.shared
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.dictly.ios
         INFOPLIST_FILE: Resources/Info.plist
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        CODE_SIGN_ENTITLEMENTS: Resources/DictlyiOS.entitlements
     dependencies:
       - package: DictlyKit
         product: DictlyKit

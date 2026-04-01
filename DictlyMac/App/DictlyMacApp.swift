@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import DictlyModels
+import DictlyStorage
 
 @main
 struct DictlyMacApp: App {
@@ -14,9 +15,16 @@ struct DictlyMacApp: App {
         }
     }()
 
+    @State private var syncService = CategorySyncService()
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(syncService)
+                .task {
+                    syncService.startObserving(context: container.mainContext)
+                    syncService.pushCategoriesToCloud()
+                }
         }
         .modelContainer(container)
     }
