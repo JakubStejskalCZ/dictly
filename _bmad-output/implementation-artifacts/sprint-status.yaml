@@ -35,24 +35,22 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-04-01
-last_updated: 2026-04-01  # story 1.4 ready-for-dev
+last_updated: 2026-04-01 20:19 # story 1.4 review
 project: Dictly
 project_key: NOKEY
 tracking_system: file-system
 story_location: "{project-root}/_bmad-output/implementation-artifacts"
-
 development_status:
   # Epic 1: Project Setup & Campaign Organization
   epic-1: in-progress
   1-1-initialize-xcode-workspace-with-shared-dictlykit-package: done
   1-2-implement-design-token-system-dictlytheme: done
   1-3-campaign-management: done
-  1-4-session-organization-within-campaigns: ready-for-dev
+  1-4-session-organization-within-campaigns: review
   1-5-tag-category-and-tag-management: backlog
   1-6-tag-category-sync-via-icloud-key-value-store: backlog
   1-7-storage-management: backlog
   epic-1-retrospective: optional
-
   # Epic 2: Session Recording & Live Tagging
   epic-2: backlog
   2-1-audio-recording-engine-with-background-persistence: backlog
@@ -63,7 +61,6 @@ development_status:
   2-6-custom-tag-creation-during-recording: backlog
   2-7-stop-recording-and-session-summary: backlog
   epic-2-retrospective: optional
-
   # Epic 3: Session Transfer & Import
   epic-3: backlog
   3-1-dictly-bundle-format-and-serialization: backlog
@@ -71,7 +68,6 @@ development_status:
   3-3-local-network-transfer-bonjour-fallback: backlog
   3-4-mac-import-with-deduplication: backlog
   epic-3-retrospective: optional
-
   # Epic 4: Session Review & Annotation
   epic-4: backlog
   4-1-mac-session-review-layout: backlog
@@ -82,7 +78,6 @@ development_status:
   4-6-retroactive-tag-placement: backlog
   4-7-tag-notes-and-session-summary-notes: backlog
   epic-4-retrospective: optional
-
   # Epic 5: Local Transcription
   epic-5: backlog
   5-1-whisper-cpp-integration-and-whisperbridge: backlog
@@ -90,7 +85,6 @@ development_status:
   5-3-per-tag-and-batch-transcription: backlog
   5-4-view-and-edit-transcription-text: backlog
   epic-5-retrospective: optional
-
   # Epic 6: Search, Archive & Export
   epic-6: backlog
   6-1-core-spotlight-indexing: backlog

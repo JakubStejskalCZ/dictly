@@ -1,6 +1,6 @@
 # Story 1.4: Session Organization Within Campaigns
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -19,35 +19,35 @@ So that I can track my session history at a glance.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Implement `SessionListRow.swift` — reusable session row component (AC: #2)
-  - [ ] 1.1 Create `DictlyiOS/Campaigns/SessionListRow.swift` displaying session title, date, duration (formatted), and tag count
-  - [ ] 1.2 Use `DictlyTypography.body` for session title, `DictlyTypography.caption` for metadata (date, duration, tag count)
-  - [ ] 1.3 Format duration as `Xh Ym` (e.g., "3h 42m") — use `Duration` or manual formatting, never raw `TimeInterval` display
-  - [ ] 1.4 Show tag count as "N tags" with pluralization
-  - [ ] 1.5 Show location name if available (optional, caption style)
+- [x] Task 1: Implement `SessionListRow.swift` — reusable session row component (AC: #2)
+  - [x] 1.1 Create `DictlyiOS/Campaigns/SessionListRow.swift` displaying session title, date, duration (formatted), and tag count
+  - [x] 1.2 Use `DictlyTypography.body` for session title, `DictlyTypography.caption` for metadata (date, duration, tag count)
+  - [x] 1.3 Format duration as `Xh Ym` (e.g., "3h 42m") — use `Duration` or manual formatting, never raw `TimeInterval` display
+  - [x] 1.4 Show tag count as "N tags" with pluralization
+  - [x] 1.5 Show location name if available (optional, caption style)
 
-- [ ] Task 2: Update `CampaignDetailScreen.swift` — add session list with empty state (AC: #1, #2)
-  - [ ] 2.1 Add `@Query` filtered to sessions belonging to this campaign, sorted by `date` descending
-  - [ ] 2.2 When sessions exist: display `List` of `SessionListRow` views (replacing empty state section)
-  - [ ] 2.3 Keep existing empty state for when `sessions.isEmpty` — current message and disabled "New Session" button are correct per UX spec
-  - [ ] 2.4 Add swipe-to-delete on session rows with `.confirmationDialog` before deletion
-  - [ ] 2.5 Add session title editing via context menu or tap-to-edit interaction
+- [x] Task 2: Update `CampaignDetailScreen.swift` — add session list with empty state (AC: #1, #2)
+  - [x] 2.1 Add `@Query` filtered to sessions belonging to this campaign, sorted by `date` descending
+  - [x] 2.2 When sessions exist: display `List` of `SessionListRow` views (replacing empty state section)
+  - [x] 2.3 Keep existing empty state for when `sessions.isEmpty` — current message and disabled "New Session" button are correct per UX spec
+  - [x] 2.4 Add swipe-to-delete on session rows with `.confirmationDialog` before deletion
+  - [x] 2.5 Add session title editing via context menu or tap-to-edit interaction
 
-- [ ] Task 3: Implement session auto-numbering and default title (AC: #3)
-  - [ ] 3.1 Create a helper method to compute the next session number: query max `sessionNumber` for the campaign's sessions + 1 (or 1 if no sessions)
-  - [ ] 3.2 Default title format: "Session N" where N is the auto-incremented number
-  - [ ] 3.3 Title is editable — allow inline rename via `SessionFormSheet.swift` or context menu action
-  - [ ] 3.4 Create `DictlyiOS/Campaigns/SessionFormSheet.swift` as a `.sheet` for editing session title (and future metadata)
+- [x] Task 3: Implement session auto-numbering and default title (AC: #3)
+  - [x] 3.1 Create a helper method to compute the next session number: query max `sessionNumber` for the campaign's sessions + 1 (or 1 if no sessions)
+  - [x] 3.2 Default title format: "Session N" where N is the auto-incremented number
+  - [x] 3.3 Title is editable — allow inline rename via `SessionFormSheet.swift` or context menu action
+  - [x] 3.4 Create `DictlyiOS/Campaigns/SessionFormSheet.swift` as a `.sheet` for editing session title (and future metadata)
 
-- [ ] Task 4: Implement session creation placeholder (AC: #3)
-  - [ ] 4.1 Enable the "New Session" button in `CampaignDetailScreen` — on tap, create a new `Session` with auto-numbered title, current date, duration 0, and insert into campaign
-  - [ ] 4.2 The new session should appear immediately in the session list via `@Query` reactivity
-  - [ ] 4.3 Note: This is a **placeholder** for session creation — actual recording-initiated session creation will be Story 2.x. This allows testing the session list UI with real data.
+- [x] Task 4: Implement session creation placeholder (AC: #3)
+  - [x] 4.1 Enable the "New Session" button in `CampaignDetailScreen` — on tap, create a new `Session` with auto-numbered title, current date, duration 0, and insert into campaign
+  - [x] 4.2 The new session should appear immediately in the session list via `@Query` reactivity
+  - [x] 4.3 Note: This is a **placeholder** for session creation — actual recording-initiated session creation will be Story 2.x. This allows testing the session list UI with real data.
 
-- [ ] Task 5: Verify data integrity (AC: #1, #2, #3)
-  - [ ] 5.1 Verify that deleting a session removes it from the campaign's sessions array (SwiftData relationship)
-  - [ ] 5.2 Verify that deleting a campaign cascades and removes all child sessions (already implemented in Campaign model)
-  - [ ] 5.3 Verify auto-numbering handles gaps correctly (e.g., if session 2 is deleted, next session is still max+1, not gap-filling)
+- [x] Task 5: Verify data integrity (AC: #1, #2, #3)
+  - [x] 5.1 Verify that deleting a session removes it from the campaign's sessions array (SwiftData relationship)
+  - [x] 5.2 Verify that deleting a campaign cascades and removes all child sessions (already implemented in Campaign model)
+  - [x] 5.3 Verify auto-numbering handles gaps correctly (e.g., if session 2 is deleted, next session is still max+1, not gap-filling)
 
 ## Dev Notes
 
@@ -253,10 +253,37 @@ Per architecture.md naming patterns:
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+claude-sonnet-4-6
 
 ### Debug Log References
 
+- xcodebuild initial failure: new files not found in scope because .xcodeproj did not exist yet — resolved by running `xcodegen generate` in DictlyiOS/
+- swift test initial failure: stale .build cache had module cache paths from original `Dictly` project path — resolved by `rm -rf .build` before re-running
+
 ### Completion Notes List
 
+- Implemented `SessionListRow.swift` — displays title (body), date/duration/tags/location (caption) following existing CampaignRowView pattern
+- Duration formatted as "Xh Ym" / "Ym" / "0m" per architecture spec, never raw TimeInterval
+- Tag count pluralized ("1 tag" / "N tags") via ternary inline
+- Implemented `SessionFormSheet.swift` — sheet for editing session title, same create/edit pattern as CampaignFormSheet, trims whitespace before save
+- Updated `CampaignDetailScreen.swift`:
+  - `sortedSessions` computed property uses `campaign.sessions.sorted { $0.date > $1.date }` (Option A — relationship array, avoids @Query predicate complexity)
+  - Empty state section unchanged (message + New Session button)
+  - Session list section shows SessionListRow with context menu (Rename/Delete) and trailing swipe actions (Delete/Rename)
+  - Separate confirmationDialog for session deletion (session title, "Delete Session?" title)
+  - New Session button enabled and wired to `createSession()` helper
+  - `createSession()` computes `(campaign.sessions.map(\.sessionNumber).max() ?? 0) + 1` for auto-numbering, inserts Session with "Session N" title
+- Data integrity verified: cascade delete on Campaign→Session confirmed in Campaign.swift, max+1 auto-numbering verified (no gap-filling)
+- All 27 DictlyModels/DictlyTheme tests pass — no regressions
+- xcodebuild succeeded after xcodegen generate
+
 ### File List
+
+- DictlyiOS/Campaigns/SessionListRow.swift (new)
+- DictlyiOS/Campaigns/SessionFormSheet.swift (new)
+- DictlyiOS/Campaigns/CampaignDetailScreen.swift (modified)
+- DictlyiOS/DictlyiOS.xcodeproj (generated by xcodegen)
+
+## Change Log
+
+- 2026-04-01: Story 1.4 implemented — session list UI with empty/filled states, SessionListRow, SessionFormSheet (title editing), session auto-numbering, swipe-to-delete and context menu, New Session placeholder creation. xcodebuild succeeded, 27 unit tests pass.
