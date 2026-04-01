@@ -18,6 +18,7 @@ struct RecordingScreen: View {
     @Environment(\.modelContext) private var modelContext
 
     @State private var viewModel: RecordingViewModel?
+    @State private var taggingService: TaggingService?
     @State private var micPermissionDenied = false
     @State private var recordingFailed = false
 
@@ -49,8 +50,14 @@ struct RecordingScreen: View {
 
                 Spacer()
 
-                // Placeholder for tag palette (Story 2.4)
-                Color.clear.frame(height: DictlySpacing.xxl)
+                // Tag palette (Story 2.4)
+                if let vm = viewModel, let ts = taggingService {
+                    TagPalette(
+                        session: session,
+                        taggingService: ts,
+                        isInteractive: vm.recordingState == .recording
+                    )
+                }
 
                 // Placeholder for stop bar (Story 2.7)
                 Color.clear.frame(height: DictlySpacing.minTapTarget)
@@ -147,6 +154,7 @@ struct RecordingScreen: View {
         do {
             try sessionRecorder.startRecording(session: session, context: modelContext)
             viewModel = RecordingViewModel(sessionRecorder: sessionRecorder)
+            taggingService = TaggingService(sessionRecorder: sessionRecorder)
         } catch {
             logger.error("Failed to start recording: \(error, privacy: .public)")
             recordingFailed = true
