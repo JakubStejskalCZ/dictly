@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-04-01
-last_updated: 2026-04-01 # story 1.7 done
+last_updated: 2026-04-01 21:44 # story 1.7 done
 project: Dictly
 project_key: NOKEY
 tracking_system: file-system
