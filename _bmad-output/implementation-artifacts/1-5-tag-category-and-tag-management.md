@@ -1,0 +1,263 @@
+# Story 1.5: Tag Category & Tag Management
+
+Status: ready-for-dev
+
+## Story
+
+As a DM,
+I want to create, rename, delete, and reorder tag categories and tags with D&D-oriented defaults,
+So that I can organize my tagging palette to match my campaign's needs.
+
+## Acceptance Criteria (BDD)
+
+### Scenario 1: Default Tag Categories on Fresh Install
+
+Given a fresh install of the app
+When the DM opens the app for the first time
+Then 5 default tag categories are present:
+  - Story (amber `#D97706`)
+  - Combat (crimson `#DC2626`)
+  - Roleplay (violet `#7C3AED`)
+  - World (green `#059669`)
+  - Meta (blue `#4B7BE5`)
+And each category contains a set of sensible default tags
+
+### Scenario 2: Create Custom Tag Category
+
+Given the tag management screen
+When the DM creates a new custom category (name, color, icon)
+Then it appears in the category list
+And is available in the tag palette
+
+### Scenario 3: Rename or Delete Existing Category
+
+Given an existing category
+When the DM renames it
+Then the change is reflected immediately in the category list
+When the DM deletes a category
+Then all tags referencing that category's name are reassigned to "Uncategorized" (tags are never deleted by category removal)
+And the category is removed from the list
+
+### Scenario 4: Reorder Categories
+
+Given the category list
+When the DM reorders categories (drag/move)
+Then the new `sortOrder` persists
+And the order is reflected in the tag palette
+
+### Scenario 5: CRUD Tags Within a Category
+
+Given a tag category
+When the DM creates a new tag within that category
+Then it appears in the tag list under that category
+When the DM renames or deletes a tag
+Then the change is reflected immediately
+
+### Scenario 6: Default Tags Seeded Per Category
+
+Given the 5 default categories exist
+Then each category has pre-seeded default tags relevant to D&D:
+  - Story: Plot Hook, Lore Drop, Quest Update, Foreshadowing, Revelation
+  - Combat: Initiative, Epic Roll, Critical Hit, Encounter Start, Encounter End
+  - Roleplay: Character Moment, NPC Introduction, Memorable Quote, In-Character Speech, Emotional Beat
+  - World: Location, Item, Lore, Map Note, Environment Description
+  - Meta: Ruling, House Rule, Schedule, Break, Player Note
+
+## Tasks / Subtasks
+
+- [ ] Task 1: Seed default tag categories on first launch (AC: #1, #6)
+  - [ ] 1.1 Create `DefaultTagSeeder` utility that checks if TagCategory table is empty and inserts the 5 defaults with correct colorHex, iconName, sortOrder, isDefault=true
+  - [ ] 1.2 Create default tags for each category (Tag models with matching categoryName string)
+  - [ ] 1.3 Call seeder from app launch (in `DictlyiOSApp.swift` after ModelContainer setup)
+  - [ ] 1.4 Write unit tests for seeder: verify 5 categories + correct tag counts created, verify idempotency (second call is no-op)
+
+- [ ] Task 2: Tag Category Management Screen (AC: #2, #3, #4)
+  - [ ] 2.1 Create `TagCategoryListScreen.swift` in `DictlyiOS/Tagging/` — List of all categories sorted by `sortOrder`
+  - [ ] 2.2 Create `TagCategoryFormSheet.swift` — Create/edit category (name, colorHex picker, iconName picker), following CampaignFormSheet pattern
+  - [ ] 2.3 Implement delete with reassignment: when deleting a category, update all Tags where `categoryName == deletedCategory.name` to `categoryName = "Uncategorized"`, ensure an "Uncategorized" category exists (create if not)
+  - [ ] 2.4 Implement reorder via `EditButton` / `.onMove` — update `sortOrder` values on move
+  - [ ] 2.5 Prevent deletion of the last remaining category
+
+- [ ] Task 3: Tag Management Within Category (AC: #5)
+  - [ ] 3.1 Create `TagListScreen.swift` in `DictlyiOS/Tagging/` — Shows tags filtered by selected category's name
+  - [ ] 3.2 Create `TagFormSheet.swift` — Create/edit tag label within a category
+  - [ ] 3.3 Implement tag delete with confirmation dialog
+  - [ ] 3.4 Tags use `categoryName: String` to reference their parent category (existing model design)
+
+- [ ] Task 4: Navigation Integration
+  - [ ] 4.1 Add "Manage Tags" entry point — accessible from Settings or Campaign detail toolbar menu
+  - [ ] 4.2 Wire NavigationLink from TagCategoryListScreen → TagListScreen for each category
+  - [ ] 4.3 Ensure navigation depth stays within 3 levels per UX spec
+
+- [ ] Task 5: Testing & Build Verification
+  - [ ] 5.1 Unit tests for DefaultTagSeeder (category count, tag count, idempotency)
+  - [ ] 5.2 Unit tests for category deletion + tag reassignment logic
+  - [ ] 5.3 Unit tests for reorder persistence
+  - [ ] 5.4 Verify xcodebuild succeeds for iOS target
+
+## Dev Notes
+
+### Architecture Compliance
+
+- **Campaigns/ pattern is the reference:** Pure SwiftData `@Query` views with no business logic beyond CRUD [Source: architecture.md#iOS-Target-Boundaries]
+- **SwiftData access:** `@Query(sort: \TagCategory.sortOrder)` for category list, `@Environment(\.modelContext)` for mutations
+- **State management:** `@State` for view-local state (sheet presentation, form fields). No `@Observable` service needed for CRUD
+- **Navigation:** iOS uses `NavigationStack` push/pop. Recording screen is modal. Tag management is push-based from settings/campaign detail
+- **No ObservableObject or @StateObject** — use `@Observable` only if a stateful service is needed (not the case here)
+- **Error UI:** `.confirmationDialog` only for destructive actions (delete category, delete tag). Everything else is instant
+- **DictlyKit boundary:** TagCategory and Tag models live in `DictlyModels`. Tag management UI lives in `DictlyiOS/Tagging/`. No DictlyKit modifications needed
+- **Logging:** Use `os.Logger` with category `tagging`, subsystem `com.dictly.ios` for any error logging
+
+### SwiftData Model Notes
+
+**TagCategory** (`DictlyKit/Sources/DictlyModels/TagCategory.swift`):
+```swift
+@Model public final class TagCategory {
+    public var uuid: UUID
+    public var name: String
+    public var colorHex: String    // e.g. "#D97706"
+    public var iconName: String    // SF Symbol name
+    public var sortOrder: Int
+    public var isDefault: Bool     // true for the 5 D&D defaults
+}
+```
+
+**Tag** (`DictlyKit/Sources/DictlyModels/Tag.swift`):
+```swift
+@Model public final class Tag {
+    public var uuid: UUID
+    public var label: String
+    public var categoryName: String  // STRING reference to TagCategory.name (NOT a relationship)
+    public var anchorTime: TimeInterval
+    public var rewindDuration: TimeInterval
+    public var notes: String?
+    public var transcription: String?
+    public var createdAt: Date
+    @Relationship(inverse: \Session.tags) public var session: Session?
+}
+```
+
+**Critical design:** Tags reference categories by `categoryName` string, not a direct SwiftData relationship. This means:
+- Deleting a TagCategory does NOT cascade-delete Tags
+- When deleting a category, you must manually query all Tags with matching `categoryName` and update them to "Uncategorized"
+- Tag creation for the palette (pre-defined tags available for one-tap use) requires Tag instances with `session: nil` (they are template tags, not session-bound tags)
+
+**Schema:** All 4 models already registered in `DictlySchema.all` — no changes needed.
+
+### Default Tag Seeding Strategy
+
+The seeder should:
+1. Check if any TagCategory exists in the store (idempotent guard)
+2. If empty, insert the 5 default categories with `isDefault: true`
+3. Insert pre-defined Tag templates for each category with `session: nil`, `anchorTime: 0`, `rewindDuration: 0`
+4. Run once at app launch — call from `DictlyiOSApp.swift` in a `.task` modifier or during ModelContainer setup
+
+**Default categories with icons:**
+| Category | colorHex | iconName | sortOrder |
+|----------|----------|----------|-----------|
+| Story | #D97706 | book.pages | 0 |
+| Combat | #DC2626 | shield | 1 |
+| Roleplay | #7C3AED | theatermasks | 2 |
+| World | #059669 | globe | 3 |
+| Meta | #4B7BE5 | info.circle | 4 |
+
+### Color Picker Implementation
+
+For the category color picker, use a fixed palette of predefined colors (the 5 tag category colors from `DictlyColors.TagCategory` plus a few additional options). Do NOT implement a freeform color picker — keep it simple and on-brand. Store selected color as hex string in `colorHex`.
+
+### Icon Picker Implementation
+
+Use a curated grid of SF Symbols relevant to D&D/tabletop (e.g., `book.pages`, `shield`, `theatermasks`, `globe`, `info.circle`, `star`, `flag`, `bolt`, `heart`, `map`, `scroll`, `crown`, `wand.and.stars`). Present as a grid in the form sheet.
+
+### Category Deletion & Tag Reassignment
+
+When deleting a category:
+1. Fetch all Tags where `categoryName == category.name`
+2. Check if "Uncategorized" category exists; create it if not (with `isDefault: false`, `colorHex: "#78716C"` (textSecondary-like), `iconName: "tag"`)
+3. Update each tag's `categoryName` to `"Uncategorized"`
+4. Delete the category
+5. Do this in a single ModelContext transaction (no explicit save needed — SwiftData auto-saves)
+
+### Reorder Implementation
+
+Use SwiftUI `List` with `.onMove` modifier + `EditButton`:
+- On move, recalculate `sortOrder` for all categories based on new array order
+- `@Query(sort: \TagCategory.sortOrder)` ensures the list always reflects persisted order
+
+### File Placement
+
+New files go in `DictlyiOS/Tagging/` (directory exists, currently empty):
+```
+DictlyiOS/Tagging/
+├── DefaultTagSeeder.swift          # Seed logic for first-launch defaults
+├── TagCategoryListScreen.swift     # List of categories with reorder/CRUD
+├── TagCategoryFormSheet.swift      # Create/edit category form
+├── TagListScreen.swift             # Tags within a selected category
+├── TagFormSheet.swift              # Create/edit tag form
+└── ColorPicker.swift               # Fixed palette color picker component (if extracted)
+```
+
+### Navigation Entry Point
+
+Add a "Manage Tags" button to the campaign detail toolbar menu (alongside "Edit Campaign" and "Delete Campaign") in `CampaignDetailScreen.swift`. This navigates to `TagCategoryListScreen`. Tag categories are global (not campaign-scoped) per the architecture.
+
+Alternatively or additionally, add a "Tag Categories" row in `SettingsScreen.swift` if it exists.
+
+### UI Patterns to Follow
+
+- **Form sheets:** Follow `CampaignFormSheet` pattern exactly — `NavigationStack` > `Form` > `Section`, Cancel/Save toolbar, optional model init for edit mode, trim whitespace on save
+- **List screens:** Follow `CampaignDetailScreen` pattern — `List` > `Section` > `ForEach`, context menus, swipe actions, confirmation dialogs for delete
+- **Typography:** `DictlyTypography.body` for primary text, `DictlyTypography.caption` for metadata
+- **Colors:** `DictlyColors.textPrimary`, `.textSecondary`, `.surface`, `.background`, `.border`
+- **Spacing:** `DictlySpacing.sm` (8pt), `.md` (16pt), `.lg` (24pt)
+- **Category color dot:** Small colored circle (6-8pt) next to category name using the category's `colorHex`
+
+### Previous Story Intelligence (from Story 1.4)
+
+Key learnings to apply:
+- **CampaignFormSheet create/edit pattern** works well — reuse for TagCategoryFormSheet and TagFormSheet (optional model in init, @State for fields, trim whitespace)
+- **Extract subviews as private struct** when body exceeds ~40 lines (like `CampaignRowView`)
+- **Use relationship array directly** for filtered child data rather than complex @Query predicates
+- **SwiftData @Model requires Xcode compilation** — verify with `xcodebuild`, not `swift build`
+- **Run `xcodegen generate`** in `DictlyiOS/` if new files are added to regenerate .xcodeproj
+- **Trim whitespace on text inputs** before save to prevent phantom content
+- **Stale state refs:** Clear `@State` references to deleted models before performing deletion (e.g., clear sessionToEdit before deleting campaign) — apply same pattern to tag/category deletion
+
+### Git Conventions
+
+- Conventional commits with `feat:` prefix: `feat(tagging): implement tag category and tag management (story 1.5)`
+- Recent commits show pattern: `feat(campaigns): implement session organization within campaigns (story 1.4)`
+
+### Project Structure Notes
+
+- `DictlyiOS/Tagging/` directory exists (empty, has `.gitkeep`) — new files go here
+- `project.yml` likely already includes `Tagging` path in sources (verify; if not, it may need adding or `xcodegen` may pick up the directory automatically)
+- No changes to `DictlyKit/`, `DictlyMac/`, or `Package.swift`
+- Schema already includes TagCategory and Tag models — no model changes needed
+
+### References
+
+- [Source: architecture.md#Data-Architecture] — SwiftData models, relationships, cascade rules
+- [Source: architecture.md#SwiftData-Relationships] — TagCategory is independent, no cascade delete
+- [Source: architecture.md#DictlyModels] — Model file structure and naming
+- [Source: architecture.md#Naming-Patterns] — PascalCase types, camelCase properties
+- [Source: architecture.md#iOS-Target-Boundaries] — Tagging/ owns tag creation, Campaigns/ is pure CRUD
+- [Source: epics.md#Story-1.5] — AC and technical requirements
+- [Source: prd.md#FR14-FR17] — Tag & category management functional requirements
+- [Source: ux-design-specification.md#Tag-Category-Colors] — 5 category colors and their semantic meaning
+- [Source: ux-design-specification.md#CategoryTabBar] — Category tab interaction pattern
+- [Source: ux-design-specification.md#Journey-1] — Default tags pre-loaded, no forced customization
+- [Source: DictlyKit/Sources/DictlyModels/TagCategory.swift] — Existing model definition
+- [Source: DictlyKit/Sources/DictlyModels/Tag.swift] — Tag uses categoryName string reference
+- [Source: DictlyKit/Sources/DictlyTheme/Colors.swift] — DictlyColors.TagCategory enum with hex values
+- [Source: 1-4-session-organization-within-campaigns.md] — Previous story patterns and learnings
+
+## Dev Agent Record
+
+### Agent Model Used
+
+### Debug Log References
+
+### Completion Notes List
+
+### File List
