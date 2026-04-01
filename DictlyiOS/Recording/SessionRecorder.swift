@@ -148,6 +148,16 @@ final class SessionRecorder {
 
         logger.info("Recording started for session \(session.uuid.uuidString, privacy: .private)")
 
+        // Remove any stale observers from a prior session that did not fully clean up
+        if let observer = interruptionObserver {
+            NotificationCenter.default.removeObserver(observer)
+            interruptionObserver = nil
+        }
+        if let observer = configChangeObserver {
+            NotificationCenter.default.removeObserver(observer)
+            configChangeObserver = nil
+        }
+
         // Register for AVAudioSession interruption notifications (phone calls, alarms, Siri)
         interruptionObserver = NotificationCenter.default.addObserver(
             forName: AVAudioSession.interruptionNotification,
@@ -194,7 +204,7 @@ final class SessionRecorder {
         audioEngine?.pause()
         isPaused = true
         pauseStartDate = Date()
-        pauseIntervalStart = elapsedTime
+        pauseIntervalStart = Date().timeIntervalSince(recordingStartDate!)
         currentAudioLevel = 0
         wasInterruptedBySystem = false
         logger.info("Recording paused at \(self.elapsedTime, privacy: .public)s")
@@ -212,9 +222,11 @@ final class SessionRecorder {
         }
 
         // Record pause interval for Mac timeline gap rendering (Story 4.2)
+        // Uses wall-clock offsets from recordingStartDate so the Mac timeline can render actual gap durations
         if let session = activeSession, let context = activeContext {
+            let pauseIntervalEnd = Date().timeIntervalSince(recordingStartDate!)
             var intervals = session.pauseIntervals
-            intervals.append(PauseInterval(start: pauseIntervalStart, end: elapsedTime))
+            intervals.append(PauseInterval(start: pauseIntervalStart, end: pauseIntervalEnd))
             session.pauseIntervals = intervals
             do {
                 try context.save()
@@ -231,6 +243,7 @@ final class SessionRecorder {
         do {
             try engine.start()
         } catch {
+            inputNode.removeTap(onBus: 0)
             logger.error("Failed to resume recording: \(error, privacy: .public)")
             return
         }
@@ -251,9 +264,10 @@ final class SessionRecorder {
 
         // Finalize open pause interval if we are currently paused
         if isPaused {
-            if let session = activeSession, let context = activeContext {
+            if let session = activeSession, let context = activeContext, let startDate = recordingStartDate {
+                let pauseIntervalEnd = Date().timeIntervalSince(startDate)
                 var intervals = session.pauseIntervals
-                intervals.append(PauseInterval(start: pauseIntervalStart, end: elapsedTime))
+                intervals.append(PauseInterval(start: pauseIntervalStart, end: pauseIntervalEnd))
                 session.pauseIntervals = intervals
                 do {
                     try context.save()

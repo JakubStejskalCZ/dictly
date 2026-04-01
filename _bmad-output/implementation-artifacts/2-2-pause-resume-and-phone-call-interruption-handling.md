@@ -1,6 +1,6 @@
 # Story 2.2: Pause, Resume & Phone Call Interruption Handling
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -387,6 +387,16 @@ claude-sonnet-4-6
 - `DictlyKit/Sources/DictlyModels/PauseInterval.swift` — new: `PauseInterval` struct + `Session.pauseIntervals` computed property
 - `DictlyiOS/Tests/RecordingTests/SessionRecorderTests.swift` — modified: 11 new unit tests for pause/resume state, PauseInterval Codable, Session pauseIntervals
 
+### Review Findings
+
+- [x] [Review][Patch] Pause intervals use stale `elapsedTime` (frozen during pause) producing `start == end` zero-duration gaps — fixed to use wall-clock offsets from `recordingStartDate` [SessionRecorder.swift:197,217,256]
+- [x] [Review][Patch] Orphan tap on resume failure — `engine.start()` fails but tap already installed, next resume crashes — added `removeTap` in catch block [SessionRecorder.swift:235]
+- [x] [Review][Patch] Defensive observer cleanup in `startRecording()` — remove stale observers before re-registration to prevent duplicate dispatch [SessionRecorder.swift:152-160]
+- [x] [Review][Patch] Empty `pauseIntervals` setter produces `"[]"` instead of `nil` — violates doc "Nil when no pauses occurred" — fixed to return `nil` for empty array [PauseInterval.swift:25]
+- [x] [Review][Defer] `isStopping` data race (`nonisolated(unsafe)` provides no memory barrier) — pre-existing from Story 2.1
+- [x] [Review][Defer] Clock skew causing negative `totalPauseDuration` — extremely unlikely edge case, not introduced by this story
+
 ## Change Log
 
 - 2026-04-01: Implemented story 2.2 — pause/resume engine, AVAudioSession interruption handling (phone call auto-pause + wasInterruptedBySystem flag), AVAudioEngine config change handling, PauseInterval persistence for Mac timeline, 11 new unit tests. All 155 tests pass.
+- 2026-04-01: Code review fixes — wall-clock offsets for pause intervals, orphan tap cleanup on resume failure, defensive observer cleanup, empty-array setter returns nil.

@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-04-01
-last_updated: 2026-04-01 # story 2.2 review
+last_updated: 2026-04-01 # story 2.2 done
 project: Dictly
 project_key: NOKEY
 tracking_system: file-system
@@ -54,7 +54,7 @@ development_status:
   # Epic 2: Session Recording & Live Tagging
   epic-2: in-progress
   2-1-audio-recording-engine-with-background-persistence: done
-  2-2-pause-resume-and-phone-call-interruption-handling: review
+  2-2-pause-resume-and-phone-call-interruption-handling: done
   2-3-recording-screen-layout-and-status-indicators: backlog
   2-4-tag-palette-with-category-tabs-and-one-tap-tagging: backlog
   2-5-rewind-anchor-tagging-and-timestamp-first-interaction: backlog

@@ -39,3 +39,8 @@
 
 - No microphone permission check before recording — `startRecording` does not call `AVAudioApplication.requestRecordPermission` and relies on engine failure for permission denial. Story 2.3 recording UI should add a permission gate with the already-defined `.permissionDenied` error.
 - `recoverOrphanedRecordings` runs synchronous file I/O on the main actor during app launch. For many orphaned recordings with large files, this could block the UI. Consider making it async or dispatching to a background queue.
+
+## Deferred from: code review of 2-2-pause-resume-and-phone-call-interruption-handling (2026-04-01)
+
+- `isStopping` is declared `nonisolated(unsafe)` and written from `@MainActor` while read from the AVAudioEngine tap callback thread. No memory barrier guarantees visibility ordering. In practice ARM's strong ordering makes this safe, but it is a formal data race by Swift concurrency rules. Consider using `Atomic<Bool>` when adopting Swift 6 atomics.
+- `totalPauseDuration` can go negative if the system clock moves backward (DST change, NTP correction) between `pauseStartDate = Date()` and `Date().timeIntervalSince(pauseStart)` on resume, causing the elapsed time to overshoot. Extremely unlikely for a recording session, but could be guarded with `max(0, ...)` on the increment.

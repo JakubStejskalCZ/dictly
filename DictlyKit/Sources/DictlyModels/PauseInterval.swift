@@ -22,6 +22,7 @@ public extension Session {
             return (try? JSONDecoder().decode([PauseInterval].self, from: data)) ?? []
         }
         set {
+            guard !newValue.isEmpty else { pauseIntervalsJSON = nil; return }
             guard let data = try? JSONEncoder().encode(newValue) else { pauseIntervalsJSON = nil; return }
             pauseIntervalsJSON = String(data: data, encoding: .utf8)
         }

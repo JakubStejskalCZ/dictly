@@ -243,8 +243,8 @@ final class SessionRecorderTests: XCTestCase {
         XCTAssertNotNil(session.pauseIntervalsJSON)
 
         session.pauseIntervals = []
-        // Empty array encodes to "[]", not nil
-        XCTAssertNotNil(session.pauseIntervalsJSON)
+        // Empty array clears JSON to nil (matching the doc: "Nil when no pauses occurred")
+        XCTAssertNil(session.pauseIntervalsJSON)
         XCTAssertEqual(session.pauseIntervals, [])
     }
 
