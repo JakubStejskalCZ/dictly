@@ -1,6 +1,6 @@
 # Story 1.5: Tag Category & Tag Management
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -65,35 +65,35 @@ Then each category has pre-seeded default tags relevant to D&D:
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Seed default tag categories on first launch (AC: #1, #6)
-  - [ ] 1.1 Create `DefaultTagSeeder` utility that checks if TagCategory table is empty and inserts the 5 defaults with correct colorHex, iconName, sortOrder, isDefault=true
-  - [ ] 1.2 Create default tags for each category (Tag models with matching categoryName string)
-  - [ ] 1.3 Call seeder from app launch (in `DictlyiOSApp.swift` after ModelContainer setup)
-  - [ ] 1.4 Write unit tests for seeder: verify 5 categories + correct tag counts created, verify idempotency (second call is no-op)
+- [x] Task 1: Seed default tag categories on first launch (AC: #1, #6)
+  - [x] 1.1 Create `DefaultTagSeeder` utility that checks if TagCategory table is empty and inserts the 5 defaults with correct colorHex, iconName, sortOrder, isDefault=true
+  - [x] 1.2 Create default tags for each category (Tag models with matching categoryName string)
+  - [x] 1.3 Call seeder from app launch (in `DictlyiOSApp.swift` after ModelContainer setup)
+  - [x] 1.4 Write unit tests for seeder: verify 5 categories + correct tag counts created, verify idempotency (second call is no-op)
 
-- [ ] Task 2: Tag Category Management Screen (AC: #2, #3, #4)
-  - [ ] 2.1 Create `TagCategoryListScreen.swift` in `DictlyiOS/Tagging/` — List of all categories sorted by `sortOrder`
-  - [ ] 2.2 Create `TagCategoryFormSheet.swift` — Create/edit category (name, colorHex picker, iconName picker), following CampaignFormSheet pattern
-  - [ ] 2.3 Implement delete with reassignment: when deleting a category, update all Tags where `categoryName == deletedCategory.name` to `categoryName = "Uncategorized"`, ensure an "Uncategorized" category exists (create if not)
-  - [ ] 2.4 Implement reorder via `EditButton` / `.onMove` — update `sortOrder` values on move
-  - [ ] 2.5 Prevent deletion of the last remaining category
+- [x] Task 2: Tag Category Management Screen (AC: #2, #3, #4)
+  - [x] 2.1 Create `TagCategoryListScreen.swift` in `DictlyiOS/Tagging/` — List of all categories sorted by `sortOrder`
+  - [x] 2.2 Create `TagCategoryFormSheet.swift` — Create/edit category (name, colorHex picker, iconName picker), following CampaignFormSheet pattern
+  - [x] 2.3 Implement delete with reassignment: when deleting a category, update all Tags where `categoryName == deletedCategory.name` to `categoryName = "Uncategorized"`, ensure an "Uncategorized" category exists (create if not)
+  - [x] 2.4 Implement reorder via `EditButton` / `.onMove` — update `sortOrder` values on move
+  - [x] 2.5 Prevent deletion of the last remaining category
 
-- [ ] Task 3: Tag Management Within Category (AC: #5)
-  - [ ] 3.1 Create `TagListScreen.swift` in `DictlyiOS/Tagging/` — Shows tags filtered by selected category's name
-  - [ ] 3.2 Create `TagFormSheet.swift` — Create/edit tag label within a category
-  - [ ] 3.3 Implement tag delete with confirmation dialog
-  - [ ] 3.4 Tags use `categoryName: String` to reference their parent category (existing model design)
+- [x] Task 3: Tag Management Within Category (AC: #5)
+  - [x] 3.1 Create `TagListScreen.swift` in `DictlyiOS/Tagging/` — Shows tags filtered by selected category's name
+  - [x] 3.2 Create `TagFormSheet.swift` — Create/edit tag label within a category
+  - [x] 3.3 Implement tag delete with confirmation dialog
+  - [x] 3.4 Tags use `categoryName: String` to reference their parent category (existing model design)
 
-- [ ] Task 4: Navigation Integration
-  - [ ] 4.1 Add "Manage Tags" entry point — accessible from Settings or Campaign detail toolbar menu
-  - [ ] 4.2 Wire NavigationLink from TagCategoryListScreen → TagListScreen for each category
-  - [ ] 4.3 Ensure navigation depth stays within 3 levels per UX spec
+- [x] Task 4: Navigation Integration
+  - [x] 4.1 Add "Manage Tags" entry point — accessible from Settings or Campaign detail toolbar menu
+  - [x] 4.2 Wire NavigationLink from TagCategoryListScreen → TagListScreen for each category
+  - [x] 4.3 Ensure navigation depth stays within 3 levels per UX spec
 
-- [ ] Task 5: Testing & Build Verification
-  - [ ] 5.1 Unit tests for DefaultTagSeeder (category count, tag count, idempotency)
-  - [ ] 5.2 Unit tests for category deletion + tag reassignment logic
-  - [ ] 5.3 Unit tests for reorder persistence
-  - [ ] 5.4 Verify xcodebuild succeeds for iOS target
+- [x] Task 5: Testing & Build Verification
+  - [x] 5.1 Unit tests for DefaultTagSeeder (category count, tag count, idempotency)
+  - [x] 5.2 Unit tests for category deletion + tag reassignment logic
+  - [x] 5.3 Unit tests for reorder persistence
+  - [x] 5.4 Verify xcodebuild succeeds for iOS target
 
 ## Dev Notes
 
@@ -256,8 +256,39 @@ Key learnings to apply:
 
 ### Agent Model Used
 
+claude-sonnet-4-6
+
 ### Debug Log References
+
+- `#Predicate` macro in `TagListScreen` required capturing `category.name` into a local `String` variable before use — SwiftData predicate macros cannot access properties of a captured `@Model` object directly (causes type inference failure at compile time).
 
 ### Completion Notes List
 
+- **Task 1:** `DefaultTagSeeder` placed in `DictlyKit/Sources/DictlyModels/` (not `DictlyiOS/Tagging/`) for testability — the existing test infrastructure (DictlyModelsTests) only tests DictlyKit code. Seeder is called from `DictlyiOSApp.swift` in a `.task` modifier on `ContentView`, logging errors via `os.Logger`. 12 unit tests added: category count/names/colors/sort/isDefault, tag count/per-category/labels/session-nil, idempotency (double-call and pre-existing-category variants).
+- **Task 2:** `TagCategoryListScreen` uses `@Query(sort: \TagCategory.sortOrder)` + `.onMove` + `EditButton`. Deletion guard prevents removing last category. `deleteCategory` reassigns orphaned tags to "Uncategorized" (creating the fallback category if absent) in one ModelContext transaction. `TagCategoryFormSheet` follows `CampaignFormSheet` pattern with fixed 10-color palette (ScrollView) and curated SF Symbol icon grid.
+- **Task 3:** `TagListScreen` fetches tags via manual ModelContext query (capturing category name as local `String` due to predicate limitation). `TagFormSheet` follows `CampaignFormSheet` pattern. Delete uses `.confirmationDialog`.
+- **Task 4:** "Manage Tags" added to `CampaignDetailScreen` toolbar Menu. Navigation uses `.navigationDestination(isPresented:)` to push `TagCategoryListScreen`. `TagCategoryListScreen` → `TagListScreen` uses `NavigationLink`. Navigation depth: Campaign list (1) → Campaign detail (2) → Tag categories (3) — within 3-level limit.
+- **Task 5:** 44 total tests pass, zero regressions. xcodebuild succeeds for DictlyiOS iOS Simulator target.
+
 ### File List
+
+- DictlyKit/Sources/DictlyModels/DefaultTagSeeder.swift (new)
+- DictlyKit/Tests/DictlyModelsTests/DefaultTagSeederTests.swift (new)
+- DictlyKit/Tests/DictlyModelsTests/TagManagementTests.swift (new)
+- DictlyiOS/Tagging/TagCategoryListScreen.swift (new)
+- DictlyiOS/Tagging/TagCategoryFormSheet.swift (new)
+- DictlyiOS/Tagging/TagListScreen.swift (new)
+- DictlyiOS/Tagging/TagFormSheet.swift (new)
+- DictlyiOS/App/DictlyiOSApp.swift (modified)
+- DictlyiOS/Campaigns/CampaignDetailScreen.swift (modified)
+- DictlyiOS/project.yml (modified)
+
+### Change Log
+
+- feat(tagging): implement DefaultTagSeeder with 5 D&D categories and 25 default tags (Date: 2026-04-01)
+- feat(tagging): add TagCategoryListScreen with CRUD, reorder, delete-with-reassignment (Date: 2026-04-01)
+- feat(tagging): add TagListScreen and TagFormSheet for tag CRUD within categories (Date: 2026-04-01)
+- feat(tagging): add TagCategoryFormSheet with color palette and icon picker (Date: 2026-04-01)
+- feat(campaigns): add Manage Tags navigation entry in CampaignDetailScreen toolbar (Date: 2026-04-01)
+- chore(ios): add Tagging source path to project.yml and regenerate xcodeproj (Date: 2026-04-01)
+- test(tagging): add 17 unit tests for seeder, deletion/reassignment, reorder persistence (Date: 2026-04-01)

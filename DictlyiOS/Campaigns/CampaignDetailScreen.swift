@@ -14,6 +14,7 @@ struct CampaignDetailScreen: View {
     @State private var sessionToDelete: Session?
     @State private var isShowingSessionDeleteConfirmation = false
     @State private var sessionToEdit: Session?
+    @State private var isShowingManageTags = false
 
     private var sortedSessions: [Session] {
         campaign.sessions.sorted { $0.date > $1.date }
@@ -35,6 +36,9 @@ struct CampaignDetailScreen: View {
                     Button("Edit Campaign") {
                         isShowingEditForm = true
                     }
+                    Button("Manage Tags") {
+                        isShowingManageTags = true
+                    }
                     Button("Delete Campaign", role: .destructive) {
                         isShowingDeleteConfirmation = true
                     }
@@ -48,6 +52,9 @@ struct CampaignDetailScreen: View {
         }
         .sheet(item: $sessionToEdit) { session in
             SessionFormSheet(session: session)
+        }
+        .navigationDestination(isPresented: $isShowingManageTags) {
+            TagCategoryListScreen()
         }
         .confirmationDialog(
             "Delete Campaign?",

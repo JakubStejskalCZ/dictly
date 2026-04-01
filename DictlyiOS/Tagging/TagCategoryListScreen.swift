@@ -1,0 +1,172 @@
+import SwiftUI
+import SwiftData
+import OSLog
+import DictlyModels
+import DictlyTheme
+
+private let logger = Logger(subsystem: "com.dictly.ios", category: "tagging")
+
+struct TagCategoryListScreen: View {
+    @Environment(\.modelContext) private var modelContext
+    @Query(sort: \TagCategory.sortOrder) private var categories: [TagCategory]
+
+    @State private var isShowingCreateSheet = false
+    @State private var categoryToEdit: TagCategory?
+    @State private var categoryToDelete: TagCategory?
+    @State private var isShowingDeleteConfirmation = false
+
+    var body: some View {
+        List {
+            ForEach(categories) { category in
+                NavigationLink {
+                    TagListScreen(category: category)
+                } label: {
+                    CategoryRowView(category: category)
+                }
+                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                    Button(role: .destructive) {
+                        requestDelete(category)
+                    } label: {
+                        Label("Delete", systemImage: "trash")
+                    }
+                    Button {
+                        categoryToEdit = category
+                    } label: {
+                        Label("Edit", systemImage: "pencil")
+                    }
+                    .tint(.blue)
+                }
+                .contextMenu {
+                    Button("Edit") { categoryToEdit = category }
+                    Button("Delete", role: .destructive) { requestDelete(category) }
+                }
+            }
+            .onMove(perform: moveCategories)
+        }
+        .navigationTitle("Tag Categories")
+        .navigationBarTitleDisplayMode(.large)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                HStack {
+                    EditButton()
+                    Button {
+                        isShowingCreateSheet = true
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                }
+            }
+        }
+        .sheet(isPresented: $isShowingCreateSheet) {
+            TagCategoryFormSheet(category: nil)
+        }
+        .sheet(item: $categoryToEdit) { cat in
+            TagCategoryFormSheet(category: cat)
+        }
+        .confirmationDialog(
+            "Delete Category?",
+            isPresented: $isShowingDeleteConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Delete", role: .destructive) {
+                if let cat = categoryToDelete {
+                    deleteCategory(cat)
+                    categoryToDelete = nil
+                }
+            }
+            Button("Cancel", role: .cancel) {
+                categoryToDelete = nil
+            }
+        } message: {
+            Text("Tags in this category will be moved to \"Uncategorized\".")
+        }
+    }
+
+    // MARK: - Helpers
+
+    private func requestDelete(_ category: TagCategory) {
+        guard categories.count > 1 else {
+            logger.warning("Cannot delete last remaining category")
+            return
+        }
+        categoryToEdit = nil
+        categoryToDelete = category
+        isShowingDeleteConfirmation = true
+    }
+
+    private func deleteCategory(_ category: TagCategory) {
+        // Ensure "Uncategorized" exists
+        let uncategorizedName = "Uncategorized"
+        let hasFallback = categories.contains { $0.name == uncategorizedName }
+        if !hasFallback && category.name != uncategorizedName {
+            let fallback = TagCategory(
+                name: uncategorizedName,
+                colorHex: "#78716C",
+                iconName: "tag",
+                sortOrder: categories.count,
+                isDefault: false
+            )
+            modelContext.insert(fallback)
+        }
+
+        // Reassign tags to "Uncategorized"
+        do {
+            let categoryName = category.name
+            let predicate = #Predicate<Tag> { $0.categoryName == categoryName }
+            let orphanedTags = try modelContext.fetch(FetchDescriptor<Tag>(predicate: predicate))
+            for tag in orphanedTags {
+                tag.categoryName = uncategorizedName
+            }
+        } catch {
+            logger.error("Failed to reassign tags: \(error)")
+        }
+
+        modelContext.delete(category)
+    }
+
+    private func moveCategories(from source: IndexSet, to destination: Int) {
+        var reordered = categories
+        reordered.move(fromOffsets: source, toOffset: destination)
+        for (index, category) in reordered.enumerated() {
+            category.sortOrder = index
+        }
+    }
+}
+
+// MARK: - Row View
+
+private struct CategoryRowView: View {
+    let category: TagCategory
+
+    var body: some View {
+        HStack(spacing: DictlySpacing.sm) {
+            Circle()
+                .fill(Color(hexString: category.colorHex))
+                .frame(width: 8, height: 8)
+            Image(systemName: category.iconName)
+                .font(DictlyTypography.body)
+                .foregroundStyle(Color(hexString: category.colorHex))
+                .frame(width: 24)
+            Text(category.name)
+                .font(DictlyTypography.body)
+                .foregroundStyle(DictlyColors.textPrimary)
+            Spacer()
+            if category.isDefault {
+                Text("Default")
+                    .font(DictlyTypography.caption)
+                    .foregroundStyle(DictlyColors.textSecondary)
+            }
+        }
+        .padding(.vertical, 2)
+    }
+}
+
+#Preview {
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(for: Schema(DictlySchema.all), configurations: config)
+    try! DefaultTagSeeder.seedIfNeeded(context: container.mainContext)
+    return NavigationStack {
+        TagCategoryListScreen()
+    }
+    .modelContainer(container)
+}
