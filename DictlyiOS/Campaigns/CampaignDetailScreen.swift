@@ -15,6 +15,7 @@ struct CampaignDetailScreen: View {
     @State private var isShowingSessionDeleteConfirmation = false
     @State private var sessionToEdit: Session?
     @State private var isShowingManageTags = false
+    @State private var activeRecordingSession: Session?
 
     private var sortedSessions: [Session] {
         campaign.sessions.sorted { $0.date > $1.date }
@@ -52,6 +53,9 @@ struct CampaignDetailScreen: View {
         }
         .sheet(item: $sessionToEdit) { session in
             SessionFormSheet(session: session)
+        }
+        .fullScreenCover(item: $activeRecordingSession) { session in
+            RecordingScreen(session: session)
         }
         .navigationDestination(isPresented: $isShowingManageTags) {
             TagCategoryListScreen()
@@ -163,6 +167,7 @@ struct CampaignDetailScreen: View {
         )
         session.campaign = campaign
         modelContext.insert(session)
+        activeRecordingSession = session
     }
 }
 
