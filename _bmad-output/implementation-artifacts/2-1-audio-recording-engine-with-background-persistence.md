@@ -1,6 +1,6 @@
 # Story 2.1: Audio Recording Engine with Background Persistence
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -96,6 +96,22 @@ Then the external mic is used as the audio input source
   - [x] 7.6 Test error cases — verify `DictlyError.recording(.audioSessionSetupFailed)` description, all 4 new cases tested
   - [x] 7.7 Verify all existing tests still pass (139 tests in DictlyKit — 0 failures after clean build)
   - [x] 7.8 Verify `xcodebuild` succeeds for the iOS target (BUILD SUCCEEDED)
+
+### Review Findings
+
+- [x] [Review][Patch] Timer drift: elapsedTime accumulates +0.1 increments instead of wall-clock anchor — causes drift over 4+ hours [SessionRecorder.swift:125-131] — FIXED: anchored to Date()
+- [x] [Review][Patch] Thread safety: tap closure writes to AVAudioFile on real-time thread while stopRecording tears down on main actor [SessionRecorder.swift:86-99] — FIXED: added isStopping flag
+- [x] [Review][Patch] Audio session not deactivated on error paths in startRecording [SessionRecorder.swift:58-76] — FIXED: added deactivateAudioSession() calls on all error paths
+- [x] [Review][Patch] diskFull error defined but never raised; silent data loss on write failure in tap [SessionRecorder.swift:88-92] — FIXED: consecutive write failure counter triggers stopRecording after 10 failures
+- [x] [Review][Patch] Division by zero in recovery when sampleRate == 0 [SessionRecorder.swift:190] — FIXED: guard sampleRate > 0
+- [x] [Review][Patch] Permanent orphan loop: zero-length/missing files never cleaned up [SessionRecorder.swift:180-197] — FIXED: clear audioFilePath and remove empty files
+- [x] [Review][Patch] stopRecording uses drifting elapsedTime instead of authoritative file duration [SessionRecorder.swift:155] — FIXED: reads file duration before releasing outputFile
+- [x] [Review][Patch] No input format validation — 0 channels crashes on devices without audio input [SessionRecorder.swift:81] — FIXED: guard channelCount > 0 and sampleRate > 0
+- [x] [Review][Patch] startRecording silently ignores call when already recording different session [SessionRecorder.swift:35] — FIXED: added warning log
+- [x] [Review][Patch] try? context.save() silently swallows persistence errors throughout [SessionRecorder.swift] — FIXED: all save calls now log errors
+- [x] [Review][Patch] setActive(false) failure silently swallowed [SessionRecorder.swift:152] — FIXED: extracted deactivateAudioSession() helper with warning log
+- [x] [Review][Defer] No microphone permission check before recording — deferred to Story 2.3 recording UI
+- [x] [Review][Defer] recoverOrphanedRecordings blocks main thread with synchronous file I/O — deferred, follows existing pattern (syncService.startObserving)
 
 ## Dev Notes
 

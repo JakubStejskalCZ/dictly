@@ -34,3 +34,8 @@
 - `audioFilePath` stores an absolute path which will break on app reinstall/iCloud restore (container UUID changes). Epic 2 should store paths relative to the Recordings directory and reconstruct full URLs at runtime via `audioStorageDirectory()`.
 - `audioFilePath` is not validated as a regular file — if set to a directory path, `deleteAudioFile` would recursively delete it. Add a file-type guard when the recording engine (Epic 2) writes the path.
 - Campaign cascade deletion (`modelContext.delete(campaign)`) removes Session models but does not delete orphaned audio files from disk. Add cleanup logic in the campaign delete flow or implement a periodic orphan-file scanner.
+
+## Deferred from: code review of 2-1-audio-recording-engine-with-background-persistence (2026-04-01)
+
+- No microphone permission check before recording — `startRecording` does not call `AVAudioApplication.requestRecordPermission` and relies on engine failure for permission denial. Story 2.3 recording UI should add a permission gate with the already-defined `.permissionDenied` error.
+- `recoverOrphanedRecordings` runs synchronous file I/O on the main actor during app launch. For many orphaned recordings with large files, this could block the UI. Consider making it async or dispatching to a background queue.
