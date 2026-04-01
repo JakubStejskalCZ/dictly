@@ -16,7 +16,7 @@ final class SessionRecorder {
 
     private(set) var isRecording = false
     private(set) var isPaused = false
-    private(set) var elapsedTime: TimeInterval = 0
+    internal(set) var elapsedTime: TimeInterval = 0
     private(set) var currentAudioLevel: Float = 0
     /// True only when the session was interrupted by the system (phone call, alarm, etc.).
     /// Drives the UI to show a prominent "Resume Recording" banner (Story 2.3).

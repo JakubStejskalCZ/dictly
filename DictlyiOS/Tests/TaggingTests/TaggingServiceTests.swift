@@ -134,71 +134,78 @@ final class TaggingServiceTests: XCTestCase {
     // MARK: - Story 2.5: Rewind-anchor tests
 
     func testPlaceTag_withRewindDuration_calculatesCorrectAnchorTime() throws {
-        // recorder.elapsedTime is 0 when not recording
-        // rewindDuration 10 with elapsedTime 0 → anchorTime clamped to 0, actualRewind = 0
-        service.placeTag(label: "Early Tag", categoryName: "Meta", rewindDuration: 10, session: session, context: context)
+        // Set elapsed time to simulate mid-recording state
+        recorder.elapsedTime = 150.0 // 2:30 into recording
+        service.placeTag(label: "Mid Recording Tag", categoryName: "Meta", rewindDuration: 10, session: session, context: context)
 
         let tag = try XCTUnwrap(session.tags.first)
-        XCTAssertEqual(tag.anchorTime, 0.0)
-        XCTAssertEqual(tag.rewindDuration, 0.0)
+        XCTAssertEqual(tag.anchorTime, 140.0, accuracy: 0.001) // 150 - 10 = 140
+        XCTAssertEqual(tag.rewindDuration, 10.0, accuracy: 0.001)
     }
 
     func testPlaceTag_withRewindDuration_storesActualRewind() throws {
-        // With elapsedTime = 0 and rewindDuration = 10, actualRewind = 0 (clamped case)
+        recorder.elapsedTime = 60.0
         service.placeTag(label: "Test Tag", categoryName: "Story", rewindDuration: 10, session: session, context: context)
 
         let tag = try XCTUnwrap(session.tags.first)
-        // actualRewind = elapsedTime - anchorTime = 0 - 0 = 0
-        XCTAssertEqual(tag.rewindDuration, recorder.elapsedTime - tag.anchorTime)
+        // actualRewind = elapsedTime - anchorTime = 60 - 50 = 10
+        XCTAssertEqual(tag.rewindDuration, 10.0, accuracy: 0.001)
+        XCTAssertEqual(tag.anchorTime, 50.0, accuracy: 0.001)
     }
 
     func testPlaceTag_earlyRecording_clampsAnchorTimeToZero() throws {
-        // elapsedTime is 0, rewindDuration is 10 → anchorTime must clamp to 0 (not negative)
+        // elapsedTime is 3, rewindDuration is 10 → anchorTime must clamp to 0 (not negative)
+        recorder.elapsedTime = 3.0
         service.placeTag(label: "Early Tag", categoryName: "Combat", rewindDuration: 10, session: session, context: context)
 
         let tag = try XCTUnwrap(session.tags.first)
-        XCTAssertGreaterThanOrEqual(tag.anchorTime, 0.0, "anchorTime must not be negative")
+        XCTAssertEqual(tag.anchorTime, 0.0, accuracy: 0.001, "anchorTime must clamp to 0")
+        XCTAssertEqual(tag.rewindDuration, 3.0, accuracy: 0.001, "actualRewind should be 3s, not 10s")
     }
 
     func testPlaceTag_rewindDuration15s_calculatesCorrectly() throws {
-        // elapsedTime is 0 when not recording — formula: max(0, 0 - 15) = 0
+        recorder.elapsedTime = 60.0 // 1 minute into recording
         service.placeTag(label: "15s Rewind Tag", categoryName: "Story", rewindDuration: 15, session: session, context: context)
 
         let tag = try XCTUnwrap(session.tags.first)
-        let expectedAnchor = max(0.0, recorder.elapsedTime - 15.0)
-        let expectedActualRewind = recorder.elapsedTime - expectedAnchor
-        XCTAssertEqual(tag.anchorTime, expectedAnchor, accuracy: 0.001)
-        XCTAssertEqual(tag.rewindDuration, expectedActualRewind, accuracy: 0.001)
+        XCTAssertEqual(tag.anchorTime, 45.0, accuracy: 0.001) // 60 - 15 = 45
+        XCTAssertEqual(tag.rewindDuration, 15.0, accuracy: 0.001)
     }
 
     func testPlaceTag_rewindDuration5s_calculatesCorrectly() throws {
-        // elapsedTime is 0 when not recording — formula: max(0, 0 - 5) = 0
+        recorder.elapsedTime = 30.0
         service.placeTag(label: "5s Rewind Tag", categoryName: "Story", rewindDuration: 5, session: session, context: context)
 
         let tag = try XCTUnwrap(session.tags.first)
-        let expectedAnchor = max(0.0, recorder.elapsedTime - 5.0)
-        let expectedActualRewind = recorder.elapsedTime - expectedAnchor
-        XCTAssertEqual(tag.anchorTime, expectedAnchor, accuracy: 0.001)
-        XCTAssertEqual(tag.rewindDuration, expectedActualRewind, accuracy: 0.001)
+        XCTAssertEqual(tag.anchorTime, 25.0, accuracy: 0.001) // 30 - 5 = 25
+        XCTAssertEqual(tag.rewindDuration, 5.0, accuracy: 0.001)
     }
 
     func testPlaceTag_rewindDuration20s_calculatesCorrectly() throws {
-        // elapsedTime is 0 when not recording — formula: max(0, 0 - 20) = 0
+        recorder.elapsedTime = 9000.0 // 2:30:00 into recording
         service.placeTag(label: "20s Rewind Tag", categoryName: "Story", rewindDuration: 20, session: session, context: context)
 
         let tag = try XCTUnwrap(session.tags.first)
-        let expectedAnchor = max(0.0, recorder.elapsedTime - 20.0)
-        let expectedActualRewind = recorder.elapsedTime - expectedAnchor
-        XCTAssertEqual(tag.anchorTime, expectedAnchor, accuracy: 0.001)
-        XCTAssertEqual(tag.rewindDuration, expectedActualRewind, accuracy: 0.001)
+        XCTAssertEqual(tag.anchorTime, 8980.0, accuracy: 0.001) // 9000 - 20 = 8980
+        XCTAssertEqual(tag.rewindDuration, 20.0, accuracy: 0.001)
     }
 
     func testPlaceTag_zeroRewindDuration_anchorEqualsElapsedTime() throws {
-        // With rewindDuration 0, anchorTime == elapsedTime (no rewind)
+        recorder.elapsedTime = 42.0
         service.placeTag(label: "No Rewind Tag", categoryName: "Meta", rewindDuration: 0, session: session, context: context)
 
         let tag = try XCTUnwrap(session.tags.first)
-        XCTAssertEqual(tag.anchorTime, recorder.elapsedTime, accuracy: 0.001)
+        XCTAssertEqual(tag.anchorTime, 42.0, accuracy: 0.001)
+        XCTAssertEqual(tag.rewindDuration, 0.0, accuracy: 0.001)
+    }
+
+    func testPlaceTag_negativeRewindDuration_clampedToZero() throws {
+        recorder.elapsedTime = 30.0
+        service.placeTag(label: "Negative Rewind Tag", categoryName: "Meta", rewindDuration: -5, session: session, context: context)
+
+        let tag = try XCTUnwrap(session.tags.first)
+        // Negative rewind should be clamped to 0, so anchorTime == elapsedTime
+        XCTAssertEqual(tag.anchorTime, 30.0, accuracy: 0.001)
         XCTAssertEqual(tag.rewindDuration, 0.0, accuracy: 0.001)
     }
 }

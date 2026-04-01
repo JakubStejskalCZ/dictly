@@ -62,3 +62,10 @@
 - context.save() is called synchronously per tap with no batching/debounce. Could cause frame drops on older devices during rapid tapping.
 - No UI affordance to deselect category filter and view all tags across categories.
 - Color(hexString:) produces black for empty or malformed hex strings. Pre-existing extension — no fallback.
+
+## Deferred from: code review of story 2-5 (2026-04-02)
+
+- @AppStorage key `"rewindDuration"` and default value `10.0` duplicated in `SettingsScreen.swift` and `TagPalette.swift`. Story 2.6 will likely add a third declaration. Consider extracting to a shared constant.
+- @AppStorage accepts arbitrary Double values from UserDefaults (e.g., via MDM or manual defaults write). No validation exists outside the Picker UI. An out-of-range value (e.g., 3600.0) would cause all tags to anchor at time 0 for the first hour.
+- `placeTag()` reads `sessionRecorder.elapsedTime` internally at call time. Story 2.6's custom tag sheet needs to capture elapsed time at first-tap and pass it to a deferred `placeTag` call — the current API doesn't support this. Story 2.6 should add an overload or parameter for pre-captured elapsed time.
+- AC #4 "zero tag loss on force-quit" is not testable in unit tests. Relies on SwiftData `context.save()` durability — verified by manual/integration testing only.

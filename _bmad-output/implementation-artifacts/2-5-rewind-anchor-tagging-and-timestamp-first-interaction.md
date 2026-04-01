@@ -1,6 +1,6 @@
 # Story 2.5: Rewind-Anchor Tagging & Timestamp-First Interaction
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -263,6 +263,16 @@ Use commit prefix: `feat(tagging): implement rewind-anchor tagging and timestamp
 - [Source: ux-design-specification.md#Experience-Mechanics] — Tag anchors to ~10s before tap (configurable: 5/10/15/20s)
 - [Source: ux-design-specification.md#Interaction-Patterns] — Timestamp-first on every tag action
 - [Source: 2-4-tag-palette-with-category-tabs-and-one-tap-tagging.md] — Previous story patterns, TaggingService implementation
+
+### Review Findings
+
+- [x] [Review][Patch] All rewind tests only exercise clamped-to-zero path — tests now use non-zero elapsedTime [TaggingServiceTests.swift:136-204] — FIXED
+- [x] [Review][Patch] No guard against negative rewindDuration input — added `max(0, rewindDuration)` clamp [TaggingService.swift:39] — FIXED
+- [x] [Review][Patch] Added test for negative rewindDuration clamping [TaggingServiceTests.swift:196-204] — FIXED
+- [x] [Review][Defer] @AppStorage key/default `"rewindDuration"` duplicated in SettingsScreen and TagPalette — deferred, design pattern
+- [x] [Review][Defer] @AppStorage accepts arbitrary values from UserDefaults outside Picker options — deferred, extreme edge case
+- [x] [Review][Defer] Story 2.6 API gap: placeTag reads elapsedTime internally, custom tag sheet needs pre-captured timestamp — deferred, Story 2.6 scope
+- [x] [Review][Defer] No force-quit persistence test for AC #4 — deferred, not testable in unit tests
 
 ## Dev Agent Record
 

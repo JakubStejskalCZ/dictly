@@ -36,7 +36,8 @@ final class TaggingService {
         hapticGenerator.impactOccurred()
 
         let elapsedTime = sessionRecorder.elapsedTime
-        let anchorTime = max(0, elapsedTime - rewindDuration)
+        let clampedRewind = max(0, rewindDuration)
+        let anchorTime = max(0, elapsedTime - clampedRewind)
         let actualRewind = elapsedTime - anchorTime
         let newTag = Tag(
             label: label,
