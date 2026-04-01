@@ -33,6 +33,7 @@
 		D48A24315637BB33F71362C1 /* SessionSummarySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BD01AF12F865CDE4934E485 /* SessionSummarySheet.swift */; };
 		D61D86C8F6D43C189A6ED53C /* SessionFormSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1293F57D2A3E00C3C41104D3 /* SessionFormSheet.swift */; };
 		DCBCA159CF7BA94948511F91 /* RecordingViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A12AA75E463BAB0350A7B859 /* RecordingViewModelTests.swift */; };
+		E36FBA8D45304C6974A693B9 /* Epic2RecordingE2ETests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3CC66E6DEF0CDFAA6D1ED74 /* Epic2RecordingE2ETests.swift */; };
 		EA0AD55B234ED4B6624F9CDF /* StorageManagementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0938A7C42C28B18503D66170 /* StorageManagementView.swift */; };
 		EA1DD70C8D64A1DED9D70F5D /* SessionRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0105A022422D16EDE58A347 /* SessionRecorder.swift */; };
 		F8515BD4C7618243956A2D5C /* TaggingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73F0ABBEE9F20F6D89AAB3AC /* TaggingService.swift */; };
@@ -72,6 +73,7 @@
 		9BD01AF12F865CDE4934E485 /* SessionSummarySheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionSummarySheet.swift; sourceTree = "<group>"; };
 		A12AA75E463BAB0350A7B859 /* RecordingViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingViewModelTests.swift; sourceTree = "<group>"; };
 		A34CAC83B9783FE002294049 /* CampaignListScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampaignListScreen.swift; sourceTree = "<group>"; };
+		A3CC66E6DEF0CDFAA6D1ED74 /* Epic2RecordingE2ETests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Epic2RecordingE2ETests.swift; sourceTree = "<group>"; };
 		AC76CF111D599F55A693CB9D /* DictlyiOSTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = DictlyiOSTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B1981874591B00DCDD63972A /* RecordingStatusBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingStatusBar.swift; sourceTree = "<group>"; };
 		B218093E2C301C2CF79D2D48 /* TagCategoryFormSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagCategoryFormSheet.swift; sourceTree = "<group>"; };
@@ -148,6 +150,7 @@
 		886BF59EFE7C0E102EA1919D /* RecordingTests */ = {
 			isa = PBXGroup;
 			children = (
+				A3CC66E6DEF0CDFAA6D1ED74 /* Epic2RecordingE2ETests.swift */,
 				A12AA75E463BAB0350A7B859 /* RecordingViewModelTests.swift */,
 				39B4A3371AF618D04CB8A30C /* SessionRecorderTests.swift */,
 			);
@@ -345,6 +348,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E36FBA8D45304C6974A693B9 /* Epic2RecordingE2ETests.swift in Sources */,
 				DCBCA159CF7BA94948511F91 /* RecordingViewModelTests.swift in Sources */,
 				574B6B47210DD155FC8B8E76 /* SessionRecorderTests.swift in Sources */,
 				290CBBA7B9D50D83D609EEA8 /* TaggingServiceTests.swift in Sources */,
