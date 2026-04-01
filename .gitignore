@@ -17,6 +17,11 @@ build/
 .swiftpm/
 Package.resolved
 
+# Swift compiler intermediates
+*.d
+*.o
+*.swiftdeps
+
 # macOS
 .DS_Store
 .AppleDouble
