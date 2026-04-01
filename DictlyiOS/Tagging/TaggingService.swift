@@ -26,21 +26,23 @@ final class TaggingService {
 
     // MARK: - Tag Placement
 
-    /// Creates a new `Tag` anchored to the current recording time, appends it to
-    /// `session.tags`, fires haptic feedback, and persists to SwiftData.
+    /// Creates a new `Tag` anchored to the recording time rewound by `rewindDuration`,
+    /// appends it to `session.tags`, fires haptic feedback, and persists to SwiftData.
     /// Must complete within 200ms — no blocking work on the main thread.
     /// Returns `true` if the tag was persisted successfully.
     @discardableResult
-    func placeTag(label: String, categoryName: String, session: Session, context: ModelContext) -> Bool {
+    func placeTag(label: String, categoryName: String, rewindDuration: TimeInterval, session: Session, context: ModelContext) -> Bool {
         // Fire haptic immediately — primary confirmation channel
         hapticGenerator.impactOccurred()
 
-        let anchorTime = sessionRecorder.elapsedTime
+        let elapsedTime = sessionRecorder.elapsedTime
+        let anchorTime = max(0, elapsedTime - rewindDuration)
+        let actualRewind = elapsedTime - anchorTime
         let newTag = Tag(
             label: label,
             categoryName: categoryName,
             anchorTime: anchorTime,
-            rewindDuration: 0,
+            rewindDuration: actualRewind,
             createdAt: Date()
         )
 
@@ -49,7 +51,7 @@ final class TaggingService {
 
         do {
             try context.save()
-            logger.info("Tag placed: \(label, privacy: .public) in \(categoryName, privacy: .public) at \(anchorTime, privacy: .public)")
+            logger.info("Tag placed: \(label, privacy: .public) in \(categoryName, privacy: .public) at \(anchorTime, privacy: .public) (rewound \(actualRewind, privacy: .public)s from \(elapsedTime, privacy: .public))")
             return true
         } catch {
             logger.error("Failed to place tag: \(error, privacy: .public)")

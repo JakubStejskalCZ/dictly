@@ -20,6 +20,8 @@ struct TagPalette: View {
 
     @State private var selectedCategory: TagCategory?
 
+    @AppStorage("rewindDuration") private var rewindDuration: Double = 10.0
+
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
@@ -71,6 +73,7 @@ struct TagPalette: View {
                                 let success = taggingService.placeTag(
                                     label: tag.label,
                                     categoryName: tag.categoryName,
+                                    rewindDuration: rewindDuration,
                                     session: session,
                                     context: modelContext
                                 )

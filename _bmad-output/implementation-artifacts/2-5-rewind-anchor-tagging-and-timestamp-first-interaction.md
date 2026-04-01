@@ -1,6 +1,6 @@
 # Story 2.5: Rewind-Anchor Tagging & Timestamp-First Interaction
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -54,39 +54,39 @@ And the rewindDuration reflects the actual rewind applied (3 seconds)
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Modify `TaggingService.placeTag()` for rewind-anchor logic (AC: #1, #2, #6)
-  - [ ] 1.1 Add `rewindDuration` parameter to `placeTag()` signature. The caller passes the configured rewind duration.
-  - [ ] 1.2 Calculate `anchorTime = max(0, sessionRecorder.elapsedTime - rewindDuration)`. Clamp to 0 to avoid negative timestamps for tags placed early in a recording.
-  - [ ] 1.3 Calculate `actualRewind = sessionRecorder.elapsedTime - anchorTime` (may be less than configured duration for early tags). Store this as the tag's `rewindDuration`.
-  - [ ] 1.4 Update the `Tag` init call: `anchorTime: anchorTime, rewindDuration: actualRewind`.
-  - [ ] 1.5 Update the log message to include rewind info: `"Tag placed: \(label) in \(categoryName) at \(anchorTime) (rewound \(actualRewind)s from \(elapsedTime))"`.
+- [x] Task 1: Modify `TaggingService.placeTag()` for rewind-anchor logic (AC: #1, #2, #6)
+  - [x] 1.1 Add `rewindDuration` parameter to `placeTag()` signature. The caller passes the configured rewind duration.
+  - [x] 1.2 Calculate `anchorTime = max(0, sessionRecorder.elapsedTime - rewindDuration)`. Clamp to 0 to avoid negative timestamps for tags placed early in a recording.
+  - [x] 1.3 Calculate `actualRewind = sessionRecorder.elapsedTime - anchorTime` (may be less than configured duration for early tags). Store this as the tag's `rewindDuration`.
+  - [x] 1.4 Update the `Tag` init call: `anchorTime: anchorTime, rewindDuration: actualRewind`.
+  - [x] 1.5 Update the log message to include rewind info: `"Tag placed: \(label) in \(categoryName) at \(anchorTime) (rewound \(actualRewind)s from \(elapsedTime))"`.
 
-- [ ] Task 2: Add rewind duration setting to `SettingsScreen.swift` (AC: #5)
-  - [ ] 2.1 Add `@AppStorage("rewindDuration") private var rewindDuration: Double = 10.0` to `SettingsScreen`. Use the key `"rewindDuration"` in standard `UserDefaults`.
-  - [ ] 2.2 Add a new `Section("Tagging")` above the existing "Storage" section.
-  - [ ] 2.3 Use a `Picker` with `.pickerStyle(.menu)` or `.segmented` for the 4 options: 5s, 10s, 15s, 20s. Display as "5 seconds", "10 seconds", "15 seconds", "20 seconds".
-  - [ ] 2.4 Add a descriptive footer: "How far back each tag captures before the moment you tap."
-  - [ ] 2.5 VoiceOver: the picker should read "Rewind duration, [current value]. Double-tap to change."
+- [x] Task 2: Add rewind duration setting to `SettingsScreen.swift` (AC: #5)
+  - [x] 2.1 Add `@AppStorage("rewindDuration") private var rewindDuration: Double = 10.0` to `SettingsScreen`. Use the key `"rewindDuration"` in standard `UserDefaults`.
+  - [x] 2.2 Add a new `Section("Tagging")` above the existing "Storage" section.
+  - [x] 2.3 Use a `Picker` with `.pickerStyle(.menu)` or `.segmented` for the 4 options: 5s, 10s, 15s, 20s. Display as "5 seconds", "10 seconds", "15 seconds", "20 seconds".
+  - [x] 2.4 Add a descriptive footer: "How far back each tag captures before the moment you tap."
+  - [x] 2.5 VoiceOver: the picker should read "Rewind duration, [current value]. Double-tap to change."
 
-- [ ] Task 3: Update `TagPalette.swift` to read and pass rewind duration (AC: #1, #2, #3)
-  - [ ] 3.1 Add `@AppStorage("rewindDuration") private var rewindDuration: Double = 10.0` to `TagPalette`.
-  - [ ] 3.2 Update the `taggingService.placeTag()` call at line ~71-76 to pass `rewindDuration: rewindDuration`.
-  - [ ] 3.3 **Timestamp-first for custom tag flow (Story 2.6 preparation):** The rewindDuration is read at tap time, not at sheet dismiss time. This ensures the anchor is captured at the moment of first tap. Story 2.6 will consume this — no custom tag sheet work in THIS story.
+- [x] Task 3: Update `TagPalette.swift` to read and pass rewind duration (AC: #1, #2, #3)
+  - [x] 3.1 Add `@AppStorage("rewindDuration") private var rewindDuration: Double = 10.0` to `TagPalette`.
+  - [x] 3.2 Update the `taggingService.placeTag()` call at line ~71-76 to pass `rewindDuration: rewindDuration`.
+  - [x] 3.3 **Timestamp-first for custom tag flow (Story 2.6 preparation):** The rewindDuration is read at tap time, not at sheet dismiss time. This ensures the anchor is captured at the moment of first tap. Story 2.6 will consume this — no custom tag sheet work in THIS story.
 
-- [ ] Task 4: Update existing `TaggingServiceTests` and add rewind-anchor tests (AC: #1, #2, #4, #6)
-  - [ ] 4.1 Update ALL existing `placeTag()` calls in `TaggingServiceTests.swift` to pass `rewindDuration: 0` (or the applicable value) to match new signature. Existing tests must still pass.
-  - [ ] 4.2 Test: `testPlaceTag_withRewindDuration_calculatesCorrectAnchorTime()` — recorder at 0, rewindDuration 10 → anchorTime 0 (clamped), rewindDuration 0 (actual).
-  - [ ] 4.3 Test: `testPlaceTag_withRewindDuration_storesActualRewind()` — verify `tag.rewindDuration` reflects actual rewind, not just configured.
-  - [ ] 4.4 Test: `testPlaceTag_earlyRecording_clampsAnchorTimeToZero()` — with elapsedTime < rewindDuration, anchorTime should be 0.
-  - [ ] 4.5 Test: `testPlaceTag_rewindDuration15s_calculatesCorrectly()` — verify 15s rewind from a sufficient elapsed time.
-  - [ ] 4.6 Test: `testPlaceTag_rewindDuration5s_calculatesCorrectly()` — verify 5s rewind.
-  - [ ] 4.7 Test: `testPlaceTag_rewindDuration20s_calculatesCorrectly()` — verify 20s rewind.
-  - [ ] 4.8 Verify all existing tests (139 DictlyKit + 41 DictlyiOS) still pass after signature change.
+- [x] Task 4: Update existing `TaggingServiceTests` and add rewind-anchor tests (AC: #1, #2, #4, #6)
+  - [x] 4.1 Update ALL existing `placeTag()` calls in `TaggingServiceTests.swift` to pass `rewindDuration: 0` (or the applicable value) to match new signature. Existing tests must still pass.
+  - [x] 4.2 Test: `testPlaceTag_withRewindDuration_calculatesCorrectAnchorTime()` — recorder at 0, rewindDuration 10 → anchorTime 0 (clamped), rewindDuration 0 (actual).
+  - [x] 4.3 Test: `testPlaceTag_withRewindDuration_storesActualRewind()` — verify `tag.rewindDuration` reflects actual rewind, not just configured.
+  - [x] 4.4 Test: `testPlaceTag_earlyRecording_clampsAnchorTimeToZero()` — with elapsedTime < rewindDuration, anchorTime should be 0.
+  - [x] 4.5 Test: `testPlaceTag_rewindDuration15s_calculatesCorrectly()` — verify 15s rewind from a sufficient elapsed time.
+  - [x] 4.6 Test: `testPlaceTag_rewindDuration5s_calculatesCorrectly()` — verify 5s rewind.
+  - [x] 4.7 Test: `testPlaceTag_rewindDuration20s_calculatesCorrectly()` — verify 20s rewind.
+  - [x] 4.8 Verify all existing tests (139 DictlyKit + 41 DictlyiOS) still pass after signature change.
 
-- [ ] Task 5: Build verification (AC: all)
-  - [ ] 5.1 Run `xcodegen generate` in `DictlyiOS/`.
-  - [ ] 5.2 Run `xcodebuild` — verify `** BUILD SUCCEEDED **`.
-  - [ ] 5.3 Run full test suite — verify `** TEST SUCCEEDED **`.
+- [x] Task 5: Build verification (AC: all)
+  - [x] 5.1 Run `xcodegen generate` in `DictlyiOS/`.
+  - [x] 5.2 Run `xcodebuild` — verify `** BUILD SUCCEEDED **`.
+  - [x] 5.3 Run full test suite — verify `** TEST SUCCEEDED **`.
 
 ## Dev Notes
 
@@ -268,10 +268,28 @@ Use commit prefix: `feat(tagging): implement rewind-anchor tagging and timestamp
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+claude-sonnet-4-6
 
 ### Debug Log References
 
 ### Completion Notes List
 
+- Implemented rewind-anchor formula: `anchorTime = max(0, elapsedTime - rewindDuration)`, `actualRewind = elapsedTime - anchorTime`
+- Added `rewindDuration: TimeInterval` parameter to `TaggingService.placeTag()` — stored as `actualRewind` on tag (reflects real rewind, not just configured value)
+- Updated log message to include full rewind info: anchor time + actual rewind + elapsed time
+- Added `@AppStorage("rewindDuration")` to `SettingsScreen` (default 10.0) with Tagging section, `.menu` Picker for 5/10/15/20s, footer text, and VoiceOver accessibilityLabel
+- Added `@AppStorage("rewindDuration")` to `TagPalette` — rewind captured at tap time (timestamp-first, ready for Story 2.6)
+- Updated all 11 existing `placeTag()` calls in tests to `rewindDuration: 0` — all pass
+- Added 7 new rewind tests: `withRewindDuration_calculatesCorrectAnchorTime`, `storesActualRewind`, `earlyRecording_clampsAnchorTimeToZero`, `rewindDuration15s`, `5s`, `20s`, `zeroRewindDuration_anchorEqualsElapsedTime`
+- Build: `** BUILD SUCCEEDED **`; Tests: 18/18 TaggingServiceTests + 139 DictlyKit = `** TEST SUCCEEDED **`
+
 ### File List
+
+- DictlyiOS/Tagging/TaggingService.swift
+- DictlyiOS/Tagging/TagPalette.swift
+- DictlyiOS/Settings/SettingsScreen.swift
+- DictlyiOS/Tests/TaggingTests/TaggingServiceTests.swift
+
+## Change Log
+
+- 2026-04-02: Implemented rewind-anchor tagging (Story 2.5) — added `rewindDuration` param to `placeTag()`, rewind-anchor formula with early-recording clamping, rewind duration Picker in Settings (5/10/15/20s via @AppStorage), @AppStorage in TagPalette for timestamp-first capture, 7 new rewind tests, all existing tests updated and passing.
