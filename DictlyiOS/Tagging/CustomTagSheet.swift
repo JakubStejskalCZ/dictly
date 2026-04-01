@@ -13,6 +13,8 @@ struct CustomTagSheet: View {
 
     @State private var label: String = ""
     @State private var categoryName: String
+    @State private var didExplicitlyCancel = false
+    @State private var didSave = false
     @FocusState private var isLabelFocused: Bool
 
     init(selectedCategoryName: String, categories: [TagCategory], onSave: @escaping (String, String) -> Void) {
@@ -23,7 +25,7 @@ struct CustomTagSheet: View {
     }
 
     private var trimmedLabel: String {
-        label.trimmingCharacters(in: .whitespaces)
+        label.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     var body: some View {
@@ -51,10 +53,14 @@ struct CustomTagSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button("Cancel") {
+                        didExplicitlyCancel = true
+                        dismiss()
+                    }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
+                        didSave = true
                         onSave(trimmedLabel, categoryName)
                         dismiss()
                     }
@@ -66,5 +72,10 @@ struct CustomTagSheet: View {
             }
         }
         .presentationDetents([.medium])
+        .onDisappear {
+            if !didSave, !didExplicitlyCancel, !trimmedLabel.isEmpty {
+                onSave(trimmedLabel, categoryName)
+            }
+        }
     }
 }

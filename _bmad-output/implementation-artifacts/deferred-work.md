@@ -69,3 +69,7 @@
 - @AppStorage accepts arbitrary Double values from UserDefaults (e.g., via MDM or manual defaults write). No validation exists outside the Picker UI. An out-of-range value (e.g., 3600.0) would cause all tags to anchor at time 0 for the first hour.
 - `placeTag()` reads `sessionRecorder.elapsedTime` internally at call time. Story 2.6's custom tag sheet needs to capture elapsed time at first-tap and pass it to a deferred `placeTag` call — the current API doesn't support this. Story 2.6 should add an overload or parameter for pre-captured elapsed time.
 - AC #4 "zero tag loss on force-quit" is not testable in unit tests. Relies on SwiftData `context.save()` durability — verified by manual/integration testing only.
+
+## Deferred from: code review of story 2-6 (2026-04-02)
+
+- `capturedAnchor` in `TaggingService` could leak (remain non-nil) if the view is removed from the hierarchy between the "+" button tap and the sheet presentation completing. Extremely unlikely SwiftUI edge case — the orphaned anchor would be harmlessly overwritten on the next capture or discarded on the next sheet dismiss.

@@ -1,6 +1,6 @@
 # Story 2.6: Custom Tag Creation During Recording
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -101,6 +101,15 @@ Then the tag is persisted in SwiftData (zero tag loss)
   - [x] 5.1 Run `xcodegen generate` in `DictlyiOS/`.
   - [x] 5.2 Run `xcodebuild` -- verify `** BUILD SUCCEEDED **`.
   - [x] 5.3 Run full test suite -- verify `** TEST SUCCEEDED **`.
+
+### Review Findings
+
+- [x] [Review][Patch] AC4 violation: dismiss-with-label does not auto-save — swipe-down/tap-outside with non-empty label discards anchor instead of saving tag [CustomTagSheet.swift, TagPalette.swift] — FIXED
+- [x] [Review][Patch] Save failure consumes anchor — capturedAnchor set to nil before save attempt; if save fails, anchor is lost and retry is impossible [TaggingService.swift:94] — FIXED
+- [x] [Review][Patch] Double-tap on "+" overwrites captured anchor with later timestamp [TagPalette.swift:93-96] — FIXED
+- [x] [Review][Patch] Whitespace trimming uses .whitespaces not .whitespacesAndNewlines — newline-only labels bypass empty check [CustomTagSheet.swift:26] — FIXED
+- [x] [Review][Patch] VoiceOver "Double-tap to open tag creator" in accessibilityLabel causes redundant announcement — should be accessibilityHint [TagPalette.swift:110] — FIXED
+- [x] [Review][Defer] capturedAnchor leak if sheet never presented after capture (e.g., view removed from hierarchy between button tap and sheet animation) — deferred, edge case with very low probability
 
 ## Dev Notes
 

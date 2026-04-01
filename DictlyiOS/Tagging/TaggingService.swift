@@ -91,7 +91,6 @@ final class TaggingService {
             logger.error("placeTagWithCapturedAnchor called without captured anchor")
             return false
         }
-        capturedAnchor = nil
 
         let newTag = Tag(
             label: label,
@@ -105,6 +104,7 @@ final class TaggingService {
 
         do {
             try context.save()
+            capturedAnchor = nil
             logger.info("Custom tag placed: \(label, privacy: .public) in \(categoryName, privacy: .public) at \(anchor.anchorTime, privacy: .public) (rewound \(anchor.actualRewind, privacy: .public)s)")
             return true
         } catch {

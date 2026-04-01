@@ -91,7 +91,7 @@ struct TagPalette: View {
                     }
                     // Custom tag "+" card — always last in grid
                     Button {
-                        guard isInteractive else { return }
+                        guard isInteractive, !isShowingCustomTagSheet else { return }
                         taggingService.captureAnchor(rewindDuration: rewindDuration)
                         isShowingCustomTagSheet = true
                     } label: {
@@ -107,7 +107,8 @@ struct TagPalette: View {
                         .frame(minHeight: DictlySpacing.minTapTarget)
                     }
                     .disabled(!isInteractive)
-                    .accessibilityLabel("Create custom tag. Double-tap to open tag creator.")
+                    .accessibilityLabel("Create custom tag")
+                    .accessibilityHint("Double-tap to open tag creator")
                     .sheet(isPresented: $isShowingCustomTagSheet, onDismiss: {
                         if !customTagSaved {
                             taggingService.discardCapturedAnchor()
