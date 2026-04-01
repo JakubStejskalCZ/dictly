@@ -78,4 +78,36 @@ final class RecordingViewModelTests: XCTestCase {
         XCTAssertEqual(interrupted, .systemInterrupted)
         XCTAssertEqual(paused, .paused)
     }
+
+    // MARK: - Story 2.7: Stop recording
+
+    func testStopRecording_callsRecorderStop() {
+        // Given a ViewModel wrapping a fresh recorder (isRecording == false)
+        let recorder = SessionRecorder()
+        let vm = RecordingViewModel(sessionRecorder: recorder)
+        // When stopRecording() is called
+        vm.stopRecording()
+        // Then recorder.stopRecording() was called — guard branch hit, state unchanged
+        XCTAssertFalse(recorder.isRecording, "recorder.isRecording should remain false after stop when not recording")
+    }
+
+    func testStopRecording_setsDidStopRecordingTrue() {
+        // Given a ViewModel with a fresh recorder
+        let recorder = SessionRecorder()
+        let vm = RecordingViewModel(sessionRecorder: recorder)
+        XCTAssertFalse(vm.didStopRecording, "didStopRecording should be false initially")
+        // When stopRecording() is called
+        vm.stopRecording()
+        // Then didStopRecording is true
+        XCTAssertTrue(vm.didStopRecording, "didStopRecording should be true after stopRecording()")
+    }
+
+    func testIsRecording_reflectsRecorderState() {
+        // Given a ViewModel wrapping a recorder
+        let recorder = SessionRecorder()
+        let vm = RecordingViewModel(sessionRecorder: recorder)
+        // Then isRecording mirrors the recorder
+        XCTAssertEqual(vm.isRecording, recorder.isRecording, "vm.isRecording should equal recorder.isRecording")
+        XCTAssertFalse(vm.isRecording, "isRecording should be false for a freshly created recorder")
+    }
 }

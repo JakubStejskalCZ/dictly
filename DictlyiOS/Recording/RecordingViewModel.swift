@@ -45,6 +45,12 @@ final class RecordingViewModel {
         )
     }
 
+    /// Whether the recorder is actively recording (not stopped).
+    var isRecording: Bool { sessionRecorder.isRecording }
+
+    /// Set to `true` once `stopRecording()` completes. RecordingScreen observes this to present the summary sheet.
+    var didStopRecording = false
+
     /// Pure state derivation — exposed for unit testing.
     static func deriveState(isPaused: Bool, wasInterruptedBySystem: Bool) -> RecordingState {
         if isPaused && wasInterruptedBySystem { return .systemInterrupted }
@@ -69,6 +75,12 @@ final class RecordingViewModel {
     /// Resumes recording after a system interruption (phone call).
     func resumeFromInterruption() {
         sessionRecorder.resumeRecording()
+    }
+
+    /// Stops the active recording and signals the UI to show the session summary.
+    func stopRecording() {
+        sessionRecorder.stopRecording()
+        didStopRecording = true
     }
 
     // MARK: - Formatting

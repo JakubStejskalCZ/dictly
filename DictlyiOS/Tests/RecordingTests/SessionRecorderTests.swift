@@ -268,4 +268,19 @@ final class SessionRecorderTests: XCTestCase {
             "Not enough disk space to continue recording."
         )
     }
+
+    // MARK: - Story 2.7: Audio quality bitrate mapping
+
+    func testBitrate_standardGives64kbps() {
+        XCTAssertEqual(SessionRecorder.bitrate(for: "standard"), 64_000)
+    }
+
+    func testBitrate_highGives128kbps() {
+        XCTAssertEqual(SessionRecorder.bitrate(for: "high"), 128_000)
+    }
+
+    func testBitrate_unknownValueDefaultsToStandard() {
+        XCTAssertEqual(SessionRecorder.bitrate(for: ""), 64_000)
+        XCTAssertEqual(SessionRecorder.bitrate(for: "ultra"), 64_000)
+    }
 }

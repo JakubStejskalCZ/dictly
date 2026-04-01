@@ -6,6 +6,7 @@ import DictlyTheme
 
 struct SettingsScreen: View {
     @AppStorage("rewindDuration") private var rewindDuration: Double = 10.0
+    @AppStorage("audioQuality") private var audioQuality: String = "standard"
 
     @Query private var allSessions: [Session]
 
@@ -33,6 +34,18 @@ struct SettingsScreen: View {
                 Text("Tagging")
             } footer: {
                 Text("How far back each tag captures before the moment you tap.")
+            }
+            Section {
+                Picker("Audio Quality", selection: $audioQuality) {
+                    Text("Standard (64 kbps)").tag("standard")
+                    Text("High (128 kbps)").tag("high")
+                }
+                .pickerStyle(.menu)
+                .accessibilityLabel("Audio quality")
+            } header: {
+                Text("Recording")
+            } footer: {
+                Text("Applies to future recordings. Higher quality uses more storage.")
             }
             Section("Storage") {
                 NavigationLink(destination: StorageManagementView()) {

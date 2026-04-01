@@ -16,11 +16,14 @@ struct RecordingScreen: View {
 
     @Environment(SessionRecorder.self) private var sessionRecorder
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismiss) private var dismiss
 
     @State private var viewModel: RecordingViewModel?
     @State private var taggingService: TaggingService?
     @State private var micPermissionDenied = false
     @State private var recordingFailed = false
+    @State private var isShowingStopConfirmation = false
+    @State private var isShowingSessionSummary = false
 
     var body: some View {
         ZStack {
@@ -55,17 +58,32 @@ struct RecordingScreen: View {
                     TagPalette(
                         session: session,
                         taggingService: ts,
-                        isInteractive: vm.recordingState == .recording
+                        isInteractive: vm.isRecording
                     )
                 }
 
-                // Placeholder for stop bar (Story 2.7)
-                Color.clear.frame(height: DictlySpacing.minTapTarget)
+                // Stop Recording bar (Story 2.7)
+                if let vm = viewModel {
+                    stopRecordingButton(vm: vm)
+                }
             }
             .padding(.horizontal, DictlySpacing.md)
             .padding(.top, DictlySpacing.md)
         }
         .preferredColorScheme(.dark)
+        .confirmationDialog("End session?", isPresented: $isShowingStopConfirmation, titleVisibility: .visible) {
+            Button("Stop Recording", role: .destructive) {
+                viewModel?.stopRecording()
+            }
+        }
+        .onChange(of: viewModel?.didStopRecording ?? false) { _, newValue in
+            if newValue {
+                isShowingSessionSummary = true
+            }
+        }
+        .sheet(isPresented: $isShowingSessionSummary, onDismiss: { dismiss() }) {
+            SessionSummarySheet(session: session, onDismiss: { isShowingSessionSummary = false })
+        }
         .task {
             await checkMicrophonePermission()
         }
@@ -87,6 +105,24 @@ struct RecordingScreen: View {
     }
 
     // MARK: - Subviews
+
+    private func stopRecordingButton(vm: RecordingViewModel) -> some View {
+        Button {
+            isShowingStopConfirmation = true
+        } label: {
+            HStack(spacing: DictlySpacing.sm) {
+                Image(systemName: "stop.circle")
+                Text("Stop Recording")
+            }
+            .font(DictlyTypography.body)
+            .foregroundStyle(DictlyColors.textSecondary)
+            .frame(maxWidth: .infinity)
+            .frame(height: DictlySpacing.minTapTarget)
+        }
+        .disabled(!vm.isRecording)
+        .accessibilityLabel("Stop Recording")
+        .accessibilityHint("Double-tap to end session.")
+    }
 
     private func interruptionBanner(vm: RecordingViewModel) -> some View {
         VStack(spacing: DictlySpacing.sm) {

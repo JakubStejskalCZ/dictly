@@ -1,6 +1,6 @@
 # Story 2.7: Stop Recording & Session Summary
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -44,54 +44,54 @@ Then the selected quality applies to future recordings
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Add "Stop Recording" bar to RecordingScreen (AC: #1, #2)
-  - [ ] 1.1 In `RecordingScreen.swift`, replace the placeholder `Color.clear.frame(height: DictlySpacing.minTapTarget)` at line 63 with a "Stop Recording" `Button`. Style per UX spec: **secondary action** — surface background with `DictlyColors.textSecondary` text, full-width, minimum 48pt height (`DictlySpacing.minTapTarget`). Use `Image(systemName: "stop.circle")` + "Stop Recording" label. Disable when `!viewModel.isRecording` (i.e., don't show stop when not recording).
-  - [ ] 1.2 On tap, set `@State private var isShowingStopConfirmation = false` to `true`.
-  - [ ] 1.3 Add `.confirmationDialog("End session?", isPresented: $isShowingStopConfirmation, titleVisibility: .visible)` to RecordingScreen. Two buttons: "Stop Recording" with `.destructive` role, and "Cancel" (implicit `.cancel` role). This matches the UX spec: "Stop Recording is the only action requiring confirmation (destructive)" and uses `.confirmationDialog` per UX pattern table.
-  - [ ] 1.4 VoiceOver: Button reads "Stop Recording. Double-tap to end session." (accessibilityLabel + accessibilityHint).
+- [x] Task 1: Add "Stop Recording" bar to RecordingScreen (AC: #1, #2)
+  - [x] 1.1 In `RecordingScreen.swift`, replace the placeholder `Color.clear.frame(height: DictlySpacing.minTapTarget)` at line 63 with a "Stop Recording" `Button`. Style per UX spec: **secondary action** — surface background with `DictlyColors.textSecondary` text, full-width, minimum 48pt height (`DictlySpacing.minTapTarget`). Use `Image(systemName: "stop.circle")` + "Stop Recording" label. Disable when `!viewModel.isRecording` (i.e., don't show stop when not recording).
+  - [x] 1.2 On tap, set `@State private var isShowingStopConfirmation = false` to `true`.
+  - [x] 1.3 Add `.confirmationDialog("End session?", isPresented: $isShowingStopConfirmation, titleVisibility: .visible)` to RecordingScreen. Two buttons: "Stop Recording" with `.destructive` role, and "Cancel" (implicit `.cancel` role). This matches the UX spec: "Stop Recording is the only action requiring confirmation (destructive)" and uses `.confirmationDialog` per UX pattern table.
+  - [x] 1.4 VoiceOver: Button reads "Stop Recording. Double-tap to end session." (accessibilityLabel + accessibilityHint).
 
-- [ ] Task 2: Add `stopRecording()` to RecordingViewModel (AC: #2, #3)
-  - [ ] 2.1 In `RecordingViewModel.swift`, add method `func stopRecording()`. This calls `recorder.stopRecording()` which already handles: finalizing pause intervals, removing notification observers, stopping AVAudioEngine, reading authoritative duration from audio file, persisting final duration to Session model, saving context, resetting state flags. No new logic needed in SessionRecorder.
-  - [ ] 2.2 Add computed property `var isRecording: Bool { recorder.isRecording }` to RecordingViewModel for the stop button's disabled state.
-  - [ ] 2.3 After `recorder.stopRecording()` completes, the ViewModel should set a new `@Observable` property `var didStopRecording = false` to `true`. RecordingScreen observes this to present the session summary.
+- [x] Task 2: Add `stopRecording()` to RecordingViewModel (AC: #2, #3)
+  - [x] 2.1 In `RecordingViewModel.swift`, add method `func stopRecording()`. This calls `recorder.stopRecording()` which already handles: finalizing pause intervals, removing notification observers, stopping AVAudioEngine, reading authoritative duration from audio file, persisting final duration to Session model, saving context, resetting state flags. No new logic needed in SessionRecorder.
+  - [x] 2.2 Add computed property `var isRecording: Bool { recorder.isRecording }` to RecordingViewModel for the stop button's disabled state.
+  - [x] 2.3 After `recorder.stopRecording()` completes, the ViewModel should set a new `@Observable` property `var didStopRecording = false` to `true`. RecordingScreen observes this to present the session summary.
 
-- [ ] Task 3: Create `SessionSummarySheet.swift` in `DictlyiOS/Recording/` (AC: #3, #4)
-  - [ ] 3.1 Create new file `DictlyiOS/Recording/SessionSummarySheet.swift`. This is the ONLY new file in this story.
-  - [ ] 3.2 Define `SessionSummarySheet` as a SwiftUI `View` struct. Accept parameters: `session: Session`, `onDismiss: () -> Void`.
-  - [ ] 3.3 Layout: `NavigationStack` containing a `ScrollView` with:
+- [x] Task 3: Create `SessionSummarySheet.swift` in `DictlyiOS/Recording/` (AC: #3, #4)
+  - [x] 3.1 Create new file `DictlyiOS/Recording/SessionSummarySheet.swift`. This is the ONLY new file in this story.
+  - [x] 3.2 Define `SessionSummarySheet` as a SwiftUI `View` struct. Accept parameters: `session: Session`, `onDismiss: () -> Void`.
+  - [x] 3.3 Layout: `NavigationStack` containing a `ScrollView` with:
     - **Header section:** Session title (e.g., "Session 3"), date formatted as medium date style, campaign name if available.
     - **Stats section:** Three key metrics in a horizontal layout:
       - Duration: formatted as "Xh Ym Zs" from `session.duration` (use `Duration.TimeFormatStyle` or manual formatting matching `RecordingViewModel.formattedElapsedTime` pattern).
       - Tag count: `session.tags.count` with "tags" label.
       - Pause count: `session.pauseIntervals.count` with "pauses" label (only show if > 0).
     - **Tag list section:** Tags grouped by `categoryName`, each group has a header with category name and count, each tag shows label and formatted anchor time. Use `Dictionary(grouping: session.tags, by: \.categoryName)` sorted alphabetically. If no tags, show "No tags placed" placeholder text.
-  - [ ] 3.4 Navigation toolbar: "Done" button (`.confirmationAction`) calls `onDismiss()`. Navigation title: "Session Summary", display mode `.inline`.
-  - [ ] 3.5 Presentation: `.presentationDetents([.large])` for full-height sheet per UX spec ("Session summary: Full-screen sheet after stop").
-  - [ ] 3.6 VoiceOver: Stats section uses `accessibilityElement(children: .combine)` so it reads as a single unit: "Duration [value]. [count] tags. [count] pauses." Tag list items read: "[label], [category], at [timestamp]."
-  - [ ] 3.7 Use `DictlyColors` and `DictlySpacing` tokens for all styling. No custom colors or hardcoded values.
+  - [x] 3.4 Navigation toolbar: "Done" button (`.confirmationAction`) calls `onDismiss()`. Navigation title: "Session Summary", display mode `.inline`.
+  - [x] 3.5 Presentation: `.presentationDetents([.large])` for full-height sheet per UX spec ("Session summary: Full-screen sheet after stop").
+  - [x] 3.6 VoiceOver: Stats section uses `accessibilityElement(children: .combine)` so it reads as a single unit: "Duration [value]. [count] tags. [count] pauses." Tag list items read: "[label], [category], at [timestamp]."
+  - [x] 3.7 Use `DictlyColors` and `DictlySpacing` tokens for all styling. No custom colors or hardcoded values.
 
-- [ ] Task 4: Integrate stop flow in RecordingScreen (AC: #1, #2, #3, #4)
-  - [ ] 4.1 In RecordingScreen, when the confirmation dialog's "Stop Recording" action fires: call `viewModel?.stopRecording()`.
-  - [ ] 4.2 Add `@State private var isShowingSessionSummary = false`. Observe `viewModel?.didStopRecording` via `.onChange(of:)` — when it becomes `true`, set `isShowingSessionSummary = true`.
-  - [ ] 4.3 Add `.sheet(isPresented: $isShowingSessionSummary, onDismiss: { dismiss() })` presenting `SessionSummarySheet(session: session, onDismiss: { isShowingSessionSummary = false })`. When the sheet's onDismiss fires (either from Done button or swipe-down), the RecordingScreen's sheet `onDismiss` calls `dismiss()` to close the full-screen modal back to CampaignDetailScreen.
-  - [ ] 4.4 The `session` parameter for SessionSummarySheet comes from `RecordingScreen`'s existing session binding (the Session object passed from CampaignDetailScreen via `.fullScreenCover(item:)`).
-  - [ ] 4.5 Ensure TagPalette and pause/resume button are disabled after stop (when `!recorder.isRecording`). TagPalette already has `isInteractive` logic — verify it reads `recorder.isRecording`.
+- [x] Task 4: Integrate stop flow in RecordingScreen (AC: #1, #2, #3, #4)
+  - [x] 4.1 In RecordingScreen, when the confirmation dialog's "Stop Recording" action fires: call `viewModel?.stopRecording()`.
+  - [x] 4.2 Add `@State private var isShowingSessionSummary = false`. Observe `viewModel?.didStopRecording` via `.onChange(of:)` — when it becomes `true`, set `isShowingSessionSummary = true`.
+  - [x] 4.3 Add `.sheet(isPresented: $isShowingSessionSummary, onDismiss: { dismiss() })` presenting `SessionSummarySheet(session: session, onDismiss: { isShowingSessionSummary = false })`. When the sheet's onDismiss fires (either from Done button or swipe-down), the RecordingScreen's sheet `onDismiss` calls `dismiss()` to close the full-screen modal back to CampaignDetailScreen.
+  - [x] 4.4 The `session` parameter for SessionSummarySheet comes from `RecordingScreen`'s existing session binding (the Session object passed from CampaignDetailScreen via `.fullScreenCover(item:)`).
+  - [x] 4.5 Ensure TagPalette and pause/resume button are disabled after stop (when `!recorder.isRecording`). TagPalette already has `isInteractive` logic — verify it reads `recorder.isRecording`.
 
-- [ ] Task 5: Audio quality settings (AC: #5)
-  - [ ] 5.1 In `DictlyiOS/Settings/SettingsScreen.swift`, verify that audio quality settings exist and are wired to `@AppStorage`. The architecture specifies FR48 in `DictlyiOS/Settings/SettingsScreen.swift`. If audio quality picker already exists, no changes needed. If NOT yet implemented: add an `@AppStorage("audioQuality")` with options (e.g., "Standard" = 64kbps, "High" = 128kbps). Use `Picker` with `.pickerStyle(.menu)` in the settings form.
-  - [ ] 5.2 In `SessionRecorder.swift`, verify that the audio quality setting is read at recording start time. If already wired (from Story 2.1), no changes. If not: read `@AppStorage("audioQuality")` value in `startRecording()` to configure the AAC encoder bitrate. This is a minor wiring task — the recorder already configures AAC encoding.
-  - [ ] 5.3 If audio quality settings were NOT implemented in prior stories, add a test in `SessionRecorderTests.swift` verifying that the configured bitrate matches the setting.
+- [x] Task 5: Audio quality settings (AC: #5)
+  - [x] 5.1 In `DictlyiOS/Settings/SettingsScreen.swift`, verify that audio quality settings exist and are wired to `@AppStorage`. The architecture specifies FR48 in `DictlyiOS/Settings/SettingsScreen.swift`. If audio quality picker already exists, no changes needed. If NOT yet implemented: add an `@AppStorage("audioQuality")` with options (e.g., "Standard" = 64kbps, "High" = 128kbps). Use `Picker` with `.pickerStyle(.menu)` in the settings form.
+  - [x] 5.2 In `SessionRecorder.swift`, verify that the audio quality setting is read at recording start time. If already wired (from Story 2.1), no changes. If not: read `@AppStorage("audioQuality")` value in `startRecording()` to configure the AAC encoder bitrate. This is a minor wiring task — the recorder already configures AAC encoding.
+  - [x] 5.3 If audio quality settings were NOT implemented in prior stories, add a test in `SessionRecorderTests.swift` verifying that the configured bitrate matches the setting.
 
-- [ ] Task 6: Add tests (AC: #1, #2, #3)
-  - [ ] 6.1 In `RecordingViewModelTests.swift`, add test: `testStopRecording_callsRecorderStop()` — verify that calling `viewModel.stopRecording()` calls through to the recorder's `stopRecording()`. Use the existing mock/test pattern from RecordingViewModelTests.
-  - [ ] 6.2 In `RecordingViewModelTests.swift`, add test: `testStopRecording_setsDidStopRecordingTrue()` — verify that after `stopRecording()`, `viewModel.didStopRecording` is `true`.
-  - [ ] 6.3 In `RecordingViewModelTests.swift`, add test: `testIsRecording_reflectsRecorderState()` — verify `viewModel.isRecording` matches `recorder.isRecording`.
-  - [ ] 6.4 Verify all existing tests pass unchanged: 27 TaggingServiceTests, 14 RecordingViewModelTests, 16 SessionRecorderTests (57 total iOS tests).
+- [x] Task 6: Add tests (AC: #1, #2, #3)
+  - [x] 6.1 In `RecordingViewModelTests.swift`, add test: `testStopRecording_callsRecorderStop()` — verify that calling `viewModel.stopRecording()` calls through to the recorder's `stopRecording()`. Use the existing mock/test pattern from RecordingViewModelTests.
+  - [x] 6.2 In `RecordingViewModelTests.swift`, add test: `testStopRecording_setsDidStopRecordingTrue()` — verify that after `stopRecording()`, `viewModel.didStopRecording` is `true`.
+  - [x] 6.3 In `RecordingViewModelTests.swift`, add test: `testIsRecording_reflectsRecorderState()` — verify `viewModel.isRecording` matches `recorder.isRecording`.
+  - [x] 6.4 Verify all existing tests pass unchanged: 27 TaggingServiceTests, 14 RecordingViewModelTests, 16 SessionRecorderTests (57 total iOS tests).
 
-- [ ] Task 7: Build verification (AC: all)
-  - [ ] 7.1 Run `xcodegen generate` in `DictlyiOS/` (new file `SessionSummarySheet.swift` auto-discovered in `Recording/` source path).
-  - [ ] 7.2 Run `xcodebuild` — verify `** BUILD SUCCEEDED **`.
-  - [ ] 7.3 Run full test suite — verify `** TEST SUCCEEDED **`.
+- [x] Task 7: Build verification (AC: all)
+  - [x] 7.1 Run `xcodegen generate` in `DictlyiOS/` (new file `SessionSummarySheet.swift` auto-discovered in `Recording/` source path).
+  - [x] 7.2 Run `xcodebuild` — verify `** BUILD SUCCEEDED **`.
+  - [x] 7.3 Run full test suite — verify `** TEST SUCCEEDED **`.
 
 ## Dev Notes
 
@@ -349,10 +349,31 @@ Use commit prefix: `feat(recording): implement stop recording with confirmation 
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+claude-sonnet-4-6
 
 ### Debug Log References
 
+No debug issues encountered. All SourceKit diagnostics were false positives from incremental analysis (module resolution issues not present at build time).
+
 ### Completion Notes List
 
+- Task 1+4 (RecordingScreen): Replaced `Color.clear` placeholder with `stopRecordingButton()` subview. Added `@State isShowingStopConfirmation` + `isShowingSessionSummary`. Added `.confirmationDialog`, `.onChange(of: viewModel?.didStopRecording)`, and `.sheet` presentation. Added `@Environment(\.dismiss)`. Updated `TagPalette.isInteractive` from `vm.recordingState == .recording` to `vm.isRecording` so it correctly disables after stop.
+- Task 2 (RecordingViewModel): Added `var isRecording: Bool`, `var didStopRecording = false`, and `func stopRecording()` which calls `sessionRecorder.stopRecording()` then sets `didStopRecording = true`.
+- Task 3 (SessionSummarySheet): Created new `NavigationStack > ScrollView` sheet with header (title, date, campaign), stats row (duration in "Xh Ym Zs", tag count, pause count), and tag list grouped alphabetically by categoryName with anchor time formatted as "MM:SS" / "H:MM:SS". VoiceOver: stats section uses `accessibilityElement(children: .combine)`, tag rows have combined accessibility labels. `presentationDetents([.large])`.
+- Task 5 (Audio quality): Audio quality was NOT wired in prior stories. Added `@AppStorage("audioQuality")` Picker to SettingsScreen with Standard (64kbps) / High (128kbps) options. Added `SessionRecorder.bitrate(for:)` static helper and wired it in `startRecording()` via `UserDefaults.standard.string(forKey: "audioQuality")`.
+- Task 6 (Tests): Added 3 RecordingViewModel tests (stop flow). Added 3 SessionRecorder bitrate tests. Total: 63 tests (57 original + 6 new), 0 failures.
+- Task 7 (Build): `xcodegen generate` ✅, `xcodebuild BUILD SUCCEEDED` ✅, `xcodebuild TEST SUCCEEDED` ✅ (63/63 tests pass).
+
 ### File List
+
+- `DictlyiOS/Recording/SessionSummarySheet.swift` (CREATED)
+- `DictlyiOS/Recording/RecordingScreen.swift` (modified)
+- `DictlyiOS/Recording/RecordingViewModel.swift` (modified)
+- `DictlyiOS/Recording/SessionRecorder.swift` (modified)
+- `DictlyiOS/Settings/SettingsScreen.swift` (modified)
+- `DictlyiOS/Tests/RecordingTests/RecordingViewModelTests.swift` (modified)
+- `DictlyiOS/Tests/RecordingTests/SessionRecorderTests.swift` (modified)
+
+## Change Log
+
+- 2026-04-02: Implemented Story 2.7 — stop recording confirmation dialog, session summary sheet, audio quality settings, and 6 new tests. All 63 iOS tests pass. Status → review.

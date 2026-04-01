@@ -79,11 +79,12 @@ final class SessionRecorder {
             throw DictlyError.recording(.fileCreationFailed(error.localizedDescription))
         }
 
+        let bitRate = SessionRecorder.bitrate(for: UserDefaults.standard.string(forKey: "audioQuality") ?? "standard")
         let settings: [String: Any] = [
             AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
             AVSampleRateKey: 44100.0,
             AVNumberOfChannelsKey: 1,
-            AVEncoderBitRateKey: 64000
+            AVEncoderBitRateKey: bitRate
         ]
 
         let file: AVAudioFile
@@ -253,6 +254,14 @@ final class SessionRecorder {
         pauseStartDate = nil
         wasInterruptedBySystem = false
         logger.info("Recording resumed at \(self.elapsedTime, privacy: .public)s")
+    }
+
+    // MARK: - Audio Quality
+
+    /// Maps an `audioQuality` setting string to the AAC encoder bitrate in bits per second.
+    /// - "high": 128 kbps; any other value (including "standard"): 64 kbps.
+    static func bitrate(for audioQuality: String) -> Int {
+        audioQuality == "high" ? 128_000 : 64_000
     }
 
     // MARK: - Stop Recording

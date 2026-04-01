@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-04-01
-last_updated: 2026-04-02 # story 2.7 ready-for-dev
+last_updated: 2026-04-02 # story 2.7 review
 project: Dictly
 project_key: NOKEY
 tracking_system: file-system
@@ -59,7 +59,7 @@ development_status:
   2-4-tag-palette-with-category-tabs-and-one-tap-tagging: done
   2-5-rewind-anchor-tagging-and-timestamp-first-interaction: done
   2-6-custom-tag-creation-during-recording: done
-  2-7-stop-recording-and-session-summary: ready-for-dev
+  2-7-stop-recording-and-session-summary: review
   epic-2-retrospective: optional
   # Epic 3: Session Transfer & Import
   epic-3: backlog

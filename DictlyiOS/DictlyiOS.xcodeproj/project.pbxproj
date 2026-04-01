@@ -30,6 +30,7 @@
 		CD8748C5AAEBFAA2E0680EFA /* TagCategoryFormSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B218093E2C301C2CF79D2D48 /* TagCategoryFormSheet.swift */; };
 		CE5CCE34159373FF410CE2B2 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 292C56CB086444688FE199C1 /* ContentView.swift */; };
 		D020AE6E92D4C6E749A68258 /* CategoryTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFFFAB70ED7084D16061D25B /* CategoryTabBar.swift */; };
+		D48A24315637BB33F71362C1 /* SessionSummarySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BD01AF12F865CDE4934E485 /* SessionSummarySheet.swift */; };
 		D61D86C8F6D43C189A6ED53C /* SessionFormSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1293F57D2A3E00C3C41104D3 /* SessionFormSheet.swift */; };
 		DCBCA159CF7BA94948511F91 /* RecordingViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A12AA75E463BAB0350A7B859 /* RecordingViewModelTests.swift */; };
 		EA0AD55B234ED4B6624F9CDF /* StorageManagementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0938A7C42C28B18503D66170 /* StorageManagementView.swift */; };
@@ -68,6 +69,7 @@
 		85641EA891D651731A1760AB /* CampaignDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampaignDetailScreen.swift; sourceTree = "<group>"; };
 		9097885CC399C9C51A2DEF9A /* .gitkeep */ = {isa = PBXFileReference; path = .gitkeep; sourceTree = "<group>"; };
 		9666E2F7C32949BAE2ABF2D9 /* RecordingScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingScreen.swift; sourceTree = "<group>"; };
+		9BD01AF12F865CDE4934E485 /* SessionSummarySheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionSummarySheet.swift; sourceTree = "<group>"; };
 		A12AA75E463BAB0350A7B859 /* RecordingViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingViewModelTests.swift; sourceTree = "<group>"; };
 		A34CAC83B9783FE002294049 /* CampaignListScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampaignListScreen.swift; sourceTree = "<group>"; };
 		AC76CF111D599F55A693CB9D /* DictlyiOSTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = DictlyiOSTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -182,6 +184,7 @@
 				B1981874591B00DCDD63972A /* RecordingStatusBar.swift */,
 				73718F65C734C27633CC330C /* RecordingViewModel.swift */,
 				D0105A022422D16EDE58A347 /* SessionRecorder.swift */,
+				9BD01AF12F865CDE4934E485 /* SessionSummarySheet.swift */,
 			);
 			path = Recording;
 			sourceTree = "<group>";
@@ -325,6 +328,7 @@
 				D61D86C8F6D43C189A6ED53C /* SessionFormSheet.swift in Sources */,
 				A0143385A6B4295D7E173921 /* SessionListRow.swift in Sources */,
 				EA1DD70C8D64A1DED9D70F5D /* SessionRecorder.swift in Sources */,
+				D48A24315637BB33F71362C1 /* SessionSummarySheet.swift in Sources */,
 				BAF24E8F2A56BF4A0E16673D /* SettingsScreen.swift in Sources */,
 				EA0AD55B234ED4B6624F9CDF /* StorageManagementView.swift in Sources */,
 				4A1326115C2761880B8BEF74 /* TagCard.swift in Sources */,
