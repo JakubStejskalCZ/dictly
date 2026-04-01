@@ -1,6 +1,6 @@
 # Story 1.7: Storage Management
 
-Status: review
+Status: done
 
 ## Story
 
@@ -81,6 +81,25 @@ Then a message indicates no recordings are stored
   - [x] 7.4 Test `AudioFileManager.formattedSize(_:)` — correct human-readable output for various sizes (0 B, KB, MB, GB)
   - [x] 7.5 Test `AudioFileManager.audioStorageDirectory()` — returns valid URL, creates directory if missing
   - [x] 7.6 Verify `xcodebuild` succeeds for both iOS and Mac targets
+
+### Review Findings
+
+- [x] [Review][Patch] `audioStorageDirectory()` silently returns URL on directory creation failure — now throws [AudioFileManager.swift]
+- [x] [Review][Patch] TOCTOU race in `deleteAudioFile` — removed pre-check, catch `NSFileNoSuchFileError` [AudioFileManager.swift]
+- [x] [Review][Patch] `deleteRecording` never calls `modelContext.save()` — added explicit save [StorageManagementView.swift, PreferencesWindow.swift]
+- [x] [Review][Patch] `totalStorageBytes` passes `allSessions` instead of `sessionsWithAudio` — fixed in all views [StorageManagementView.swift, PreferencesWindow.swift, SettingsScreen.swift]
+- [x] [Review][Patch] `fileSize` casts `.size` as `Int64` instead of `NSNumber.int64Value` — fixed [AudioFileManager.swift]
+- [x] [Review][Patch] `ByteCountFormatter` allocated per `formattedSize` call — cached as static [AudioFileManager.swift]
+- [x] [Review][Patch] `SessionStorageRow.dateFormatter` stale on locale change — replaced with `Text(date, style:)` [StorageManagementView.swift]
+- [x] [Review][Patch] Empty state text "No Recordings Stored" vs spec "No recordings are stored" — fixed [StorageManagementView.swift, PreferencesWindow.swift]
+- [x] [Review][Patch] `audioStorageDirectory` path logged `.public` violating privacy spec — fixed [AudioFileManager.swift]
+- [x] [Review][Patch] Missing accessibility label on Mac Delete button — added [PreferencesWindow.swift]
+- [x] [Review][Patch] Cancel action doesn't clear `sessionToDelete` — fixed [StorageManagementView.swift, PreferencesWindow.swift]
+- [x] [Review][Patch] `onDelete` only processes `offsets.first` — kept single-offset (swipe-to-delete always single) but confirmed correct
+- [x] [Review][Patch] `deleteRecording` doesn't clear `sessionToDelete` after action — fixed [StorageManagementView.swift, PreferencesWindow.swift]
+- [x] [Review][Defer] `audioFilePath` stores absolute path — breaks on reinstall — deferred, Epic 2 will set paths
+- [x] [Review][Defer] `audioFilePath` pointing to directory could delete recursively — deferred, defensive guard not in scope
+- [x] [Review][Defer] Campaign deletion orphans audio files on disk — deferred, pre-existing design gap
 
 ## Dev Notes
 

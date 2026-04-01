@@ -7,8 +7,12 @@ import DictlyTheme
 struct SettingsScreen: View {
     @Query private var allSessions: [Session]
 
+    private var sessionsWithAudio: [Session] {
+        allSessions.filter { $0.audioFilePath != nil }
+    }
+
     private var totalStorageText: String {
-        let bytes = AudioFileManager.totalAudioStorageSize(sessions: allSessions)
+        let bytes = AudioFileManager.totalAudioStorageSize(sessions: sessionsWithAudio)
         return AudioFileManager.formattedSize(bytes)
     }
 

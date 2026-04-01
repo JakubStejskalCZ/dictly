@@ -28,3 +28,9 @@
 
 - iCloud KVS 1 MB total store limit is not checked before `store.set(data:forKey:)`. Unit test validates 200 categories fit easily, but no runtime guard exists. Consider adding a size check before writing if category volume may grow significantly.
 - Tag↔category linkage uses `categoryName` string rather than UUID. Rename cascades work (both local and sync), but concurrent renames on different devices can orphan tags on the losing device. Pre-existing architectural decision from Story 1.5 — address if cross-device rename conflicts become a user issue.
+
+## Deferred from: code review of 1-7-storage-management (2026-04-01)
+
+- `audioFilePath` stores an absolute path which will break on app reinstall/iCloud restore (container UUID changes). Epic 2 should store paths relative to the Recordings directory and reconstruct full URLs at runtime via `audioStorageDirectory()`.
+- `audioFilePath` is not validated as a regular file — if set to a directory path, `deleteAudioFile` would recursively delete it. Add a file-type guard when the recording engine (Epic 2) writes the path.
+- Campaign cascade deletion (`modelContext.delete(campaign)`) removes Session models but does not delete orphaned audio files from disk. Add cleanup logic in the campaign delete flow or implement a periodic orphan-file scanner.

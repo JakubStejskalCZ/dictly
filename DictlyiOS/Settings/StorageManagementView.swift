@@ -16,7 +16,7 @@ struct StorageManagementView: View {
     }
 
     private var totalStorageBytes: Int64 {
-        AudioFileManager.totalAudioStorageSize(sessions: allSessions)
+        AudioFileManager.totalAudioStorageSize(sessions: sessionsWithAudio)
     }
 
     var body: some View {
@@ -40,7 +40,9 @@ struct StorageManagementView: View {
                     deleteRecording(for: session)
                 }
             }
-            Button("Cancel", role: .cancel) {}
+            Button("Cancel", role: .cancel) {
+                sessionToDelete = nil
+            }
         } message: {
             if let session = sessionToDelete {
                 Text("The audio recording for \"\(session.title)\" will be permanently deleted. Session notes and tags will be preserved.")
@@ -56,7 +58,7 @@ struct StorageManagementView: View {
                 Image(systemName: "waveform.slash")
                     .font(.system(size: 44))
                     .foregroundStyle(DictlyColors.textSecondary)
-                Text("No Recordings Stored")
+                Text("No recordings are stored")
                     .font(DictlyTypography.h3)
                     .foregroundStyle(DictlyColors.textPrimary)
                 Text("Recordings will appear here once you record a session. You can delete old recordings to free up space on your device.")
@@ -106,6 +108,8 @@ struct StorageManagementView: View {
         }
         session.audioFilePath = nil
         session.duration = 0
+        try? modelContext.save()
+        sessionToDelete = nil
     }
 }
 
@@ -113,13 +117,6 @@ struct StorageManagementView: View {
 
 private struct SessionStorageRow: View {
     let session: Session
-
-    private static let dateFormatter: DateFormatter = {
-        let f = DateFormatter()
-        f.dateStyle = .medium
-        f.timeStyle = .none
-        return f
-    }()
 
     private var fileSizeText: String {
         guard let path = session.audioFilePath else { return "—" }
@@ -141,7 +138,7 @@ private struct SessionStorageRow: View {
                         .font(DictlyTypography.caption)
                         .foregroundStyle(DictlyColors.textSecondary)
                 }
-                Text(Self.dateFormatter.string(from: session.date))
+                Text(session.date, style: .date)
                     .font(DictlyTypography.caption)
                     .foregroundStyle(DictlyColors.textSecondary)
                 Spacer()

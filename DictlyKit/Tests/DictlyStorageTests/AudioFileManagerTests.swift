@@ -7,17 +7,17 @@ final class AudioFileManagerTests: XCTestCase {
     // MARK: - audioStorageDirectory
 
     // 7.5 — Returns a valid URL and creates the directory if missing
-    func testAudioStorageDirectoryReturnsValidURL() {
-        let url = AudioFileManager.audioStorageDirectory()
+    func testAudioStorageDirectoryReturnsValidURL() throws {
+        let url = try AudioFileManager.audioStorageDirectory()
         XCTAssertFalse(url.path.isEmpty, "audioStorageDirectory should return a non-empty path")
         XCTAssertTrue(url.path.hasSuffix("Recordings"), "path should end with 'Recordings'")
         XCTAssertTrue(FileManager.default.fileExists(atPath: url.path), "directory should exist after calling audioStorageDirectory")
     }
 
-    func testAudioStorageDirectoryIsIdempotent() {
+    func testAudioStorageDirectoryIsIdempotent() throws {
         // Calling twice should not throw and should return the same directory
-        let url1 = AudioFileManager.audioStorageDirectory()
-        let url2 = AudioFileManager.audioStorageDirectory()
+        let url1 = try AudioFileManager.audioStorageDirectory()
+        let url2 = try AudioFileManager.audioStorageDirectory()
         XCTAssertEqual(url1, url2, "audioStorageDirectory should return the same URL on repeated calls")
         XCTAssertTrue(FileManager.default.fileExists(atPath: url1.path))
     }

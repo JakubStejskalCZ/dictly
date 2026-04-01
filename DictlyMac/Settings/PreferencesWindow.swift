@@ -30,7 +30,7 @@ private struct StoragePreferencesTab: View {
     }
 
     private var totalStorageBytes: Int64 {
-        AudioFileManager.totalAudioStorageSize(sessions: allSessions)
+        AudioFileManager.totalAudioStorageSize(sessions: sessionsWithAudio)
     }
 
     var body: some View {
@@ -65,7 +65,9 @@ private struct StoragePreferencesTab: View {
             Button("Delete", role: .destructive) {
                 deleteRecording(for: session)
             }
-            Button("Cancel", role: .cancel) {}
+            Button("Cancel", role: .cancel) {
+                sessionToDelete = nil
+            }
         } message: { session in
             Text("The audio recording for \"\(session.title)\" will be permanently deleted. Session notes and tags will be preserved.")
         }
@@ -78,7 +80,7 @@ private struct StoragePreferencesTab: View {
             Image(systemName: "waveform.slash")
                 .font(.system(size: 48))
                 .foregroundStyle(.secondary)
-            Text("No Recordings Stored")
+            Text("No recordings are stored")
                 .font(.title3)
                 .fontWeight(.semibold)
             Text("Recordings will appear here once you record a session.\nYou can delete old recordings to free up space.")
@@ -114,6 +116,7 @@ private struct StoragePreferencesTab: View {
                 }
                 .buttonStyle(.borderless)
                 .foregroundStyle(.red)
+                .accessibilityLabel("Delete recording for \(session.title)")
             }
             .width(60)
         }
@@ -137,5 +140,7 @@ private struct StoragePreferencesTab: View {
         }
         session.audioFilePath = nil
         session.duration = 0
+        try? modelContext.save()
+        sessionToDelete = nil
     }
 }
