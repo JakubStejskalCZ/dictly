@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Dictly records audio during your tabletop sessions so you can tag and review important moments later.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Dictly can optionally save where you played each session for easier recall.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>audio</string>
+	</array>
+	<key>UTExportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeIdentifier</key>
+			<string>com.dictly.dictly-bundle</string>
+			<key>UTTypeDescription</key>
+			<string>Dictly Session Bundle</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>dictly</string>
+				</array>
+			</dict>
+		</dict>
+	</array>
+</dict>
+</plist>
