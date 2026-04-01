@@ -117,7 +117,9 @@ struct RecordingScreen: View {
             .font(DictlyTypography.body)
             .foregroundStyle(DictlyColors.textSecondary)
             .frame(maxWidth: .infinity)
-            .frame(height: DictlySpacing.minTapTarget)
+            .frame(minHeight: DictlySpacing.minTapTarget)
+            .background(DictlyColors.surface)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
         }
         .disabled(!vm.isRecording)
         .accessibilityLabel("Stop Recording")

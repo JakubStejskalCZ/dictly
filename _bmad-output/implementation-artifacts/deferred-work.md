@@ -73,3 +73,8 @@
 ## Deferred from: code review of story 2-6 (2026-04-02)
 
 - `capturedAnchor` in `TaggingService` could leak (remain non-nil) if the view is removed from the hierarchy between the "+" button tap and the sheet presentation completing. Extremely unlikely SwiftUI edge case — the orphaned anchor would be harmlessly overwritten on the next capture or discarded on the next sheet dismiss.
+
+## Deferred from: code review of story 2-7 (2026-04-02)
+
+- Tag `categoryName` could be an empty string, rendering a blank section header in SessionSummarySheet's grouped tag list. Pre-existing data model concern — all current tag creation paths populate `categoryName` from a TagCategory, but no model-level validation prevents an empty string.
+- Stop recording ViewModel tests (`testStopRecording_callsRecorderStop`, etc.) only verify behavior on a non-recording recorder due to hardware dependency (AVAudioEngine requires a real audio input). The actual stop-while-recording path is covered by integration/manual testing.

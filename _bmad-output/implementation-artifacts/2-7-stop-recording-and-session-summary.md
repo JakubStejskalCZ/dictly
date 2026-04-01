@@ -1,6 +1,6 @@
 # Story 2.7: Stop Recording & Session Summary
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -92,6 +92,13 @@ Then the selected quality applies to future recordings
   - [x] 7.1 Run `xcodegen generate` in `DictlyiOS/` (new file `SessionSummarySheet.swift` auto-discovered in `Recording/` source path).
   - [x] 7.2 Run `xcodebuild` — verify `** BUILD SUCCEEDED **`.
   - [x] 7.3 Run full test suite — verify `** TEST SUCCEEDED **`.
+
+### Review Findings
+
+- [x] [Review][Patch] Stop button missing `DictlyColors.surface` background per UX spec [RecordingScreen.swift:117] — fixed
+- [x] [Review][Patch] Stop button uses `.frame(height:)` instead of `.frame(minHeight:)` for Dynamic Type support [RecordingScreen.swift:120] — fixed
+- [x] [Review][Defer] Tag `categoryName` could be empty string, rendering blank section header in summary [SessionSummarySheet.swift:83] — deferred, pre-existing data model concern
+- [x] [Review][Defer] Stop recording tests only verify on non-recording recorder due to hardware dependency [RecordingViewModelTests.swift:84] — deferred, testing limitation
 
 ## Dev Notes
 
