@@ -8,14 +8,21 @@
 
 /* Begin PBXBuildFile section */
 		001E2D694DC34F6280E2F408 /* DictlyiOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65858E28AFE327CE10E45530 /* DictlyiOSApp.swift */; };
+		0B094A68B17F4F92E3898F6B /* CampaignDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85641EA891D651731A1760AB /* CampaignDetailScreen.swift */; };
 		213BE7694C64750A5070F1EE /* DictlyKit in Frameworks */ = {isa = PBXBuildFile; productRef = 73283B2AADDD38B3A8F3CBBF /* DictlyKit */; };
+		87A2B544278BCD7C5AB9AA94 /* CampaignListScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A34CAC83B9783FE002294049 /* CampaignListScreen.swift */; };
+		AFF7496D2EA43AA3D1A40D54 /* CampaignFormSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1140D16A3FA3BF0E382A17B9 /* CampaignFormSheet.swift */; };
 		CE5CCE34159373FF410CE2B2 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 292C56CB086444688FE199C1 /* ContentView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		1140D16A3FA3BF0E382A17B9 /* CampaignFormSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampaignFormSheet.swift; sourceTree = "<group>"; };
+		212048F3B21C673F727CF238 /* .gitkeep */ = {isa = PBXFileReference; path = .gitkeep; sourceTree = "<group>"; };
 		292C56CB086444688FE199C1 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		421DF30DCF157DFEB97DFC73 /* DictlyiOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = DictlyiOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		65858E28AFE327CE10E45530 /* DictlyiOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictlyiOSApp.swift; sourceTree = "<group>"; };
+		85641EA891D651731A1760AB /* CampaignDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampaignDetailScreen.swift; sourceTree = "<group>"; };
+		A34CAC83B9783FE002294049 /* CampaignListScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampaignListScreen.swift; sourceTree = "<group>"; };
 		E9DF83D1579012F36AC2AC18 /* DictlyKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = DictlyKit; path = ../DictlyKit; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
@@ -35,6 +42,7 @@
 			isa = PBXGroup;
 			children = (
 				102D047256739A005B43E852 /* App */,
+				9EAF4186648735D4DD6A42A2 /* Campaigns */,
 				DE00568F58657567AEDD6FA3 /* Packages */,
 				E233D43E11DF5690FCBCBD58 /* Products */,
 			);
@@ -47,6 +55,17 @@
 				65858E28AFE327CE10E45530 /* DictlyiOSApp.swift */,
 			);
 			path = App;
+			sourceTree = "<group>";
+		};
+		9EAF4186648735D4DD6A42A2 /* Campaigns */ = {
+			isa = PBXGroup;
+			children = (
+				212048F3B21C673F727CF238 /* .gitkeep */,
+				85641EA891D651731A1760AB /* CampaignDetailScreen.swift */,
+				1140D16A3FA3BF0E382A17B9 /* CampaignFormSheet.swift */,
+				A34CAC83B9783FE002294049 /* CampaignListScreen.swift */,
+			);
+			path = Campaigns;
 			sourceTree = "<group>";
 		};
 		DE00568F58657567AEDD6FA3 /* Packages */ = {
@@ -129,6 +148,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0B094A68B17F4F92E3898F6B /* CampaignDetailScreen.swift in Sources */,
+				AFF7496D2EA43AA3D1A40D54 /* CampaignFormSheet.swift in Sources */,
+				87A2B544278BCD7C5AB9AA94 /* CampaignListScreen.swift in Sources */,
 				CE5CCE34159373FF410CE2B2 /* ContentView.swift in Sources */,
 				001E2D694DC34F6280E2F408 /* DictlyiOSApp.swift in Sources */,
 			);

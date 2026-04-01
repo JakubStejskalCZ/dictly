@@ -1,12 +1,15 @@
 import SwiftUI
+import DictlyModels
 
 struct ContentView: View {
     var body: some View {
-        Text("Dictly")
-            .font(.largeTitle)
+        NavigationStack {
+            CampaignListScreen()
+        }
     }
 }
 
 #Preview {
     ContentView()
+        .modelContainer(for: Campaign.self, inMemory: true)
 }
