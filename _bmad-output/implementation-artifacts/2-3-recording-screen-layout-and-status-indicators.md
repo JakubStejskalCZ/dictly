@@ -1,6 +1,6 @@
 # Story 2.3: Recording Screen Layout & Status Indicators
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -291,6 +291,18 @@ Files modified in Stories 2.1/2.2 that overlap:
 - [Source: ux-design-specification.md#Journey-4] — Interruption recovery: phone call pause/resume UX
 - [Source: 2-1-audio-recording-engine-with-background-persistence.md] — SessionRecorder API, review findings
 - [Source: 2-2-pause-resume-and-phone-call-interruption-handling.md] — Pause/resume state properties, wasInterruptedBySystem
+
+### Review Findings
+
+- [x] [Review][Patch] `startRecording` error leaves `viewModel` set — UI shows controls over dead engine [RecordingScreen.swift] — fixed: moved `viewModel` assignment after successful `startRecording()`; added `recordingFailed` alert
+- [x] [Review][Patch] `activeRecordingSession` never cleared on dismiss + double-tap creates orphan sessions [CampaignDetailScreen.swift] — fixed: added `onDismiss` handler and guard in `createSession()`
+- [x] [Review][Patch] Timer font uses inline literal instead of `DictlyTypography` design tokens [RecordingStatusBar.swift] — fixed: use `DictlyTypography.h1.monospacedDigit()`
+- [x] [Review][Patch] Paused waveform bars use `textSecondary.opacity(0.5)` instead of solid `textSecondary` [LiveWaveform.swift] — fixed: removed `.opacity(0.5)`
+- [x] [Review][Patch] `@unknown default` in mic permission switch silently starts recording [RecordingScreen.swift] — fixed: treat as denied
+- [x] [Review][Patch] `formatDuration` crashes on infinity/NaN input [RecordingViewModel.swift] — fixed: added `.isFinite` guard
+- [x] [Review][Patch] Reduce Motion: dot animation still toggles `dotPulse` — should be fully suppressed [RecordingStatusBar.swift] — fixed: skip pulse entirely when `reduceMotion` is on
+- [x] [Review][Patch] LiveWaveform samples array unnecessary copy at 15fps [LiveWaveform.swift] — fixed: mutate `@State` array in-place
+- [x] [Review][Defer] VoiceOver accessibility label collapses paused/systemInterrupted into same string — deferred, needs spec clarification on distinct labels
 
 ## Dev Agent Record
 

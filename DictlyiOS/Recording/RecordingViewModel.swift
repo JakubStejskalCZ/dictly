@@ -75,6 +75,7 @@ final class RecordingViewModel {
 
     /// Formats a `TimeInterval` as `"H:MM:SS"`.
     static func formatDuration(_ timeInterval: TimeInterval) -> String {
+        guard timeInterval.isFinite else { return "0:00:00" }
         let total = max(0, Int(timeInterval))
         let hours = total / 3600
         let minutes = (total % 3600) / 60

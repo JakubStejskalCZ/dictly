@@ -23,10 +23,8 @@ struct LiveWaveform: View {
                 waveformContent
                     .onChange(of: context.date) { _, _ in
                         guard !isPaused else { return }
-                        var updated = samples
-                        updated.removeFirst()
-                        updated.append(audioLevel)
-                        samples = updated
+                        samples.removeFirst()
+                        samples.append(audioLevel)
                     }
             }
 
@@ -69,7 +67,7 @@ struct LiveWaveform: View {
 
     private func barColor(for index: Int) -> Color {
         if isPaused {
-            return DictlyColors.textSecondary.opacity(0.5)
+            return DictlyColors.textSecondary
         }
         let progress = Double(index) / Double(max(1, samples.count - 1))
         return progress > 0.7 ? DictlyColors.recordingActive : DictlyColors.textSecondary

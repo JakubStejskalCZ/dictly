@@ -54,7 +54,9 @@ struct CampaignDetailScreen: View {
         .sheet(item: $sessionToEdit) { session in
             SessionFormSheet(session: session)
         }
-        .fullScreenCover(item: $activeRecordingSession) { session in
+        .fullScreenCover(item: $activeRecordingSession, onDismiss: {
+            activeRecordingSession = nil
+        }) { session in
             RecordingScreen(session: session)
         }
         .navigationDestination(isPresented: $isShowingManageTags) {
@@ -158,6 +160,7 @@ struct CampaignDetailScreen: View {
     // MARK: - Helpers
 
     private func createSession() {
+        guard activeRecordingSession == nil else { return }
         let nextNumber = (campaign.sessions.map(\.sessionNumber).max() ?? 0) + 1
         let session = Session(
             title: "Session \(nextNumber)",

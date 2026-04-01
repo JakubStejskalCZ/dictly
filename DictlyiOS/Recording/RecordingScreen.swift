@@ -19,6 +19,7 @@ struct RecordingScreen: View {
 
     @State private var viewModel: RecordingViewModel?
     @State private var micPermissionDenied = false
+    @State private var recordingFailed = false
 
     var body: some View {
         ZStack {
@@ -60,6 +61,11 @@ struct RecordingScreen: View {
         .preferredColorScheme(.dark)
         .task {
             await checkMicrophonePermission()
+        }
+        .alert("Recording Failed", isPresented: $recordingFailed) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Unable to start recording. Please try again.")
         }
         .alert("Microphone Access Required", isPresented: $micPermissionDenied) {
             Button("Open Settings") {
@@ -131,18 +137,19 @@ struct RecordingScreen: View {
             logger.info("Microphone permission granted")
             startRecording()
         @unknown default:
-            startRecording()
+            logger.error("Microphone permission unknown state — cannot start recording")
+            micPermissionDenied = true
         }
     }
 
     private func startRecording() {
         logger.info("Recording screen presented for session \(session.uuid.uuidString, privacy: .private)")
-        let vm = RecordingViewModel(sessionRecorder: sessionRecorder)
-        viewModel = vm
         do {
             try sessionRecorder.startRecording(session: session, context: modelContext)
+            viewModel = RecordingViewModel(sessionRecorder: sessionRecorder)
         } catch {
             logger.error("Failed to start recording: \(error, privacy: .public)")
+            recordingFailed = true
         }
     }
 }

@@ -27,7 +27,7 @@ struct RecordingStatusBar: View {
             Spacer()
 
             Text(formattedElapsedTime)
-                .font(.system(size: 28, weight: .bold).monospacedDigit())
+                .font(DictlyTypography.h1.monospacedDigit())
                 .foregroundStyle(DictlyColors.textPrimary)
 
             tagCountBadge
@@ -66,8 +66,12 @@ struct RecordingStatusBar: View {
     // MARK: - Animation
 
     private func updateDotAnimation(for state: RecordingState) {
+        if reduceMotion {
+            dotPulse = false
+            return
+        }
         if state == .recording {
-            withAnimation(DictlyAnimation.recordingBreath(reduceMotion: reduceMotion)) {
+            withAnimation(DictlyAnimation.recordingBreath(reduceMotion: false)) {
                 dotPulse = true
             }
         } else {
