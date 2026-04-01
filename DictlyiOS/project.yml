@@ -27,6 +27,7 @@ targets:
       - path: App
       - path: Campaigns
       - path: Tagging
+      - path: Settings
     resources:
       - path: Resources
     entitlements:

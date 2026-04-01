@@ -1,6 +1,6 @@
 # Story 1.7: Storage Management
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -31,56 +31,56 @@ Then a message indicates no recordings are stored
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Add `audioFilePath` property to Session model (AC: #1, #2)
-  - [ ] 1.1 Add `public var audioFilePath: String?` to `Session` SwiftData `@Model` in `DictlyKit/Sources/DictlyModels/Session.swift`
-  - [ ] 1.2 Add `audioFilePath` as optional parameter (default `nil`) to `Session.init`
-  - [ ] 1.3 SwiftData lightweight migration handles adding a new optional property automatically — no migration code needed
-  - [ ] 1.4 Verify existing tests still pass (new property is optional, existing code unaffected)
+- [x] Task 1: Add `audioFilePath` property to Session model (AC: #1, #2)
+  - [x] 1.1 Add `public var audioFilePath: String?` to `Session` SwiftData `@Model` in `DictlyKit/Sources/DictlyModels/Session.swift`
+  - [x] 1.2 Add `audioFilePath` as optional parameter (default `nil`) to `Session.init`
+  - [x] 1.3 SwiftData lightweight migration handles adding a new optional property automatically — no migration code needed
+  - [x] 1.4 Verify existing tests still pass (new property is optional, existing code unaffected)
 
-- [ ] Task 2: Create `AudioFileManager` in DictlyKit/DictlyStorage (AC: #1, #2)
-  - [ ] 2.1 Create `AudioFileManager.swift` as a `public struct` (stateless utility) in `DictlyKit/Sources/DictlyStorage/`
-  - [ ] 2.2 Implement `static func audioStorageDirectory() -> URL` — returns the app sandbox subdirectory for audio files (`<appSupportDir>/Recordings/`), creating it if needed
-  - [ ] 2.3 Implement `static func fileSize(at path: String) throws -> Int64` — returns file size in bytes using `FileManager.default.attributesOfItem(atPath:)[.size]`
-  - [ ] 2.4 Implement `static func totalAudioStorageSize(sessions: [Session]) -> Int64` — iterates sessions with non-nil `audioFilePath`, sums file sizes, skips missing files gracefully
-  - [ ] 2.5 Implement `static func deleteAudioFile(at path: String) throws` — removes file using `FileManager.default.removeItem(atPath:)`, throws `DictlyError.storage(.fileNotFound)` if file doesn't exist
-  - [ ] 2.6 Implement `static func formattedSize(_ bytes: Int64) -> String` — returns human-readable string using `ByteCountFormatter` with `.file` count style (e.g., "115 MB", "2.3 GB")
+- [x] Task 2: Create `AudioFileManager` in DictlyKit/DictlyStorage (AC: #1, #2)
+  - [x] 2.1 Create `AudioFileManager.swift` as a `public struct` (stateless utility) in `DictlyKit/Sources/DictlyStorage/`
+  - [x] 2.2 Implement `static func audioStorageDirectory() -> URL` — returns the app sandbox subdirectory for audio files (`<appSupportDir>/Recordings/`), creating it if needed
+  - [x] 2.3 Implement `static func fileSize(at path: String) throws -> Int64` — returns file size in bytes using `FileManager.default.attributesOfItem(atPath:)[.size]`
+  - [x] 2.4 Implement `static func totalAudioStorageSize(sessions: [Session]) -> Int64` — iterates sessions with non-nil `audioFilePath`, sums file sizes, skips missing files gracefully
+  - [x] 2.5 Implement `static func deleteAudioFile(at path: String) throws` — removes file using `FileManager.default.removeItem(atPath:)`, throws `DictlyError.storage(.fileNotFound)` if file doesn't exist
+  - [x] 2.6 Implement `static func formattedSize(_ bytes: Int64) -> String` — returns human-readable string using `ByteCountFormatter` with `.file` count style (e.g., "115 MB", "2.3 GB")
 
-- [ ] Task 3: Create `StorageManagementView` for iOS (AC: #1, #2, #3)
-  - [ ] 3.1 Create `StorageManagementView.swift` in `DictlyiOS/Settings/`
-  - [ ] 3.2 Use `@Query(sort: \Session.date, order: .reverse)` to fetch all sessions
-  - [ ] 3.3 Display total storage used at the top (sum of all audio file sizes) using `AudioFileManager.formattedSize`
-  - [ ] 3.4 Display per-session rows: session title, campaign name, date, audio file size
-  - [ ] 3.5 Sessions without audio files (`audioFilePath == nil`) are excluded from the storage list
-  - [ ] 3.6 Implement swipe-to-delete on session rows with `.confirmationDialog` for destructive action confirmation
-  - [ ] 3.7 On confirmed delete: call `AudioFileManager.deleteAudioFile`, set session's `audioFilePath = nil`, clear `duration = 0` — do NOT delete the Session model itself (session metadata and tags are preserved)
-  - [ ] 3.8 After deletion, the list and total storage update reactively via `@Query`
-  - [ ] 3.9 Show empty state when no sessions have audio files: "No recordings are stored" with explanatory subtext
-  - [ ] 3.10 Use `Form` container with sections per UX patterns for settings screens
+- [x] Task 3: Create `StorageManagementView` for iOS (AC: #1, #2, #3)
+  - [x] 3.1 Create `StorageManagementView.swift` in `DictlyiOS/Settings/`
+  - [x] 3.2 Use `@Query(sort: \Session.date, order: .reverse)` to fetch all sessions
+  - [x] 3.3 Display total storage used at the top (sum of all audio file sizes) using `AudioFileManager.formattedSize`
+  - [x] 3.4 Display per-session rows: session title, campaign name, date, audio file size
+  - [x] 3.5 Sessions without audio files (`audioFilePath == nil`) are excluded from the storage list
+  - [x] 3.6 Implement swipe-to-delete on session rows with `.confirmationDialog` for destructive action confirmation
+  - [x] 3.7 On confirmed delete: call `AudioFileManager.deleteAudioFile`, set session's `audioFilePath = nil`, clear `duration = 0` — do NOT delete the Session model itself (session metadata and tags are preserved)
+  - [x] 3.8 After deletion, the list and total storage update reactively via `@Query`
+  - [x] 3.9 Show empty state when no sessions have audio files: "No recordings are stored" with explanatory subtext
+  - [x] 3.10 Use `Form` container with sections per UX patterns for settings screens
 
-- [ ] Task 4: Create `SettingsScreen` for iOS (AC: #1, #2, #3)
-  - [ ] 4.1 Create `SettingsScreen.swift` in `DictlyiOS/Settings/`
-  - [ ] 4.2 Use `Form` with a `Section` for "Storage" containing a `NavigationLink` to `StorageManagementView`
-  - [ ] 4.3 Show total storage used as secondary text in the navigation link row
-  - [ ] 4.4 Add toolbar navigation to Settings from `CampaignListScreen` (gear icon in toolbar)
+- [x] Task 4: Create `SettingsScreen` for iOS (AC: #1, #2, #3)
+  - [x] 4.1 Create `SettingsScreen.swift` in `DictlyiOS/Settings/`
+  - [x] 4.2 Use `Form` with a `Section` for "Storage" containing a `NavigationLink` to `StorageManagementView`
+  - [x] 4.3 Show total storage used as secondary text in the navigation link row
+  - [x] 4.4 Add toolbar navigation to Settings from `CampaignListScreen` (gear icon in toolbar)
 
-- [ ] Task 5: Add storage management to Mac Preferences (AC: #1, #2, #3)
-  - [ ] 5.1 Create `PreferencesWindow.swift` in `DictlyMac/Settings/`
-  - [ ] 5.2 Register as a `Settings` scene in `DictlyMacApp.swift` (macOS `Settings { PreferencesWindow() }`)
-  - [ ] 5.3 Reuse the same storage display logic: total size, per-session breakdown, delete with `.alert` confirmation (Mac uses `.alert` not `.confirmationDialog` per UX spec)
-  - [ ] 5.4 Use `Table` or `List` for session breakdown appropriate to macOS idiom
-  - [ ] 5.5 Same empty state handling as iOS
+- [x] Task 5: Add storage management to Mac Preferences (AC: #1, #2, #3)
+  - [x] 5.1 Create `PreferencesWindow.swift` in `DictlyMac/Settings/`
+  - [x] 5.2 Register as a `Settings` scene in `DictlyMacApp.swift` (macOS `Settings { PreferencesWindow() }`)
+  - [x] 5.3 Reuse the same storage display logic: total size, per-session breakdown, delete with `.alert` confirmation (Mac uses `.alert` not `.confirmationDialog` per UX spec)
+  - [x] 5.4 Use `Table` or `List` for session breakdown appropriate to macOS idiom
+  - [x] 5.5 Same empty state handling as iOS
 
-- [ ] Task 6: Navigation Integration (AC: #1)
-  - [ ] 6.1 Add a gear icon (`Image(systemName: "gearshape")`) toolbar button to `CampaignListScreen.swift` that navigates to `SettingsScreen`
-  - [ ] 6.2 Mac: the `Settings` scene is accessible via the standard macOS app menu (Cmd+,) — no additional navigation needed
+- [x] Task 6: Navigation Integration (AC: #1)
+  - [x] 6.1 Add a gear icon (`Image(systemName: "gearshape")`) toolbar button to `CampaignListScreen.swift` that navigates to `SettingsScreen`
+  - [x] 6.2 Mac: the `Settings` scene is accessible via the standard macOS app menu (Cmd+,) — no additional navigation needed
 
-- [ ] Task 7: Unit Tests (AC: #1, #2, #3)
-  - [ ] 7.1 Test `AudioFileManager.fileSize(at:)` — returns correct size for a temp file, throws for missing file
-  - [ ] 7.2 Test `AudioFileManager.totalAudioStorageSize(sessions:)` — correctly sums sizes, handles nil paths, handles missing files
-  - [ ] 7.3 Test `AudioFileManager.deleteAudioFile(at:)` — removes file, throws `.fileNotFound` for missing
-  - [ ] 7.4 Test `AudioFileManager.formattedSize(_:)` — correct human-readable output for various sizes (0 B, KB, MB, GB)
-  - [ ] 7.5 Test `AudioFileManager.audioStorageDirectory()` — returns valid URL, creates directory if missing
-  - [ ] 7.6 Verify `xcodebuild` succeeds for both iOS and Mac targets
+- [x] Task 7: Unit Tests (AC: #1, #2, #3)
+  - [x] 7.1 Test `AudioFileManager.fileSize(at:)` — returns correct size for a temp file, throws for missing file
+  - [x] 7.2 Test `AudioFileManager.totalAudioStorageSize(sessions:)` — correctly sums sizes, handles nil paths, handles missing files
+  - [x] 7.3 Test `AudioFileManager.deleteAudioFile(at:)` — removes file, throws `.fileNotFound` for missing
+  - [x] 7.4 Test `AudioFileManager.formattedSize(_:)` — correct human-readable output for various sizes (0 B, KB, MB, GB)
+  - [x] 7.5 Test `AudioFileManager.audioStorageDirectory()` — returns valid URL, creates directory if missing
+  - [x] 7.6 Verify `xcodebuild` succeeds for both iOS and Mac targets
 
 ## Dev Notes
 
@@ -206,10 +206,38 @@ Files recently modified that overlap:
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+claude-sonnet-4-6
 
 ### Debug Log References
 
+- `DictlyTypography` has no `headline` member — replaced with `h3` in `StorageManagementView.swift` (line 60). Available tokens: display, h1, h2, h3, body, caption, tagLabel, monospacedDigits.
+
 ### Completion Notes List
 
+- **Task 1:** Added `public var audioFilePath: String?` to `Session` model with optional `audioFilePath` init param (default nil). SwiftData handles lightweight migration for new optional properties automatically. All 56 prior tests still pass.
+- **Task 2:** Created `AudioFileManager` as a stateless `public struct` with 5 static methods: `audioStorageDirectory()`, `fileSize(at:)`, `totalAudioStorageSize(sessions:)`, `deleteAudioFile(at:)`, `formattedSize(_:)`. Uses `os.Logger` with subsystem `"com.dictly"`, category `"storage"`. File paths logged `.private`, sizes `.public`.
+- **Task 3:** Created `StorageManagementView` for iOS using `@Query` for reactive session fetching. Swipe-to-delete with `.confirmationDialog`. Deletes audio file + sets `audioFilePath = nil` + clears `duration`. Empty state shows "No Recordings Stored" with icon and explanatory text.
+- **Task 4:** Created `SettingsScreen` with `Form`/`Section("Storage")` containing `NavigationLink` to `StorageManagementView`. Shows total storage as secondary text.
+- **Task 5:** Created `PreferencesWindow` for macOS with `TabView` (Storage tab). Uses `Table` for per-session breakdown and `.alert` (not `.confirmationDialog`) per UX spec. Added `Settings { PreferencesWindow() }` scene to `DictlyMacApp.swift`.
+- **Task 6:** Added gear icon `ToolbarItem(placement: .navigationBarLeading)` to `CampaignListScreen`. Uses `navigationDestination(isPresented:)` to push `SettingsScreen`.
+- **Task 7:** 13 new `AudioFileManagerTests` covering all 5 static methods. All 69 tests pass (56 prior + 13 new). Both xcodebuild targets succeed.
+- **Note on empty state:** Since audio recording is Epic 2 (not yet implemented), all sessions have `audioFilePath == nil`. Storage management will show the correct empty state until Epic 2 is complete — this is the expected and designed behavior per Dev Notes.
+
 ### File List
+
+- DictlyKit/Sources/DictlyModels/Session.swift (modified)
+- DictlyKit/Sources/DictlyStorage/AudioFileManager.swift (new)
+- DictlyKit/Tests/DictlyStorageTests/AudioFileManagerTests.swift (new)
+- DictlyiOS/Settings/StorageManagementView.swift (new)
+- DictlyiOS/Settings/SettingsScreen.swift (new)
+- DictlyiOS/Campaigns/CampaignListScreen.swift (modified)
+- DictlyiOS/project.yml (modified — added Settings source dir)
+- DictlyMac/Settings/PreferencesWindow.swift (new)
+- DictlyMac/App/DictlyMacApp.swift (modified — added Settings scene)
+- DictlyMac/project.yml (modified — added Settings source dir)
+- DictlyiOS/DictlyiOS.xcodeproj (regenerated)
+- DictlyMac/DictlyMac.xcodeproj (regenerated)
+
+## Change Log
+
+- 2026-04-01: Implemented Story 1.7 — Storage Management. Added `audioFilePath` to Session model, created `AudioFileManager` utility, `StorageManagementView` and `SettingsScreen` for iOS, `PreferencesWindow` for Mac, gear icon navigation from campaign list, and 13 unit tests. All 69 tests pass, both targets build successfully.

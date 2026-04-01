@@ -25,6 +25,7 @@ targets:
     deploymentTarget: "14.0"
     sources:
       - path: App
+      - path: Settings
     resources:
       - path: Resources
     entitlements:

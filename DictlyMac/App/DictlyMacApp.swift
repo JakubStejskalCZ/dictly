@@ -32,6 +32,11 @@ struct DictlyMacApp: App {
                 }
         }
         .modelContainer(container)
+
+        Settings {
+            PreferencesWindow()
+                .modelContainer(container)
+        }
     }
 }
 

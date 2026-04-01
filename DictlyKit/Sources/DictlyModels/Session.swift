@@ -12,6 +12,7 @@ public final class Session {
     public var locationLatitude: Double?
     public var locationLongitude: Double?
     public var summaryNote: String?
+    public var audioFilePath: String?
     @Relationship(deleteRule: .cascade) public var tags: [Tag]
     @Relationship(inverse: \Campaign.sessions) public var campaign: Campaign?
 
@@ -24,7 +25,8 @@ public final class Session {
         locationName: String? = nil,
         locationLatitude: Double? = nil,
         locationLongitude: Double? = nil,
-        summaryNote: String? = nil
+        summaryNote: String? = nil,
+        audioFilePath: String? = nil
     ) {
         self.uuid = uuid
         self.title = title
@@ -35,6 +37,7 @@ public final class Session {
         self.locationLatitude = locationLatitude
         self.locationLongitude = locationLongitude
         self.summaryNote = summaryNote
+        self.audioFilePath = audioFilePath
         self.tags = []
     }
 }

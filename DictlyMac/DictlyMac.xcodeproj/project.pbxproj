@@ -9,13 +9,16 @@
 /* Begin PBXBuildFile section */
 		483EBF5CB15388A4061C741A /* DictlyKit in Frameworks */ = {isa = PBXBuildFile; productRef = C7A8F80EBE71320BD7E63E9E /* DictlyKit */; };
 		8026E48D8E51F41B6ACCC2BB /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D79153280CF49C24B46C221 /* ContentView.swift */; };
+		C219054539490DBD3F6F4340 /* PreferencesWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B010B705AA06A5BD1749B44 /* PreferencesWindow.swift */; };
 		C5E3B5BCF8DFDEECC5C4BC6F /* DictlyMacApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95E649BA6DF1539916AFC171 /* DictlyMacApp.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		3B010B705AA06A5BD1749B44 /* PreferencesWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesWindow.swift; sourceTree = "<group>"; };
 		451A0E0AFA5C65057119CDBD /* DictlyMac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DictlyMac.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8D79153280CF49C24B46C221 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		95E649BA6DF1539916AFC171 /* DictlyMacApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictlyMacApp.swift; sourceTree = "<group>"; };
+		A8885E926145C865765F63DE /* .gitkeep */ = {isa = PBXFileReference; path = .gitkeep; sourceTree = "<group>"; };
 		BC6F035F6865123E34DDB2E6 /* DictlyKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = DictlyKit; path = ../DictlyKit; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
@@ -36,6 +39,7 @@
 			children = (
 				23E53F03A9B6D0166A5C11F4 /* App */,
 				9B444FB2F46D61DBB2B657F6 /* Packages */,
+				F7C55C541B7F24ACC93E0963 /* Settings */,
 				6F0AAFC1884D885B01A85E4E /* Products */,
 			);
 			sourceTree = "<group>";
@@ -63,6 +67,15 @@
 				BC6F035F6865123E34DDB2E6 /* DictlyKit */,
 			);
 			name = Packages;
+			sourceTree = "<group>";
+		};
+		F7C55C541B7F24ACC93E0963 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				A8885E926145C865765F63DE /* .gitkeep */,
+				3B010B705AA06A5BD1749B44 /* PreferencesWindow.swift */,
+			);
+			path = Settings;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -131,6 +144,7 @@
 			files = (
 				8026E48D8E51F41B6ACCC2BB /* ContentView.swift in Sources */,
 				C5E3B5BCF8DFDEECC5C4BC6F /* DictlyMacApp.swift in Sources */,
+				C219054539490DBD3F6F4340 /* PreferencesWindow.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

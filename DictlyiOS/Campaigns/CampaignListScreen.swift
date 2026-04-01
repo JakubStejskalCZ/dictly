@@ -7,6 +7,7 @@ struct CampaignListScreen: View {
     @Query(sort: \Campaign.createdAt, order: .reverse) private var campaigns: [Campaign]
     @Environment(\.modelContext) private var modelContext
     @State private var isShowingCreateForm = false
+    @State private var isShowingSettings = false
     @State private var campaignToDelete: Campaign?
     @State private var isShowingDeleteConfirmation = false
 
@@ -27,9 +28,19 @@ struct CampaignListScreen: View {
                     Image(systemName: "plus")
                 }
             }
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button {
+                    isShowingSettings = true
+                } label: {
+                    Image(systemName: "gearshape")
+                }
+            }
         }
         .sheet(isPresented: $isShowingCreateForm) {
             CampaignFormSheet(campaign: nil)
+        }
+        .navigationDestination(isPresented: $isShowingSettings) {
+            SettingsScreen()
         }
         .confirmationDialog(
             "Delete Campaign?",
