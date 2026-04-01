@@ -12,6 +12,7 @@ struct TagCategoryFormSheet: View {
     @State private var name: String
     @State private var selectedColorHex: String
     @State private var selectedIconName: String
+    @State private var showDuplicateAlert = false
 
     init(category: TagCategory?) {
         self.category = category
@@ -49,6 +50,11 @@ struct TagCategoryFormSheet: View {
                 }
             }
         }
+        .alert("Duplicate Name", isPresented: $showDuplicateAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("A category with this name already exists.")
+        }
     }
 
     // MARK: - Helpers
@@ -57,15 +63,37 @@ struct TagCategoryFormSheet: View {
         let trimmedName = name.trimmingCharacters(in: .whitespaces)
         guard !trimmedName.isEmpty else { return }
 
+        // Check for duplicate name (exclude current category in edit mode)
+        let allCategories = (try? modelContext.fetch(FetchDescriptor<TagCategory>())) ?? []
+        let isDuplicate = allCategories.contains { $0.name == trimmedName && $0.uuid != category?.uuid }
+        guard !isDuplicate else {
+            showDuplicateAlert = true
+            return
+        }
+
         if let existing = category {
+            let oldName = existing.name
             existing.name = trimmedName
             existing.colorHex = selectedColorHex
             existing.iconName = selectedIconName
+
+            // Update all tags referencing the old category name
+            if oldName != trimmedName {
+                let predicate = #Predicate<Tag> { $0.categoryName == oldName }
+                if let tags = try? modelContext.fetch(FetchDescriptor<Tag>(predicate: predicate)) {
+                    for tag in tags {
+                        tag.categoryName = trimmedName
+                    }
+                }
+            }
         } else {
+            let existingCategories = (try? modelContext.fetch(FetchDescriptor<TagCategory>())) ?? []
+            let nextSortOrder = (existingCategories.map(\.sortOrder).max() ?? -1) + 1
             let newCategory = TagCategory(
                 name: trimmedName,
                 colorHex: selectedColorHex,
                 iconName: selectedIconName,
+                sortOrder: nextSortOrder,
                 isDefault: false
             )
             modelContext.insert(newCategory)

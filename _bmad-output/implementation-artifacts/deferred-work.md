@@ -19,3 +19,7 @@
 
 - `formatDuration` in `SessionListRow` does not guard against negative `TimeInterval` values. Currently impossible (duration set to 0 on creation, real values from recording engine in Story 2.x), but add a `max(0, duration)` clamp when recording engine is implemented.
 - `SessionListRow.dateFormatter` uses system locale without explicit locale setting — pre-existing pattern from `CampaignRowView`. May produce unexpected date formats on non-Gregorian calendars. Consider standardizing locale handling across all formatters.
+
+## Deferred from: code review of 1-5-tag-category-and-tag-management (2026-04-01)
+
+- `DefaultTagSeeder.seedIfNeeded` performs a read-then-write (`fetchCount` → insert loop) with no transaction lock. In multi-window scenarios, concurrent calls could both observe `existingCount == 0` and insert duplicate defaults. Extremely unlikely in single-window iOS app but should be addressed if multi-window support is added.

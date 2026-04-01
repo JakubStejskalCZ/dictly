@@ -7,17 +7,17 @@ struct TagListScreen: View {
     let category: TagCategory
 
     @Environment(\.modelContext) private var modelContext
+    @Query private var tags: [Tag]
 
     @State private var isShowingCreateSheet = false
     @State private var tagToEdit: Tag?
     @State private var tagToDelete: Tag?
     @State private var isShowingDeleteConfirmation = false
 
-    private var tags: [Tag] {
+    init(category: TagCategory) {
+        self.category = category
         let name = category.name
-        return (try? modelContext.fetch(
-            FetchDescriptor<Tag>(predicate: #Predicate { $0.categoryName == name })
-        )) ?? []
+        _tags = Query(filter: #Predicate<Tag> { $0.categoryName == name })
     }
 
     var body: some View {

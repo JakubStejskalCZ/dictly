@@ -14,6 +14,7 @@ struct TagCategoryListScreen: View {
     @State private var categoryToEdit: TagCategory?
     @State private var categoryToDelete: TagCategory?
     @State private var isShowingDeleteConfirmation = false
+    @State private var isShowingLastCategoryAlert = false
 
     var body: some View {
         List {
@@ -80,13 +81,18 @@ struct TagCategoryListScreen: View {
         } message: {
             Text("Tags in this category will be moved to \"Uncategorized\".")
         }
+        .alert("Cannot Delete", isPresented: $isShowingLastCategoryAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("You must have at least one tag category.")
+        }
     }
 
     // MARK: - Helpers
 
     private func requestDelete(_ category: TagCategory) {
         guard categories.count > 1 else {
-            logger.warning("Cannot delete last remaining category")
+            isShowingLastCategoryAlert = true
             return
         }
         categoryToEdit = nil
@@ -95,15 +101,17 @@ struct TagCategoryListScreen: View {
     }
 
     private func deleteCategory(_ category: TagCategory) {
-        // Ensure "Uncategorized" exists
         let uncategorizedName = "Uncategorized"
-        let hasFallback = categories.contains { $0.name == uncategorizedName }
-        if !hasFallback && category.name != uncategorizedName {
+        let isDeletingUncategorized = category.name == uncategorizedName
+
+        // Ensure "Uncategorized" fallback exists (create if needed, even when deleting "Uncategorized" itself)
+        let hasFallback = categories.contains { $0.name == uncategorizedName && $0.uuid != category.uuid }
+        if !hasFallback {
             let fallback = TagCategory(
                 name: uncategorizedName,
                 colorHex: "#78716C",
                 iconName: "tag",
-                sortOrder: categories.count,
+                sortOrder: isDeletingUncategorized ? category.sortOrder : categories.count,
                 isDefault: false
             )
             modelContext.insert(fallback)
@@ -117,11 +125,10 @@ struct TagCategoryListScreen: View {
             for tag in orphanedTags {
                 tag.categoryName = uncategorizedName
             }
+            modelContext.delete(category)
         } catch {
-            logger.error("Failed to reassign tags: \(error)")
+            logger.error("Failed to reassign tags — category not deleted: \(error)")
         }
-
-        modelContext.delete(category)
     }
 
     private func moveCategories(from source: IndexSet, to destination: Int) {

@@ -1,6 +1,6 @@
 # Story 1.5: Tag Category & Tag Management
 
-Status: review
+Status: done
 
 ## Story
 
@@ -94,6 +94,17 @@ Then each category has pre-seeded default tags relevant to D&D:
   - [x] 5.2 Unit tests for category deletion + tag reassignment logic
   - [x] 5.3 Unit tests for reorder persistence
   - [x] 5.4 Verify xcodebuild succeeds for iOS target
+
+### Review Findings
+
+- [x] [Review][Patch] Category rename doesn't update tags' categoryName — data orphaning bug [TagCategoryFormSheet.swift:61] — FIXED
+- [x] [Review][Patch] Deleting "Uncategorized" category orphans its tags [TagCategoryListScreen.swift:97-124] — FIXED
+- [x] [Review][Patch] TagListScreen computed property lacks SwiftData reactivity [TagListScreen.swift:16-20] — FIXED (replaced with @Query)
+- [x] [Review][Patch] sortOrder not set for new categories, defaults to 0 [TagCategoryFormSheet.swift:76-86] — FIXED
+- [x] [Review][Patch] No duplicate category name validation [TagCategoryFormSheet.swift:57] — FIXED
+- [x] [Review][Patch] deleteCategory deletes category even if tag reassignment fetch fails [TagCategoryListScreen.swift:113-124] — FIXED (moved delete inside do block)
+- [x] [Review][Patch] No user feedback when delete-last-category is blocked [TagCategoryListScreen.swift:88] — FIXED (added alert)
+- [x] [Review][Defer] Concurrent seeding race condition in multi-window scenario [DefaultTagSeeder.swift:26-28] — deferred, pre-existing architectural concern, extremely unlikely in single-window iOS app
 
 ## Dev Notes
 
