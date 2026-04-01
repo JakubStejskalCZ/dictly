@@ -123,6 +123,131 @@ final class SessionRecorderTests: XCTestCase {
         // audioFile deallocates here, finalizing the file on disk
     }
 
+    // MARK: - 8.2 Pause state (guard conditions)
+
+    func testPauseRecording_noopWhenNotRecording() {
+        let recorder = SessionRecorder()
+        recorder.pauseRecording()
+        XCTAssertFalse(recorder.isPaused, "pauseRecording() should be a no-op when not recording")
+        XCTAssertFalse(recorder.isRecording)
+    }
+
+    func testPauseRecording_noopWhenAlreadyPaused() {
+        let recorder = SessionRecorder()
+        // Both guards fail: isRecording == false
+        recorder.pauseRecording()
+        recorder.pauseRecording()
+        XCTAssertFalse(recorder.isPaused)
+    }
+
+    // MARK: - 8.3 Resume state (guard conditions)
+
+    func testResumeRecording_noopWhenNotRecording() {
+        let recorder = SessionRecorder()
+        recorder.resumeRecording()
+        XCTAssertFalse(recorder.isPaused, "resumeRecording() should be a no-op when not recording")
+        XCTAssertFalse(recorder.isRecording)
+    }
+
+    // MARK: - 8.4 wasInterruptedBySystem state
+
+    func testWasInterruptedBySystem_initiallyFalse() {
+        let recorder = SessionRecorder()
+        XCTAssertFalse(recorder.wasInterruptedBySystem, "wasInterruptedBySystem should be false initially")
+    }
+
+    func testStopRecording_noopWhenNotRecording() {
+        let recorder = SessionRecorder()
+        // Should not crash or change state unexpectedly
+        recorder.stopRecording()
+        XCTAssertFalse(recorder.isRecording)
+        XCTAssertFalse(recorder.isPaused)
+        XCTAssertFalse(recorder.wasInterruptedBySystem)
+    }
+
+    // MARK: - 8.5 PauseInterval Codable round-trip
+
+    func testPauseInterval_codableRoundTrip() throws {
+        let interval = PauseInterval(start: 12.5, end: 45.0)
+        let data = try JSONEncoder().encode(interval)
+        let decoded = try JSONDecoder().decode(PauseInterval.self, from: data)
+        XCTAssertEqual(decoded.start, 12.5, accuracy: 0.001)
+        XCTAssertEqual(decoded.end, 45.0, accuracy: 0.001)
+        XCTAssertEqual(decoded, interval)
+    }
+
+    func testPauseIntervalArray_codableRoundTrip() throws {
+        let intervals = [PauseInterval(start: 0, end: 5.5), PauseInterval(start: 10.0, end: 20.75)]
+        let data = try JSONEncoder().encode(intervals)
+        let decoded = try JSONDecoder().decode([PauseInterval].self, from: data)
+        XCTAssertEqual(decoded, intervals)
+    }
+
+    func testPauseInterval_equatable() {
+        let a = PauseInterval(start: 1.0, end: 2.0)
+        let b = PauseInterval(start: 1.0, end: 2.0)
+        let c = PauseInterval(start: 1.0, end: 3.0)
+        XCTAssertEqual(a, b)
+        XCTAssertNotEqual(a, c)
+    }
+
+    // MARK: - 8.6 pauseIntervalsJSON on Session
+
+    func testSession_pauseIntervals_emptyWhenNilJSON() throws {
+        let schema = Schema(DictlySchema.all)
+        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+        let container = try ModelContainer(for: schema, configurations: config)
+        let context = ModelContext(container)
+
+        let session = Session(title: "Test", sessionNumber: 1)
+        context.insert(session)
+
+        XCTAssertNil(session.pauseIntervalsJSON, "pauseIntervalsJSON should be nil by default")
+        XCTAssertEqual(session.pauseIntervals, [], "pauseIntervals should be empty when JSON is nil")
+    }
+
+    func testSession_pauseIntervals_encodesAndDecodes() throws {
+        let schema = Schema(DictlySchema.all)
+        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+        let container = try ModelContainer(for: schema, configurations: config)
+        let context = ModelContext(container)
+
+        let session = Session(title: "Test", sessionNumber: 1)
+        context.insert(session)
+
+        let intervals = [PauseInterval(start: 5.0, end: 10.0), PauseInterval(start: 30.0, end: 45.0)]
+        session.pauseIntervals = intervals
+        try context.save()
+
+        let descriptor = FetchDescriptor<Session>()
+        let sessions = try context.fetch(descriptor)
+        XCTAssertEqual(sessions.count, 1)
+
+        let decoded = sessions[0].pauseIntervals
+        XCTAssertEqual(decoded.count, 2)
+        XCTAssertEqual(decoded[0].start, 5.0, accuracy: 0.001)
+        XCTAssertEqual(decoded[0].end, 10.0, accuracy: 0.001)
+        XCTAssertEqual(decoded[1].start, 30.0, accuracy: 0.001)
+        XCTAssertEqual(decoded[1].end, 45.0, accuracy: 0.001)
+    }
+
+    func testSession_pauseIntervals_clearsWhenSetToEmpty() throws {
+        let schema = Schema(DictlySchema.all)
+        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+        let container = try ModelContainer(for: schema, configurations: config)
+        let context = ModelContext(container)
+
+        let session = Session(title: "Test", sessionNumber: 1)
+        context.insert(session)
+        session.pauseIntervals = [PauseInterval(start: 1.0, end: 2.0)]
+        XCTAssertNotNil(session.pauseIntervalsJSON)
+
+        session.pauseIntervals = []
+        // Empty array encodes to "[]", not nil
+        XCTAssertNotNil(session.pauseIntervalsJSON)
+        XCTAssertEqual(session.pauseIntervals, [])
+    }
+
     // MARK: - 7.6 DictlyError RecordingError cases
 
     func testRecordingErrorDescriptions() {

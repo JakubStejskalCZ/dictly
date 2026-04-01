@@ -13,6 +13,9 @@ public final class Session {
     public var locationLongitude: Double?
     public var summaryNote: String?
     public var audioFilePath: String?
+    /// JSON-encoded array of `PauseInterval` values. Nil when no pauses occurred.
+    /// Use the `pauseIntervals` computed property for type-safe access.
+    public var pauseIntervalsJSON: String?
     @Relationship(deleteRule: .cascade) public var tags: [Tag]
     @Relationship(inverse: \Campaign.sessions) public var campaign: Campaign?
 

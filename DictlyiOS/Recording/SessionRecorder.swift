@@ -18,6 +18,9 @@ final class SessionRecorder {
     private(set) var isPaused = false
     private(set) var elapsedTime: TimeInterval = 0
     private(set) var currentAudioLevel: Float = 0
+    /// True only when the session was interrupted by the system (phone call, alarm, etc.).
+    /// Drives the UI to show a prominent "Resume Recording" banner (Story 2.3).
+    private(set) var wasInterruptedBySystem = false
 
     // MARK: - Private
 
@@ -29,6 +32,15 @@ final class SessionRecorder {
     private var recordingStartDate: Date?
     private nonisolated(unsafe) var isStopping = false
     private var consecutiveWriteFailures = 0
+
+    // Pause tracking
+    private var totalPauseDuration: TimeInterval = 0
+    private var pauseStartDate: Date?
+    private var pauseIntervalStart: TimeInterval = 0
+
+    // Notification observers
+    private var interruptionObserver: (any NSObjectProtocol)?
+    private var configChangeObserver: (any NSObjectProtocol)?
 
     // MARK: - Start Recording
 
@@ -100,32 +112,11 @@ final class SessionRecorder {
 
         isStopping = false
         consecutiveWriteFailures = 0
+        totalPauseDuration = 0
+        pauseStartDate = nil
+        pauseIntervalStart = 0
 
-        inputNode.installTap(onBus: 0, bufferSize: bufferSize, format: inputFormat) { [weak self] buffer, _ in
-            guard let self, !self.isStopping else { return }
-
-            // Write PCM buffer to file (AVAudioFile encodes to AAC on write)
-            do {
-                try file.write(from: buffer)
-                self.consecutiveWriteFailures = 0
-            } catch {
-                logger.error("Failed to write audio buffer: \(error, privacy: .public)")
-                self.consecutiveWriteFailures += 1
-                if self.consecutiveWriteFailures >= 10 {
-                    logger.error("Too many consecutive write failures — stopping recording (possible disk full)")
-                    Task { @MainActor [weak self] in
-                        self?.stopRecording()
-                    }
-                    return
-                }
-            }
-
-            // Calculate RMS audio level for LiveWaveform (Story 2.3)
-            let level = Self.calculateRMS(buffer: buffer)
-            Task { @MainActor [weak self] in
-                self?.currentAudioLevel = level
-            }
-        }
+        installInputTap(on: inputNode, bufferSize: bufferSize, file: file)
 
         do {
             try engine.start()
@@ -143,6 +134,7 @@ final class SessionRecorder {
         activeContext = context
         isRecording = true
         isPaused = false
+        wasInterruptedBySystem = false
         elapsedTime = 0
         recordingStartDate = Date()
 
@@ -156,15 +148,98 @@ final class SessionRecorder {
 
         logger.info("Recording started for session \(session.uuid.uuidString, privacy: .private)")
 
+        // Register for AVAudioSession interruption notifications (phone calls, alarms, Siri)
+        interruptionObserver = NotificationCenter.default.addObserver(
+            forName: AVAudioSession.interruptionNotification,
+            object: AVAudioSession.sharedInstance(),
+            queue: nil
+        ) { [weak self] notification in
+            // Extract Sendable values before crossing to MainActor
+            guard let typeValue = notification.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt,
+                  let interruptionType = AVAudioSession.InterruptionType(rawValue: typeValue) else { return }
+            Task { @MainActor [weak self] in
+                self?.handleInterruption(type: interruptionType)
+            }
+        }
+
+        // Register for engine configuration change (e.g. Bluetooth mic disconnect)
+        configChangeObserver = NotificationCenter.default.addObserver(
+            forName: .AVAudioEngineConfigurationChange,
+            object: engine,
+            queue: nil
+        ) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                self?.handleConfigChange()
+            }
+        }
+
         // Start elapsed time ticker (anchored to wall clock for drift-free 4+ hour recordings)
         let startDate = Date()
         timerTask = Task { @MainActor [weak self] in
             while !(self?.timerTask?.isCancelled ?? true) {
                 try? await Task.sleep(nanoseconds: 100_000_000) // 0.1s
                 guard let self, self.isRecording, !self.isPaused else { continue }
-                self.elapsedTime = Date().timeIntervalSince(startDate)
+                self.elapsedTime = Date().timeIntervalSince(startDate) - self.totalPauseDuration
             }
         }
+    }
+
+    // MARK: - Pause Recording
+
+    /// Stops audio capture without deactivating the AVAudioSession, keeping background mode alive.
+    /// Does NOT close the output file — recording continues into the same file on resume.
+    func pauseRecording() {
+        guard isRecording, !isPaused else { return }
+        audioEngine?.inputNode.removeTap(onBus: 0)
+        audioEngine?.pause()
+        isPaused = true
+        pauseStartDate = Date()
+        pauseIntervalStart = elapsedTime
+        currentAudioLevel = 0
+        wasInterruptedBySystem = false
+        logger.info("Recording paused at \(self.elapsedTime, privacy: .public)s")
+    }
+
+    // MARK: - Resume Recording
+
+    /// Reinstalls the input tap, restarts the engine, and accumulates the pause duration.
+    func resumeRecording() {
+        guard isRecording, isPaused, let engine = audioEngine, let file = outputFile else { return }
+
+        // Accumulate wall-clock pause duration for elapsed-time correction
+        if let pauseStart = pauseStartDate {
+            totalPauseDuration += Date().timeIntervalSince(pauseStart)
+        }
+
+        // Record pause interval for Mac timeline gap rendering (Story 4.2)
+        if let session = activeSession, let context = activeContext {
+            var intervals = session.pauseIntervals
+            intervals.append(PauseInterval(start: pauseIntervalStart, end: elapsedTime))
+            session.pauseIntervals = intervals
+            do {
+                try context.save()
+            } catch {
+                logger.error("Failed to save pause interval: \(error, privacy: .public)")
+            }
+        }
+
+        // Reinstall tap using the current input format (may have changed during pause)
+        let inputNode = engine.inputNode
+        let bufferSize: AVAudioFrameCount = 4096
+        installInputTap(on: inputNode, bufferSize: bufferSize, file: file)
+
+        do {
+            try engine.start()
+        } catch {
+            logger.error("Failed to resume recording: \(error, privacy: .public)")
+            return
+        }
+
+        consecutiveWriteFailures = 0
+        isPaused = false
+        pauseStartDate = nil
+        wasInterruptedBySystem = false
+        logger.info("Recording resumed at \(self.elapsedTime, privacy: .public)s")
     }
 
     // MARK: - Stop Recording
@@ -173,6 +248,30 @@ final class SessionRecorder {
     /// and persists the final duration.
     func stopRecording() {
         guard isRecording else { return }
+
+        // Finalize open pause interval if we are currently paused
+        if isPaused {
+            if let session = activeSession, let context = activeContext {
+                var intervals = session.pauseIntervals
+                intervals.append(PauseInterval(start: pauseIntervalStart, end: elapsedTime))
+                session.pauseIntervals = intervals
+                do {
+                    try context.save()
+                } catch {
+                    logger.error("Failed to save final pause interval: \(error, privacy: .public)")
+                }
+            }
+        }
+
+        // Remove notification observers
+        if let observer = interruptionObserver {
+            NotificationCenter.default.removeObserver(observer)
+            interruptionObserver = nil
+        }
+        if let observer = configChangeObserver {
+            NotificationCenter.default.removeObserver(observer)
+            configChangeObserver = nil
+        }
 
         isStopping = true
         timerTask?.cancel()
@@ -210,7 +309,10 @@ final class SessionRecorder {
         activeContext = nil
         isRecording = false
         isPaused = false
+        wasInterruptedBySystem = false
         currentAudioLevel = 0
+        totalPauseDuration = 0
+        pauseStartDate = nil
     }
 
     // MARK: - Crash Recovery
@@ -281,7 +383,78 @@ final class SessionRecorder {
         return sqrt(sum / Float(frameLength))
     }
 
+    // MARK: - Interruption Handling
+
+    private func handleInterruption(type: AVAudioSession.InterruptionType) {
+        switch type {
+        case .began:
+            guard isRecording, !isPaused else { return }
+            pauseRecording()
+            wasInterruptedBySystem = true  // Override the false set by pauseRecording()
+            logger.info("Recording interrupted by system (phone call/alarm)")
+        case .ended:
+            // Per UX spec, phone call resume always requires user action — do NOT auto-resume.
+            logger.info("System interruption ended. Awaiting user resume.")
+        @unknown default:
+            break
+        }
+    }
+
+    // MARK: - Configuration Change Handling
+
+    private func handleConfigChange() {
+        guard isRecording, !isPaused, let engine = audioEngine, let file = outputFile else { return }
+
+        let audioSession = AVAudioSession.sharedInstance()
+        if let portName = audioSession.currentRoute.inputs.first?.portName {
+            logger.info("Audio route changed: \(portName, privacy: .public)")
+        }
+
+        // Re-install tap with potentially updated input format and restart
+        let inputNode = engine.inputNode
+        inputNode.removeTap(onBus: 0)
+        let bufferSize: AVAudioFrameCount = 4096
+        installInputTap(on: inputNode, bufferSize: bufferSize, file: file)
+
+        do {
+            try engine.start()
+        } catch {
+            logger.error("Failed to restart engine after config change: \(error, privacy: .public)")
+        }
+    }
+
     // MARK: - Helpers
+
+    /// Installs the audio input tap on `inputNode`, writing captured buffers to `file`.
+    /// Shared by `startRecording()`, `resumeRecording()`, and `handleConfigChange()`.
+    private func installInputTap(on inputNode: AVAudioInputNode, bufferSize: AVAudioFrameCount, file: AVAudioFile) {
+        let inputFormat = inputNode.outputFormat(forBus: 0)
+        inputNode.installTap(onBus: 0, bufferSize: bufferSize, format: inputFormat) { [weak self] buffer, _ in
+            guard let self, !self.isStopping else { return }
+
+            // Write PCM buffer to file (AVAudioFile encodes to AAC on write)
+            do {
+                try file.write(from: buffer)
+                self.consecutiveWriteFailures = 0
+            } catch {
+                logger.error("Failed to write audio buffer: \(error, privacy: .public)")
+                self.consecutiveWriteFailures += 1
+                if self.consecutiveWriteFailures >= 10 {
+                    logger.error("Too many consecutive write failures — stopping recording (possible disk full)")
+                    Task { @MainActor [weak self] in
+                        self?.stopRecording()
+                    }
+                    return
+                }
+            }
+
+            // Calculate RMS audio level for LiveWaveform (Story 2.3)
+            let level = Self.calculateRMS(buffer: buffer)
+            Task { @MainActor [weak self] in
+                self?.currentAudioLevel = level
+            }
+        }
+    }
 
     private func deactivateAudioSession() {
         do {
