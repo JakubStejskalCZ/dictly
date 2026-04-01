@@ -28,6 +28,7 @@ targets:
       - path: Campaigns
       - path: Tagging
       - path: Settings
+      - path: Recording
     resources:
       - path: Resources
     entitlements:
@@ -42,5 +43,21 @@ targets:
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         CODE_SIGN_ENTITLEMENTS: Resources/DictlyiOS.entitlements
     dependencies:
+      - package: DictlyKit
+        product: DictlyKit
+
+  DictlyiOSTests:
+    type: bundle.unit-test
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: Tests
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.dictly.ios.tests
+        SWIFT_VERSION: "6.0"
+        GENERATE_INFOPLIST_FILE: YES
+    dependencies:
+      - target: DictlyiOS
       - package: DictlyKit
         product: DictlyKit

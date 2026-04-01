@@ -21,12 +21,20 @@ public enum DictlyError: Error, LocalizedError {
         case permissionDenied
         case deviceUnavailable
         case interrupted
+        case audioSessionSetupFailed(String)
+        case engineStartFailed(String)
+        case fileCreationFailed(String)
+        case diskFull
 
         public var errorDescription: String? {
             switch self {
             case .permissionDenied: return "Microphone permission denied."
             case .deviceUnavailable: return "Audio device unavailable."
             case .interrupted: return "Recording interrupted."
+            case .audioSessionSetupFailed(let detail): return "Audio session setup failed: \(detail)"
+            case .engineStartFailed(let detail): return "Failed to start recording engine: \(detail)"
+            case .fileCreationFailed(let detail): return "Failed to create recording file: \(detail)"
+            case .diskFull: return "Not enough disk space to continue recording."
             }
         }
     }

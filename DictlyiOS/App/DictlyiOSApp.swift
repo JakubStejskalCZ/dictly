@@ -17,11 +17,13 @@ struct DictlyiOSApp: App {
     }()
 
     @State private var syncService = CategorySyncService()
+    @State private var sessionRecorder = SessionRecorder()
 
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .environment(syncService)
+                .environment(sessionRecorder)
                 .task {
                     do {
                         try DefaultTagSeeder.seedIfNeeded(context: container.mainContext)
@@ -29,6 +31,7 @@ struct DictlyiOSApp: App {
                         logger.error("Failed to seed default tags: \(error)")
                     }
                     syncService.startObserving(context: container.mainContext)
+                    SessionRecorder.recoverOrphanedRecordings(context: container.mainContext)
                 }
         }
         .modelContainer(container)
