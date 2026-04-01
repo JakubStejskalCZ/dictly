@@ -58,9 +58,9 @@ public enum DictlyTypography {
     public static let caption: Font = .system(size: 12, weight: .regular)
     #endif
 
-    /// Tag label — iOS: 15pt Medium / Mac: 13pt Medium
+    /// Tag label — iOS: 14pt Medium / Mac: 13pt Medium
     #if os(iOS)
-    public static let tagLabel: Font = .system(size: 15, weight: .medium)
+    public static let tagLabel: Font = .system(size: 14, weight: .medium)
     #else
     public static let tagLabel: Font = .system(size: 13, weight: .medium)
     #endif

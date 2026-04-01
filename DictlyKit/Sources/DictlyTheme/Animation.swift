@@ -19,7 +19,7 @@ public enum DictlyAnimation {
     public static let tagPlacementSpring: Animation = .spring(response: 0.15, dampingFraction: 0.6)
 
     /// Starting scale for the tag placement entrance animation.
-    public static let tagPlacementStartScale: CGFloat = 0.95
+    public static let tagPlacementStartScale: CGFloat = 0.96
 
     // MARK: Recording Indicator
 

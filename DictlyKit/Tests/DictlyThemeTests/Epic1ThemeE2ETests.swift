@@ -177,7 +177,7 @@ final class Epic1ThemeE2ETests: XCTestCase {
     }
 
     func testTagPlacementStartScale() {
-        XCTAssertEqual(DictlyAnimation.tagPlacementStartScale, 0.95, "Tag placement should start at 0.95 scale")
+        XCTAssertEqual(DictlyAnimation.tagPlacementStartScale, 0.96, "Tag placement should start at 0.96 scale")
     }
 
     // MARK: - Accent/State Color Values

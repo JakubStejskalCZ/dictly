@@ -50,3 +50,15 @@
 
 - `isStopping` is declared `nonisolated(unsafe)` and written from `@MainActor` while read from the AVAudioEngine tap callback thread. No memory barrier guarantees visibility ordering. In practice ARM's strong ordering makes this safe, but it is a formal data race by Swift concurrency rules. Consider using `Atomic<Bool>` when adopting Swift 6 atomics.
 - `totalPauseDuration` can go negative if the system clock moves backward (DST change, NTP correction) between `pauseStartDate = Date()` and `Date().timeIntervalSince(pauseStart)` on resume, causing the elapsed time to overshoot. Extremely unlikely for a recording session, but could be guarded with `max(0, ...)` on the increment.
+
+## Deferred from: code review of story 2-4 (2026-04-02)
+
+- CategoryTabBar fade mask always clips first/last tab edges via leading/trailing LinearGradient, even when content does not overflow the scroll view. Should conditionally apply mask only when scrollable.
+- DictlyTypography.caption is 13pt (iOS) but story 2.4 spec calls for 11pt caption on TagCard. Shared design token — changing it would affect all caption usages across the app.
+- TaggingServiceTests anchorTime assertion is tautological — recorder is never started, so elapsedTime is always 0. Test verifies 0 == 0.
+- No test coverage for placeTag save-failure path (context.save() throwing).
+- selectedCategory in TagPalette can become stale if categories are removed while the palette is visible. Only the empty→non-empty transition is handled.
+- Tag↔category matching uses String comparison (categoryName == category.name). Renames can orphan tags from their category tab.
+- context.save() is called synchronously per tap with no batching/debounce. Could cause frame drops on older devices during rapid tapping.
+- No UI affordance to deselect category filter and view all tags across categories.
+- Color(hexString:) produces black for empty or malformed hex strings. Pre-existing extension — no fallback.

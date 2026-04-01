@@ -29,7 +29,9 @@ final class TaggingService {
     /// Creates a new `Tag` anchored to the current recording time, appends it to
     /// `session.tags`, fires haptic feedback, and persists to SwiftData.
     /// Must complete within 200ms — no blocking work on the main thread.
-    func placeTag(label: String, categoryName: String, session: Session, context: ModelContext) {
+    /// Returns `true` if the tag was persisted successfully.
+    @discardableResult
+    func placeTag(label: String, categoryName: String, session: Session, context: ModelContext) -> Bool {
         // Fire haptic immediately — primary confirmation channel
         hapticGenerator.impactOccurred()
 
@@ -47,11 +49,14 @@ final class TaggingService {
 
         do {
             try context.save()
+            logger.info("Tag placed: \(label, privacy: .public) in \(categoryName, privacy: .public) at \(anchorTime, privacy: .public)")
+            return true
         } catch {
             logger.error("Failed to place tag: \(error, privacy: .public)")
+            session.tags.removeAll { $0.uuid == newTag.uuid }
+            context.delete(newTag)
+            return false
         }
-
-        logger.info("Tag placed: \(label, privacy: .public) in \(categoryName, privacy: .public) at \(anchorTime, privacy: .public)")
     }
 
     /// Re-warms the Taptic Engine. Call when the recording palette becomes visible.

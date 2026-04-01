@@ -1,6 +1,6 @@
 # Story 2.4: Tag Palette with Category Tabs & One-Tap Tagging
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -102,6 +102,25 @@ Then it reads "[Tag name], [Category]. Double-tap to place tag."
   - [x] 7.5 `TaggingService` tested directly by instantiating `SessionRecorder()` (no-arg init available).
   - [x] 7.6 All existing tests pass: 139 DictlyKit + 30 DictlyiOS (now 41 with 11 new tagging tests).
   - [x] 7.7 `xcodebuild` succeeded for iOS target (`** TEST SUCCEEDED **`).
+
+### Review Findings
+
+- [x] [Review][Patch] Misleading log message in TagPalette onTap — "Category tab selected" when placing a tag [TagPalette.swift:82] — FIXED
+- [x] [Review][Patch] tagPlacementStartScale 0.95 vs spec 0.96 [Animation.swift:22] — FIXED
+- [x] [Review][Patch] tagLabel font 15pt vs spec 14pt [Typography.swift:62] — FIXED
+- [x] [Review][Patch] Tab bar not dimmed/disabled when paused — opacity only on ScrollView, not entire palette [TagPalette.swift:89] — FIXED
+- [x] [Review][Patch] No category switch animation (AC3 requires smooth transition) [CategoryTabBar.swift:20] — FIXED
+- [x] [Review][Patch] placeTag swallows save errors — orphans tag in memory, no feedback to caller [TaggingService.swift:48-52] — FIXED (returns Bool, rolls back on failure)
+- [x] [Review][Patch] Accessibility announcement fires even on save failure [TagPalette.swift:77-81] — FIXED (conditional on success)
+- [x] [Review][Defer] CategoryTabBar fade mask always clips first/last tab edges regardless of overflow — deferred, design complexity
+- [x] [Review][Defer] Caption font 13pt vs spec 11pt — deferred, shared design token affects other screens
+- [x] [Review][Defer] Test anchorTime assertion is tautological (recorder always at 0) — deferred, test quality
+- [x] [Review][Defer] No test for save-failure path in TaggingService — deferred, nice-to-have
+- [x] [Review][Defer] selectedCategory can go stale if categories removed — deferred, categories stable during recording
+- [x] [Review][Defer] String-based category matching fragile across renames — deferred, by-design per Tag model
+- [x] [Review][Defer] context.save() called per tap with no batching — deferred, meets 200ms requirement
+- [x] [Review][Defer] No "all categories" deselection path — deferred, spec doesn't require it
+- [x] [Review][Defer] Color(hexString:) no fallback for malformed hex — deferred, pre-existing extension
 
 ## Dev Notes
 

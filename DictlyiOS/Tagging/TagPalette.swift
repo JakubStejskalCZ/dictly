@@ -68,26 +68,27 @@ struct TagPalette: View {
                             categoryName: tag.categoryName,
                             onTap: {
                                 guard isInteractive else { return }
-                                taggingService.placeTag(
+                                let success = taggingService.placeTag(
                                     label: tag.label,
                                     categoryName: tag.categoryName,
                                     session: session,
                                     context: modelContext
                                 )
-                                let count = session.tags.count
-                                UIAccessibility.post(
-                                    notification: .announcement,
-                                    argument: "Tag placed. \(count) tags total."
-                                )
-                                logger.info("Category tab selected: \(tag.categoryName, privacy: .public)")
+                                if success {
+                                    let count = session.tags.count
+                                    UIAccessibility.post(
+                                        notification: .announcement,
+                                        argument: "Tag placed. \(count) tags total."
+                                    )
+                                }
                             }
                         )
                     }
                 }
                 .padding(.bottom, DictlySpacing.sm)
             }
-            .opacity(isInteractive ? 1.0 : 0.5)
         }
+        .opacity(isInteractive ? 1.0 : 0.5)
         .onAppear {
             if selectedCategory == nil {
                 selectedCategory = categories.first

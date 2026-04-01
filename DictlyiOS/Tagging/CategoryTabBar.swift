@@ -17,7 +17,7 @@ struct CategoryTabBar: View {
                         category: category,
                         tagCount: tagCountPerCategory[category.name] ?? 0,
                         isSelected: selectedCategory?.uuid == category.uuid,
-                        onTap: { selectedCategory = category }
+                        onTap: { withAnimation(.easeInOut(duration: 0.2)) { selectedCategory = category } }
                     )
                 }
             }
