@@ -18,6 +18,7 @@
 		50223616BDCB96EA9222C2E4 /* TagListScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 218663D6D95E12A07825370C /* TagListScreen.swift */; };
 		574B6B47210DD155FC8B8E76 /* SessionRecorderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39B4A3371AF618D04CB8A30C /* SessionRecorderTests.swift */; };
 		57884EC1179A9C26DDB5C2F9 /* TagCategoryListScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 198D76E81C60D43ECDE83E5F /* TagCategoryListScreen.swift */; };
+		5D6E828DB013B7CA72918795 /* CustomTagSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E04998E46B51178FE74A8F6 /* CustomTagSheet.swift */; };
 		87A2B544278BCD7C5AB9AA94 /* CampaignListScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A34CAC83B9783FE002294049 /* CampaignListScreen.swift */; };
 		8854FF6C9D361829ACF29674 /* RecordingScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9666E2F7C32949BAE2ABF2D9 /* RecordingScreen.swift */; };
 		99FF4C6FC40557A21A43F80D /* RecordingStatusBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1981874591B00DCDD63972A /* RecordingStatusBar.swift */; };
@@ -51,6 +52,7 @@
 		1140D16A3FA3BF0E382A17B9 /* CampaignFormSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampaignFormSheet.swift; sourceTree = "<group>"; };
 		1293F57D2A3E00C3C41104D3 /* SessionFormSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionFormSheet.swift; sourceTree = "<group>"; };
 		198D76E81C60D43ECDE83E5F /* TagCategoryListScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagCategoryListScreen.swift; sourceTree = "<group>"; };
+		1E04998E46B51178FE74A8F6 /* CustomTagSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTagSheet.swift; sourceTree = "<group>"; };
 		212048F3B21C673F727CF238 /* .gitkeep */ = {isa = PBXFileReference; path = .gitkeep; sourceTree = "<group>"; };
 		218663D6D95E12A07825370C /* TagListScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagListScreen.swift; sourceTree = "<group>"; };
 		25083852435AB1C24830FBC3 /* TagFormSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagFormSheet.swift; sourceTree = "<group>"; };
@@ -129,6 +131,7 @@
 			children = (
 				9097885CC399C9C51A2DEF9A /* .gitkeep */,
 				EFFFAB70ED7084D16061D25B /* CategoryTabBar.swift */,
+				1E04998E46B51178FE74A8F6 /* CustomTagSheet.swift */,
 				B438FB1963EC9745237CDEFE /* TagCard.swift */,
 				B218093E2C301C2CF79D2D48 /* TagCategoryFormSheet.swift */,
 				198D76E81C60D43ECDE83E5F /* TagCategoryListScreen.swift */,
@@ -313,6 +316,7 @@
 				87A2B544278BCD7C5AB9AA94 /* CampaignListScreen.swift in Sources */,
 				D020AE6E92D4C6E749A68258 /* CategoryTabBar.swift in Sources */,
 				CE5CCE34159373FF410CE2B2 /* ContentView.swift in Sources */,
+				5D6E828DB013B7CA72918795 /* CustomTagSheet.swift in Sources */,
 				001E2D694DC34F6280E2F408 /* DictlyiOSApp.swift in Sources */,
 				00626D62FF83243E41EA8672 /* LiveWaveform.swift in Sources */,
 				8854FF6C9D361829ACF29674 /* RecordingScreen.swift in Sources */,

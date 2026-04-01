@@ -19,6 +19,8 @@ struct TagPalette: View {
     @Query(sort: \TagCategory.sortOrder) private var categories: [TagCategory]
 
     @State private var selectedCategory: TagCategory?
+    @State private var isShowingCustomTagSheet = false
+    @State private var customTagSaved = false
 
     @AppStorage("rewindDuration") private var rewindDuration: Double = 10.0
 
@@ -78,6 +80,52 @@ struct TagPalette: View {
                                     context: modelContext
                                 )
                                 if success {
+                                    let count = session.tags.count
+                                    UIAccessibility.post(
+                                        notification: .announcement,
+                                        argument: "Tag placed. \(count) tags total."
+                                    )
+                                }
+                            }
+                        )
+                    }
+                    // Custom tag "+" card — always last in grid
+                    Button {
+                        guard isInteractive else { return }
+                        taggingService.captureAnchor(rewindDuration: rewindDuration)
+                        isShowingCustomTagSheet = true
+                    } label: {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 12)
+                                .strokeBorder(
+                                    style: StrokeStyle(lineWidth: 1.5, dash: [6])
+                                )
+                                .foregroundStyle(DictlyColors.textSecondary)
+                            Image(systemName: "plus")
+                                .foregroundStyle(DictlyColors.textSecondary)
+                        }
+                        .frame(minHeight: DictlySpacing.minTapTarget)
+                    }
+                    .disabled(!isInteractive)
+                    .accessibilityLabel("Create custom tag. Double-tap to open tag creator.")
+                    .sheet(isPresented: $isShowingCustomTagSheet, onDismiss: {
+                        if !customTagSaved {
+                            taggingService.discardCapturedAnchor()
+                        }
+                        customTagSaved = false
+                    }) {
+                        CustomTagSheet(
+                            selectedCategoryName: selectedCategory?.name ?? "Uncategorized",
+                            categories: Array(categories),
+                            onSave: { label, categoryName in
+                                let success = taggingService.placeTagWithCapturedAnchor(
+                                    label: label,
+                                    categoryName: categoryName,
+                                    session: session,
+                                    context: modelContext
+                                )
+                                if success {
+                                    customTagSaved = true
                                     let count = session.tags.count
                                     UIAccessibility.post(
                                         notification: .announcement,

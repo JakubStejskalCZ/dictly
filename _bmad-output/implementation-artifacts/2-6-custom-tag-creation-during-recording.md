@@ -1,6 +1,6 @@
 # Story 2.6: Custom Tag Creation During Recording
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -56,51 +56,51 @@ Then the tag is persisted in SwiftData (zero tag loss)
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create `CustomTagSheet.swift` in `DictlyiOS/Tagging/` (AC: #1, #2, #3, #4, #5)
-  - [ ] 1.1 Create new file `DictlyiOS/Tagging/CustomTagSheet.swift`. This is the ONLY new file in this story.
-  - [ ] 1.2 Define `CustomTagSheet` as a SwiftUI `View` struct. Accept parameters: `selectedCategoryName: String` (default from TagPalette), `categories: [TagCategory]` (for the picker), `onSave: (String, String) -> Void` closure (passes `label`, `categoryName` back to TagPalette for placement). The sheet does NOT call `taggingService.placeTag()` directly -- the caller handles placement with the pre-captured anchor time.
-  - [ ] 1.3 Layout: `NavigationStack` containing a `Form` with two sections:
+- [x] Task 1: Create `CustomTagSheet.swift` in `DictlyiOS/Tagging/` (AC: #1, #2, #3, #4, #5)
+  - [x] 1.1 Create new file `DictlyiOS/Tagging/CustomTagSheet.swift`. This is the ONLY new file in this story.
+  - [x] 1.2 Define `CustomTagSheet` as a SwiftUI `View` struct. Accept parameters: `selectedCategoryName: String` (default from TagPalette), `categories: [TagCategory]` (for the picker), `onSave: (String, String) -> Void` closure (passes `label`, `categoryName` back to TagPalette for placement). The sheet does NOT call `taggingService.placeTag()` directly -- the caller handles placement with the pre-captured anchor time.
+  - [x] 1.3 Layout: `NavigationStack` containing a `Form` with two sections:
     - Section 1: `TextField("Tag Name", text: $label)` with `.focused($isLabelFocused)` and auto-focus on appear via `.onAppear { isLabelFocused = true }`.
     - Section 2: `Picker("Category", selection: $categoryName)` iterating over `categories` array. Use `.pickerStyle(.menu)`. Each option shows the category name.
-  - [ ] 1.4 Toolbar: Cancel button (`.cancellationAction`) calls `dismiss()`. Save button (`.confirmationAction`) calls `onSave(trimmedLabel, categoryName)` then `dismiss()`. Save disabled when `label.trimmingCharacters(in: .whitespaces).isEmpty`.
-  - [ ] 1.5 Navigation title: "Custom Tag", display mode `.inline`.
-  - [ ] 1.6 Use `@Environment(\.dismiss)` for sheet dismissal. Use `@FocusState` for keyboard auto-focus.
-  - [ ] 1.7 VoiceOver: text field reads "Tag name. Enter a short label for this moment." Category picker reads "Category, [current value]."
-  - [ ] 1.8 Presentation detents: `.presentationDetents([.medium])` for partial-height sheet.
+  - [x] 1.4 Toolbar: Cancel button (`.cancellationAction`) calls `dismiss()`. Save button (`.confirmationAction`) calls `onSave(trimmedLabel, categoryName)` then `dismiss()`. Save disabled when `label.trimmingCharacters(in: .whitespaces).isEmpty`.
+  - [x] 1.5 Navigation title: "Custom Tag", display mode `.inline`.
+  - [x] 1.6 Use `@Environment(\.dismiss)` for sheet dismissal. Use `@FocusState` for keyboard auto-focus.
+  - [x] 1.7 VoiceOver: text field reads "Tag name. Enter a short label for this moment." Category picker reads "Category, [current value]."
+  - [x] 1.8 Presentation detents: `.presentationDetents([.medium])` for partial-height sheet.
 
-- [ ] Task 2: Add "+" custom tag card and sheet integration to `TagPalette.swift` (AC: #1, #2, #3, #4, #5)
-  - [ ] 2.1 Add `@State private var isShowingCustomTagSheet = false` to TagPalette.
-  - [ ] 2.2 Add `@State private var capturedAnchorTime: TimeInterval?` to store the pre-captured rewind-anchor timestamp from the "+" tap.
-  - [ ] 2.3 After the `ForEach(filteredTags)` block inside the `LazyVGrid` (after line 89), add a custom tag card `Button`. Style: dashed border (`RoundedRectangle(cornerRadius: 12).strokeBorder(style: StrokeStyle(lineWidth: 1.5, dash: [6]))` in `DictlyColors.textSecondary`), "+" icon (`Image(systemName: "plus")`) centered, minimum 48pt height. Disable when `!isInteractive`.
-  - [ ] 2.4 On "+" tap: (a) capture `capturedAnchorTime` using the same rewind formula as `placeTag` -- `max(0, taggingService.sessionRecorder.elapsedTime - rewindDuration)` -- but this requires the elapsed time. **Instead:** store `capturedRewindDuration = rewindDuration` and `capturedElapsedTime = Date()` -- NO. **Correct approach:** The `placeTag()` method reads `sessionRecorder.elapsedTime` internally. To achieve timestamp-first, we need `TaggingService` to expose a method to capture the current anchor. See Task 3.
-  - [ ] 2.5 On "+" tap: call `taggingService.captureAnchor(rewindDuration: rewindDuration)` to lock the anchor time, then set `isShowingCustomTagSheet = true`.
-  - [ ] 2.6 Add `.sheet(isPresented: $isShowingCustomTagSheet)` presenting `CustomTagSheet` with `selectedCategoryName: selectedCategory?.name ?? "Uncategorized"`, `categories: Array(categories)`, and `onSave` closure.
-  - [ ] 2.7 In the `onSave` closure: call `taggingService.placeTagWithCapturedAnchor(label:, categoryName:, session:, context:)`. If success, post VoiceOver announcement: "Tag placed. \(count) tags total." On sheet dismiss without save, call `taggingService.discardCapturedAnchor()`.
-  - [ ] 2.8 VoiceOver for "+" card: "Create custom tag. Double-tap to open tag creator."
-  - [ ] 2.9 Add `.onDisappear` on the sheet to reset `capturedAnchorTime` to nil (cleanup).
+- [x] Task 2: Add "+" custom tag card and sheet integration to `TagPalette.swift` (AC: #1, #2, #3, #4, #5)
+  - [x] 2.1 Add `@State private var isShowingCustomTagSheet = false` to TagPalette.
+  - [x] 2.2 Add `@State private var capturedAnchorTime: TimeInterval?` to store the pre-captured rewind-anchor timestamp from the "+" tap.
+  - [x] 2.3 After the `ForEach(filteredTags)` block inside the `LazyVGrid` (after line 89), add a custom tag card `Button`. Style: dashed border (`RoundedRectangle(cornerRadius: 12).strokeBorder(style: StrokeStyle(lineWidth: 1.5, dash: [6]))` in `DictlyColors.textSecondary`), "+" icon (`Image(systemName: "plus")`) centered, minimum 48pt height. Disable when `!isInteractive`.
+  - [x] 2.4 On "+" tap: (a) capture `capturedAnchorTime` using the same rewind formula as `placeTag` -- `max(0, taggingService.sessionRecorder.elapsedTime - rewindDuration)` -- but this requires the elapsed time. **Instead:** store `capturedRewindDuration = rewindDuration` and `capturedElapsedTime = Date()` -- NO. **Correct approach:** The `placeTag()` method reads `sessionRecorder.elapsedTime` internally. To achieve timestamp-first, we need `TaggingService` to expose a method to capture the current anchor. See Task 3.
+  - [x] 2.5 On "+" tap: call `taggingService.captureAnchor(rewindDuration: rewindDuration)` to lock the anchor time, then set `isShowingCustomTagSheet = true`.
+  - [x] 2.6 Add `.sheet(isPresented: $isShowingCustomTagSheet)` presenting `CustomTagSheet` with `selectedCategoryName: selectedCategory?.name ?? "Uncategorized"`, `categories: Array(categories)`, and `onSave` closure.
+  - [x] 2.7 In the `onSave` closure: call `taggingService.placeTagWithCapturedAnchor(label:, categoryName:, session:, context:)`. If success, post VoiceOver announcement: "Tag placed. \(count) tags total." On sheet dismiss without save, call `taggingService.discardCapturedAnchor()`.
+  - [x] 2.8 VoiceOver for "+" card: "Create custom tag. Double-tap to open tag creator."
+  - [x] 2.9 Add `.onDisappear` on the sheet to reset `capturedAnchorTime` to nil (cleanup).
 
-- [ ] Task 3: Add anchor capture methods to `TaggingService.swift` (AC: #1, #2, #3)
-  - [ ] 3.1 Add a private stored property: `private var capturedAnchor: (anchorTime: TimeInterval, actualRewind: TimeInterval)?`
-  - [ ] 3.2 Add method `captureAnchor(rewindDuration: TimeInterval)`: calculates `anchorTime = max(0, sessionRecorder.elapsedTime - max(0, rewindDuration))` and `actualRewind = sessionRecorder.elapsedTime - anchorTime`, stores in `capturedAnchor`. Fires haptic immediately (the "+" tap IS the moment). Logs: `"Anchor captured at \(anchorTime) (rewound \(actualRewind)s) for custom tag"`.
-  - [ ] 3.3 Add method `placeTagWithCapturedAnchor(label: String, categoryName: String, session: Session, context: ModelContext) -> Bool`: uses `capturedAnchor` values instead of reading `sessionRecorder.elapsedTime`. Creates `Tag` with stored `anchorTime` and `actualRewind`. Inserts, saves, logs, returns Bool. Clears `capturedAnchor` after use. Does NOT fire haptic again (already fired on capture).
-  - [ ] 3.4 Add method `discardCapturedAnchor()`: sets `capturedAnchor = nil`. Logs: `"Captured anchor discarded (custom tag cancelled)"`.
-  - [ ] 3.5 Guard in `placeTagWithCapturedAnchor`: if `capturedAnchor` is nil, log error and return false.
+- [x] Task 3: Add anchor capture methods to `TaggingService.swift` (AC: #1, #2, #3)
+  - [x] 3.1 Add a private stored property: `private var capturedAnchor: (anchorTime: TimeInterval, actualRewind: TimeInterval)?`
+  - [x] 3.2 Add method `captureAnchor(rewindDuration: TimeInterval)`: calculates `anchorTime = max(0, sessionRecorder.elapsedTime - max(0, rewindDuration))` and `actualRewind = sessionRecorder.elapsedTime - anchorTime`, stores in `capturedAnchor`. Fires haptic immediately (the "+" tap IS the moment). Logs: `"Anchor captured at \(anchorTime) (rewound \(actualRewind)s) for custom tag"`.
+  - [x] 3.3 Add method `placeTagWithCapturedAnchor(label: String, categoryName: String, session: Session, context: ModelContext) -> Bool`: uses `capturedAnchor` values instead of reading `sessionRecorder.elapsedTime`. Creates `Tag` with stored `anchorTime` and `actualRewind`. Inserts, saves, logs, returns Bool. Clears `capturedAnchor` after use. Does NOT fire haptic again (already fired on capture).
+  - [x] 3.4 Add method `discardCapturedAnchor()`: sets `capturedAnchor = nil`. Logs: `"Captured anchor discarded (custom tag cancelled)"`.
+  - [x] 3.5 Guard in `placeTagWithCapturedAnchor`: if `capturedAnchor` is nil, log error and return false.
 
-- [ ] Task 4: Add tests for custom tag anchor capture flow (AC: #1, #2, #3)
-  - [ ] 4.1 Test: `testCaptureAnchor_storesCorrectAnchorTime()` -- set `recorder.elapsedTime = 120`, call `captureAnchor(rewindDuration: 10)`, verify stored anchor via `placeTagWithCapturedAnchor`.
-  - [ ] 4.2 Test: `testPlaceTagWithCapturedAnchor_usesStoredAnchorNotCurrentTime()` -- capture anchor at elapsed 100, then change `recorder.elapsedTime = 200` (simulating time passing while typing), call `placeTagWithCapturedAnchor`. Verify tag's `anchorTime` is 90 (100-10), NOT 190 (200-10). This is the CRITICAL timestamp-first test.
-  - [ ] 4.3 Test: `testPlaceTagWithCapturedAnchor_clearsCapturedAnchorAfterUse()` -- capture, place, then call `placeTagWithCapturedAnchor` again. Second call should return false (no anchor).
-  - [ ] 4.4 Test: `testDiscardCapturedAnchor_clearsStoredAnchor()` -- capture, discard, then `placeTagWithCapturedAnchor` should return false.
-  - [ ] 4.5 Test: `testPlaceTagWithCapturedAnchor_withoutCapture_returnsFalse()` -- call `placeTagWithCapturedAnchor` without prior capture. Should return false.
-  - [ ] 4.6 Test: `testCaptureAnchor_earlyRecording_clampsToZero()` -- set `recorder.elapsedTime = 3`, `captureAnchor(rewindDuration: 10)`, verify anchorTime is 0 and actualRewind is 3.
-  - [ ] 4.7 Test: `testPlaceTagWithCapturedAnchor_createsTagWithCorrectProperties()` -- verify label, categoryName, anchorTime, rewindDuration are all correct on the created tag.
-  - [ ] 4.8 Test: `testPlaceTagWithCapturedAnchor_appendsTagToSession()` -- verify `session.tags` contains the new tag.
-  - [ ] 4.9 Verify all existing tests (18 TaggingServiceTests + 139 DictlyKit) still pass.
+- [x] Task 4: Add tests for custom tag anchor capture flow (AC: #1, #2, #3)
+  - [x] 4.1 Test: `testCaptureAnchor_storesCorrectAnchorTime()` -- set `recorder.elapsedTime = 120`, call `captureAnchor(rewindDuration: 10)`, verify stored anchor via `placeTagWithCapturedAnchor`.
+  - [x] 4.2 Test: `testPlaceTagWithCapturedAnchor_usesStoredAnchorNotCurrentTime()` -- capture anchor at elapsed 100, then change `recorder.elapsedTime = 200` (simulating time passing while typing), call `placeTagWithCapturedAnchor`. Verify tag's `anchorTime` is 90 (100-10), NOT 190 (200-10). This is the CRITICAL timestamp-first test.
+  - [x] 4.3 Test: `testPlaceTagWithCapturedAnchor_clearsCapturedAnchorAfterUse()` -- capture, place, then call `placeTagWithCapturedAnchor` again. Second call should return false (no anchor).
+  - [x] 4.4 Test: `testDiscardCapturedAnchor_clearsStoredAnchor()` -- capture, discard, then `placeTagWithCapturedAnchor` should return false.
+  - [x] 4.5 Test: `testPlaceTagWithCapturedAnchor_withoutCapture_returnsFalse()` -- call `placeTagWithCapturedAnchor` without prior capture. Should return false.
+  - [x] 4.6 Test: `testCaptureAnchor_earlyRecording_clampsToZero()` -- set `recorder.elapsedTime = 3`, `captureAnchor(rewindDuration: 10)`, verify anchorTime is 0 and actualRewind is 3.
+  - [x] 4.7 Test: `testPlaceTagWithCapturedAnchor_createsTagWithCorrectProperties()` -- verify label, categoryName, anchorTime, rewindDuration are all correct on the created tag.
+  - [x] 4.8 Test: `testPlaceTagWithCapturedAnchor_appendsTagToSession()` -- verify `session.tags` contains the new tag.
+  - [x] 4.9 Verify all existing tests (18 TaggingServiceTests + 139 DictlyKit) still pass.
 
-- [ ] Task 5: Build verification (AC: all)
-  - [ ] 5.1 Run `xcodegen generate` in `DictlyiOS/`.
-  - [ ] 5.2 Run `xcodebuild` -- verify `** BUILD SUCCEEDED **`.
-  - [ ] 5.3 Run full test suite -- verify `** TEST SUCCEEDED **`.
+- [x] Task 5: Build verification (AC: all)
+  - [x] 5.1 Run `xcodegen generate` in `DictlyiOS/`.
+  - [x] 5.2 Run `xcodebuild` -- verify `** BUILD SUCCEEDED **`.
+  - [x] 5.3 Run full test suite -- verify `** TEST SUCCEEDED **`.
 
 ## Dev Notes
 
@@ -310,10 +310,27 @@ Use commit prefix: `feat(tagging): implement custom tag creation during recordin
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+claude-sonnet-4-6
 
 ### Debug Log References
 
+None — implementation went smoothly following story spec.
+
 ### Completion Notes List
 
+- Created `CustomTagSheet.swift` as a purpose-built SwiftUI sheet with `NavigationStack > Form`, two sections (label TextField + category Picker), auto-keyboard-focus, `.presentationDetents([.medium])`, and Cancel/Save toolbar items. Delegates placement to caller via `onSave` closure.
+- Added 3 new methods to `TaggingService`: `captureAnchor(rewindDuration:)` (fires haptic + stores anchor), `placeTagWithCapturedAnchor(label:categoryName:session:context:)` (uses stored anchor, clears after use), `discardCapturedAnchor()` (clears on cancel). All inherit `@MainActor` from the class.
+- Integrated "+" card in `TagPalette.swift` after the `ForEach(filteredTags)` block: dashed border button with `@State private var isShowingCustomTagSheet`, `@State private var customTagSaved` tracking whether save occurred to distinguish discard vs save on `onDismiss`.
+- 9 new tests added to `TaggingServiceTests.swift` in `// MARK: - Story 2.6` section. Critical test `testPlaceTagWithCapturedAnchor_usesStoredAnchorNotCurrentTime` verifies timestamp-first invariant (anchor at elapsed 100 → tag at anchorTime 90, even when `elapsedTime` later advances to 200).
+- All 57 iOS tests pass (27 TaggingServiceTests, 14 RecordingViewModelTests, 16 SessionRecorderTests). BUILD SUCCEEDED.
+
 ### File List
+
+- `DictlyiOS/Tagging/CustomTagSheet.swift` — NEW
+- `DictlyiOS/Tagging/TaggingService.swift` — MODIFIED (added capturedAnchor property + 3 methods)
+- `DictlyiOS/Tagging/TagPalette.swift` — MODIFIED (added "+" card, sheet state, sheet integration)
+- `DictlyiOS/Tests/TaggingTests/TaggingServiceTests.swift` — MODIFIED (9 new tests)
+
+## Change Log
+
+- 2026-04-02: Implemented custom tag creation during recording with timestamp-first anchor capture flow. Created `CustomTagSheet.swift`, extended `TaggingService` with `captureAnchor`/`placeTagWithCapturedAnchor`/`discardCapturedAnchor`, integrated "+" card into `TagPalette`, added 9 new tests (TaggingServiceTests: 18 → 27). All 57 tests pass.

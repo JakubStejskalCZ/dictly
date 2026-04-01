@@ -208,4 +208,121 @@ final class TaggingServiceTests: XCTestCase {
         XCTAssertEqual(tag.anchorTime, 30.0, accuracy: 0.001)
         XCTAssertEqual(tag.rewindDuration, 0.0, accuracy: 0.001)
     }
+
+    // MARK: - Story 2.6: Custom tag anchor capture
+
+    func testCaptureAnchor_storesCorrectAnchorTime() throws {
+        // Set elapsed time to simulate mid-recording
+        recorder.elapsedTime = 120.0
+        service.captureAnchor(rewindDuration: 10.0)
+
+        // Verify anchor is stored by placing with it and checking the result
+        let success = service.placeTagWithCapturedAnchor(
+            label: "Test", categoryName: "Combat", session: session, context: context
+        )
+        XCTAssertTrue(success)
+        let tag = try XCTUnwrap(session.tags.first)
+        XCTAssertEqual(tag.anchorTime, 110.0, accuracy: 0.001) // 120 - 10 = 110
+        XCTAssertEqual(tag.rewindDuration, 10.0, accuracy: 0.001)
+    }
+
+    func testPlaceTagWithCapturedAnchor_usesStoredAnchorNotCurrentTime() throws {
+        // Capture anchor at elapsed 100
+        recorder.elapsedTime = 100.0
+        service.captureAnchor(rewindDuration: 10.0)
+
+        // Simulate time passing while the DM typed a label
+        recorder.elapsedTime = 200.0
+
+        let success = service.placeTagWithCapturedAnchor(
+            label: "Grimthor", categoryName: "Story", session: session, context: context
+        )
+        XCTAssertTrue(success)
+        let tag = try XCTUnwrap(session.tags.first)
+        // CRITICAL: anchorTime must be 90 (100-10), NOT 190 (200-10)
+        XCTAssertEqual(tag.anchorTime, 90.0, accuracy: 0.001)
+        XCTAssertEqual(tag.rewindDuration, 10.0, accuracy: 0.001)
+    }
+
+    func testPlaceTagWithCapturedAnchor_clearsCapturedAnchorAfterUse() {
+        recorder.elapsedTime = 60.0
+        service.captureAnchor(rewindDuration: 5.0)
+
+        // First call succeeds
+        let first = service.placeTagWithCapturedAnchor(
+            label: "First", categoryName: "Combat", session: session, context: context
+        )
+        XCTAssertTrue(first)
+
+        // Second call fails — anchor was cleared after first use
+        let second = service.placeTagWithCapturedAnchor(
+            label: "Second", categoryName: "Combat", session: session, context: context
+        )
+        XCTAssertFalse(second)
+    }
+
+    func testDiscardCapturedAnchor_clearsStoredAnchor() {
+        recorder.elapsedTime = 50.0
+        service.captureAnchor(rewindDuration: 5.0)
+        service.discardCapturedAnchor()
+
+        let result = service.placeTagWithCapturedAnchor(
+            label: "Should Fail", categoryName: "Meta", session: session, context: context
+        )
+        XCTAssertFalse(result)
+        XCTAssertEqual(session.tags.count, 0, "No tag should be created after discard")
+    }
+
+    func testPlaceTagWithCapturedAnchor_withoutCapture_returnsFalse() {
+        // Call place without any prior captureAnchor
+        let result = service.placeTagWithCapturedAnchor(
+            label: "No Anchor", categoryName: "Story", session: session, context: context
+        )
+        XCTAssertFalse(result)
+        XCTAssertEqual(session.tags.count, 0)
+    }
+
+    func testCaptureAnchor_earlyRecording_clampsToZero() throws {
+        // elapsedTime < rewindDuration → anchorTime must clamp to 0
+        recorder.elapsedTime = 3.0
+        service.captureAnchor(rewindDuration: 10.0)
+
+        let success = service.placeTagWithCapturedAnchor(
+            label: "Early Tag", categoryName: "Combat", session: session, context: context
+        )
+        XCTAssertTrue(success)
+        let tag = try XCTUnwrap(session.tags.first)
+        XCTAssertEqual(tag.anchorTime, 0.0, accuracy: 0.001, "anchorTime must clamp to 0")
+        XCTAssertEqual(tag.rewindDuration, 3.0, accuracy: 0.001, "actualRewind should be 3s, not 10s")
+    }
+
+    func testPlaceTagWithCapturedAnchor_createsTagWithCorrectProperties() throws {
+        recorder.elapsedTime = 90.0
+        service.captureAnchor(rewindDuration: 10.0)
+
+        service.placeTagWithCapturedAnchor(
+            label: "Grimthor -- blacksmith intro",
+            categoryName: "Story",
+            session: session,
+            context: context
+        )
+
+        let tag = try XCTUnwrap(session.tags.first)
+        XCTAssertEqual(tag.label, "Grimthor -- blacksmith intro")
+        XCTAssertEqual(tag.categoryName, "Story")
+        XCTAssertEqual(tag.anchorTime, 80.0, accuracy: 0.001)
+        XCTAssertEqual(tag.rewindDuration, 10.0, accuracy: 0.001)
+    }
+
+    func testPlaceTagWithCapturedAnchor_appendsTagToSession() throws {
+        recorder.elapsedTime = 45.0
+        service.captureAnchor(rewindDuration: 5.0)
+
+        service.placeTagWithCapturedAnchor(
+            label: "Session Tag", categoryName: "World", session: session, context: context
+        )
+
+        XCTAssertEqual(session.tags.count, 1)
+        XCTAssertTrue(session.tags.contains(where: { $0.label == "Session Tag" }))
+    }
 }
