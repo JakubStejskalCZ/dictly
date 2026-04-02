@@ -92,6 +92,28 @@ final class SessionReviewScreenTests: XCTestCase {
         XCTAssertEqual(formatTimestamp(7384), "2:03:04")
     }
 
+    // MARK: - formatDuration edge cases
+
+    func testFormatDuration_zeroSeconds_returnsZeroMinutes() {
+        XCTAssertEqual(formatDuration(0), "0m")
+    }
+
+    func testFormatDuration_underOneHour_returnsMinutesOnly() {
+        XCTAssertEqual(formatDuration(59), "0m")
+        XCTAssertEqual(formatDuration(60), "1m")
+        XCTAssertEqual(formatDuration(3599), "59m")
+    }
+
+    func testFormatDuration_oneHourOrMore_returnsHoursAndMinutes() {
+        XCTAssertEqual(formatDuration(3600), "1h 0m")
+        XCTAssertEqual(formatDuration(3660), "1h 1m")
+        XCTAssertEqual(formatDuration(7384), "2h 3m")
+    }
+
+    func testFormatDuration_negativeValue_clampsToZero() {
+        XCTAssertEqual(formatDuration(-60), "0m")
+    }
+
     // MARK: - 10.6 Empty state shown when session has no tags
 
     func testTagSidebar_emptyState_whenSessionHasNoTags() throws {

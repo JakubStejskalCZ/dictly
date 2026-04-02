@@ -1,6 +1,6 @@
 # Story 4.1: Mac Session Review Layout
 
-Status: review
+Status: done
 
 ## Story
 
@@ -338,6 +338,22 @@ claude-sonnet-4-6
 - `DictlyMac/DictlyMac.xcodeproj` (regenerated via xcodegen)
 - `DictlyMacTests/ReviewTests/SessionReviewScreenTests.swift` (new)
 
+### Review Findings
+
+- [x] [Review][Patch] Redundant `.frame(minWidth: 900, minHeight: 500)` on SessionReviewScreen — removed [SessionReviewScreen.swift:28]
+- [x] [Review][Patch] Duplicated `categoryColor` function — extracted to `CategoryColorHelper.swift` [TagDetailPanel.swift, TagSidebarRow.swift]
+- [x] [Review][Patch] Hardcoded font for session title — changed to `DictlyTypography.h3` [SessionReviewScreen.swift:71]
+- [x] [Review][Patch] Hardcoded font for tag label in sidebar row — changed to `DictlyTypography.tagLabel` [TagSidebarRow.swift:20]
+- [x] [Review][Patch] Hardcoded font for timestamp in sidebar row — changed to `DictlyTypography.caption` [TagSidebarRow.swift:24]
+- [x] [Review][Patch] Category badge contrast — fallback uses surface bg + textPrimary + border for WCAG AA [TagDetailPanel.swift:153-168]
+- [x] [Review][Patch] Waveform placeholder — added `.accessibilityElement(children: .ignore)` [SessionReviewScreen.swift:126]
+- [x] [Review][Patch] Added `formatDuration` tests (zero, under/over 1h, negative clamp) [SessionReviewScreenTests.swift]
+- [x] [Review][Patch] Empty `tag.label` — added "Untitled Tag" fallback in display + accessibility [TagSidebarRow.swift, TagDetailPanel.swift]
+- [x] [Review][Patch] GeometryReader breakpoint — changed to `< 600` panel-relative threshold [TagDetailPanel.swift:16]
+- [x] [Review][Defer] Negative/NaN anchorTime handling in `formatTimestamp` — deferred, pre-existing model validation gap
+- [x] [Review][Defer] SwiftData model lifecycle — selectedTag/selectedSession can hold faulted objects if deleted externally — deferred, pre-existing pattern
+
 ## Change Log
 
 - 2026-04-02: Story 4.1 implemented — Mac session review three-panel layout with HSplitView, toolbar, waveform placeholder, TagDetailPanel, TagSidebar, TagSidebarRow, ContentView session navigation, window size constraints, accessibility, and unit tests (claude-sonnet-4-6)
+- 2026-04-02: Code review — 10 patches applied, 2 deferred. Fixes: removed redundant frame constraints, extracted shared categoryColor helper, replaced hardcoded fonts with DictlyTypography tokens, fixed WCAG badge contrast for unknown categories, combined waveform accessibility element, added formatDuration tests with negative clamp, added empty label fallbacks, fixed panel-relative GeometryReader breakpoint (1100→600). (claude-opus-4-6)

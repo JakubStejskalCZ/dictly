@@ -16,13 +16,13 @@ struct TagSidebarRow: View {
                 .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(tag.label)
-                    .font(.system(size: 14, weight: .medium))
+                Text(tag.label.isEmpty ? "Untitled Tag" : tag.label)
+                    .font(DictlyTypography.tagLabel)
                     .foregroundStyle(DictlyColors.textPrimary)
                     .lineLimit(1)
 
                 Text(formatTimestamp(tag.anchorTime))
-                    .font(.system(size: 11, weight: .regular))
+                    .font(DictlyTypography.caption)
                     .foregroundStyle(DictlyColors.textSecondary)
                     .monospacedDigit()
             }
@@ -31,21 +31,9 @@ struct TagSidebarRow: View {
         }
         .padding(.vertical, DictlySpacing.xs)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(tag.categoryName): \(tag.label) at \(formatTimestamp(tag.anchorTime))")
+        .accessibilityLabel("\(tag.categoryName): \(tag.label.isEmpty ? "Untitled Tag" : tag.label) at \(formatTimestamp(tag.anchorTime))")
     }
 
-    // MARK: - Helpers
-
-    private func categoryColor(for name: String) -> Color {
-        switch name.lowercased() {
-        case "story":    return DictlyColors.TagCategory.story
-        case "combat":   return DictlyColors.TagCategory.combat
-        case "roleplay": return DictlyColors.TagCategory.roleplay
-        case "world":    return DictlyColors.TagCategory.world
-        case "meta":     return DictlyColors.TagCategory.meta
-        default:         return DictlyColors.textSecondary
-        }
-    }
 }
 
 // MARK: - Timestamp Formatting

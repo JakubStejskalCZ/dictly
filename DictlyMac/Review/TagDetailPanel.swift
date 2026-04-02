@@ -13,7 +13,7 @@ struct TagDetailPanel: View {
         GeometryReader { geometry in
             Group {
                 if let tag {
-                    tagDetailContent(tag: tag, isNarrow: geometry.size.width < 1100)
+                    tagDetailContent(tag: tag, isNarrow: geometry.size.width < 600)
                         .animation(.easeInOut(duration: 0.2), value: tag.uuid)
                 } else {
                     noSelectionPlaceholder
@@ -71,7 +71,7 @@ struct TagDetailPanel: View {
                 Text("Label")
                     .font(DictlyTypography.caption)
                     .foregroundStyle(DictlyColors.textSecondary)
-                Text(tag.label)
+                Text(tag.label.isEmpty ? "Untitled Tag" : tag.label)
                     .font(DictlyTypography.h3)
                     .foregroundStyle(DictlyColors.textPrimary)
             }
@@ -151,25 +151,20 @@ struct TagDetailPanel: View {
     // MARK: - Category Badge
 
     private func categoryBadge(for categoryName: String) -> some View {
-        Text(categoryName)
+        let color = categoryColor(for: categoryName)
+        let isKnownCategory = ["story", "combat", "roleplay", "world", "meta"]
+            .contains(categoryName.lowercased())
+        return Text(categoryName.isEmpty ? "Uncategorized" : categoryName)
             .font(DictlyTypography.caption)
-            .foregroundStyle(.white)
+            .foregroundStyle(isKnownCategory ? .white : DictlyColors.textPrimary)
             .padding(.horizontal, DictlySpacing.sm)
             .padding(.vertical, DictlySpacing.xs)
-            .background(categoryColor(for: categoryName))
+            .background(isKnownCategory ? color : DictlyColors.surface)
             .clipShape(Capsule())
+            .overlay(
+                Capsule()
+                    .strokeBorder(isKnownCategory ? Color.clear : DictlyColors.border, lineWidth: 1)
+            )
     }
 
-    // MARK: - Helpers
-
-    private func categoryColor(for name: String) -> Color {
-        switch name.lowercased() {
-        case "story":    return DictlyColors.TagCategory.story
-        case "combat":   return DictlyColors.TagCategory.combat
-        case "roleplay": return DictlyColors.TagCategory.roleplay
-        case "world":    return DictlyColors.TagCategory.world
-        case "meta":     return DictlyColors.TagCategory.meta
-        default:         return DictlyColors.textSecondary
-        }
-    }
 }

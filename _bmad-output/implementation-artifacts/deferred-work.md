@@ -108,3 +108,8 @@
 - Replace flow (`replaceExisting`) is not atomic — deletes old session then re-imports. If reimport fails after delete, user's original session is permanently lost with no recovery path.
 - All SwiftData operations (fetch, insert, save, delete) run on `@MainActor` — large bundles with many tags or big audio files may block the UI thread. Consider background `ModelContext` for heavy operations.
 - `retry()` after network receiver failure may use a stale `lastBundleURL` that was already cleaned up by `LocalNetworkReceiver.reset()`. No coordination between receiver cleanup and ImportService retry timing.
+
+## Deferred from: code review of story 4-1-mac-session-review-layout (2026-04-02)
+
+- Negative/NaN `anchorTime` in `formatTimestamp` produces garbled/negative timestamp strings. `Tag.anchorTime` (`TimeInterval`) has no lower-bound constraint in the model. Pre-existing model validation gap.
+- SwiftData model lifecycle: `selectedTag` and `selectedSession` (`@State`) can hold strong references to faulted/deleted objects if a `Session` or `Tag` is deleted externally while the review screen is displayed. Pre-existing pattern across the app.

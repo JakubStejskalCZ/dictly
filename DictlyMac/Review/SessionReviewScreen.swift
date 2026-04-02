@@ -25,7 +25,6 @@ struct SessionReviewScreen: View {
             mainContent
                 .frame(minWidth: 500, maxWidth: .infinity)
         }
-        .frame(minWidth: 900, minHeight: 500)
         .background(DictlyColors.background)
         .toolbar {
             ToolbarItem(placement: .navigation) {
@@ -68,7 +67,7 @@ struct SessionReviewScreen: View {
             // Leading: session metadata
             VStack(alignment: .leading, spacing: DictlySpacing.xs) {
                 Text(session.title)
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(DictlyTypography.h3)
                     .foregroundStyle(DictlyColors.textPrimary)
                     .lineLimit(1)
                     .accessibilityAddTraits(.isHeader)
@@ -124,20 +123,23 @@ struct SessionReviewScreen: View {
                     .font(DictlyTypography.body)
                     .foregroundStyle(DictlyColors.textSecondary)
             )
+            .accessibilityElement(children: .ignore)
             .accessibilityLabel(
                 "Waveform timeline placeholder. Available after waveform rendering is implemented."
             )
     }
 
-    // MARK: - Duration Formatting
+}
 
-    private func formatDuration(_ seconds: TimeInterval) -> String {
-        let totalSeconds = Int(seconds)
-        let hours = totalSeconds / 3600
-        let minutes = (totalSeconds % 3600) / 60
-        if hours > 0 {
-            return "\(hours)h \(minutes)m"
-        }
-        return "\(minutes)m"
+// MARK: - Duration Formatting
+
+/// Formats a `TimeInterval` (seconds) as a human-readable duration string: `Xh Ym` or `Xm`.
+func formatDuration(_ seconds: TimeInterval) -> String {
+    let totalSeconds = max(0, Int(seconds))
+    let hours = totalSeconds / 3600
+    let minutes = (totalSeconds % 3600) / 60
+    if hours > 0 {
+        return "\(hours)h \(minutes)m"
     }
+    return "\(minutes)m"
 }

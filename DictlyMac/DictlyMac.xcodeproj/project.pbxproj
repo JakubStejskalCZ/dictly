@@ -20,6 +20,7 @@
 		BCAED8D36C822AA36C27F4DF /* ImportProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC2E9ED61A8775A41989834D /* ImportProgressView.swift */; };
 		C219054539490DBD3F6F4340 /* PreferencesWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B010B705AA06A5BD1749B44 /* PreferencesWindow.swift */; };
 		C5E3B5BCF8DFDEECC5C4BC6F /* DictlyMacApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95E649BA6DF1539916AFC171 /* DictlyMacApp.swift */; };
+		E86F70A8B0CC20F126937255 /* CategoryColorHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AF6212CC3464C0246405B2D /* CategoryColorHelper.swift */; };
 		E89B3FAB32A9A61B34328160 /* DictlyKit in Frameworks */ = {isa = PBXBuildFile; productRef = 6D779627DD09B4C0A1B8FA61 /* DictlyKit */; };
 		F4F3492A52C73AD6E109335E /* ImportServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BD4B11F67071DA75BD374EC /* ImportServiceTests.swift */; };
 /* End PBXBuildFile section */
@@ -38,6 +39,7 @@
 		2BD4B11F67071DA75BD374EC /* ImportServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportServiceTests.swift; sourceTree = "<group>"; };
 		3B010B705AA06A5BD1749B44 /* PreferencesWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesWindow.swift; sourceTree = "<group>"; };
 		451A0E0AFA5C65057119CDBD /* DictlyMac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DictlyMac.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		5AF6212CC3464C0246405B2D /* CategoryColorHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryColorHelper.swift; sourceTree = "<group>"; };
 		630711832B38B9EA2231CB37 /* LocalNetworkReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalNetworkReceiverTests.swift; sourceTree = "<group>"; };
 		8D79153280CF49C24B46C221 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		95E649BA6DF1539916AFC171 /* DictlyMacApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictlyMacApp.swift; sourceTree = "<group>"; };
@@ -132,6 +134,7 @@
 			isa = PBXGroup;
 			children = (
 				E093A48C431BE0333F497950 /* .gitkeep */,
+				5AF6212CC3464C0246405B2D /* CategoryColorHelper.swift */,
 				DB85059BE85A27C7184F5C28 /* SessionReviewScreen.swift */,
 				F99799ADDC35F183C7A44D98 /* TagDetailPanel.swift */,
 				C99BEC7DCA95A5E95CB29E76 /* TagSidebar.swift */,
@@ -283,6 +286,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E86F70A8B0CC20F126937255 /* CategoryColorHelper.swift in Sources */,
 				8026E48D8E51F41B6ACCC2BB /* ContentView.swift in Sources */,
 				C5E3B5BCF8DFDEECC5C4BC6F /* DictlyMacApp.swift in Sources */,
 				BCAED8D36C822AA36C27F4DF /* ImportProgressView.swift in Sources */,
