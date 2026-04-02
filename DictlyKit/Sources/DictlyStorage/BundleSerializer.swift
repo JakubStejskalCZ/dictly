@@ -31,6 +31,11 @@ public struct BundleSerializer {
     ///   - url: Destination .dictly directory URL (will be created if absent).
     /// - Throws: `DictlyError.transfer(.bundleCorrupted)` if writing fails.
     public func serialize(session: Session, audioData: Data, to url: URL) throws {
+        guard !audioData.isEmpty else {
+            logger.error("BundleSerializer: refusing to serialize empty audioData for session \(session.uuid)")
+            throw DictlyError.transfer(.bundleCorrupted)
+        }
+
         let fm = FileManager.default
         do {
             try fm.createDirectory(at: url, withIntermediateDirectories: true)
@@ -53,6 +58,7 @@ public struct BundleSerializer {
             jsonData = try encoder.encode(bundle)
         } catch {
             logger.error("BundleSerializer: JSON encoding failed: \(error)")
+            cleanup(at: url)
             throw DictlyError.transfer(.bundleCorrupted)
         }
 
@@ -60,6 +66,7 @@ public struct BundleSerializer {
             try audioData.write(to: url.appendingPathComponent("audio.aac"))
         } catch {
             logger.error("BundleSerializer: failed to write audio.aac: \(error)")
+            cleanup(at: url)
             throw DictlyError.transfer(.bundleCorrupted)
         }
 
@@ -67,6 +74,7 @@ public struct BundleSerializer {
             try jsonData.write(to: url.appendingPathComponent("session.json"))
         } catch {
             logger.error("BundleSerializer: failed to write session.json: \(error)")
+            cleanup(at: url)
             throw DictlyError.transfer(.bundleCorrupted)
         }
     }
@@ -122,6 +130,12 @@ public struct BundleSerializer {
             throw DictlyError.transfer(.bundleCorrupted)
         }
 
+        // Validate session.json is non-empty
+        guard !jsonData.isEmpty else {
+            logger.error("BundleSerializer: session.json is empty in bundle at \(url.path)")
+            throw DictlyError.transfer(.bundleCorrupted)
+        }
+
         // Decode TransferBundle
         let decoder = makeDecoder()
         let bundle: TransferBundle
@@ -129,6 +143,12 @@ public struct BundleSerializer {
             bundle = try decoder.decode(TransferBundle.self, from: jsonData)
         } catch {
             logger.error("BundleSerializer: JSON decoding failed: \(error)")
+            throw DictlyError.transfer(.bundleCorrupted)
+        }
+
+        // Validate bundle version
+        guard bundle.version == 1 else {
+            logger.error("BundleSerializer: unsupported bundle version \(bundle.version) at \(url.path)")
             throw DictlyError.transfer(.bundleCorrupted)
         }
 
@@ -148,5 +168,9 @@ public struct BundleSerializer {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
         return decoder
+    }
+
+    private func cleanup(at url: URL) {
+        try? FileManager.default.removeItem(at: url)
     }
 }

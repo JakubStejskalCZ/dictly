@@ -1,6 +1,6 @@
 # Story 3.1: .dictly Bundle Format & Serialization
 
-Status: review
+Status: done
 
 ## Story
 
@@ -44,6 +44,21 @@ so that transfer between iOS and Mac preserves all session data in a single file
   - [x] 4.4 Test BundleSerializer round-trip: session + audio → .dictly directory → deserialize → verify all data intact
   - [x] 4.5 Test error cases: missing audio.aac, missing session.json, corrupted JSON, empty directory
   - [x] 4.6 Test edge cases: session with zero tags, session with many tags across categories, optional fields nil
+
+### Review Findings
+
+- [x] [Review][Patch] Add `locationLatitude`/`locationLongitude` to `SessionDTO` and round-trip conversions — prevents silent GPS data loss [TransferBundle.swift:8-36]
+- [x] [Review][Patch] Add version check in `deserialize()` — reject unsupported bundle versions [BundleSerializer.swift:84]
+- [x] [Review][Patch] Add empty `audioData` guard in `serialize()` — match deserialize validation [BundleSerializer.swift:33]
+- [x] [Review][Patch] Add empty `session.json` guard in `deserialize()` — consistent with audio check [BundleSerializer.swift:117]
+- [x] [Review][Patch] Add `@MainActor` to `BundleSerializerTests` — project convention [BundleSerializerTests.swift:7]
+- [x] [Review][Patch] Add serialize→deserialize integration test with real `@Model Session` [TransferBundleTests.swift]
+- [x] [Review][Patch] Clean up partial bundle on `serialize()` failure — remove orphaned directory [BundleSerializer.swift:33-71]
+- [x] [Review][Defer] Race condition on concurrent `serialize()` to same URL — deferred, caller responsibility
+- [x] [Review][Defer] No directory-vs-file check on deserialize URL — deferred, functionally correct
+- [x] [Review][Defer] PauseInterval invariant validation (start <= end) — deferred, pre-existing code
+- [x] [Review][Defer] Corrupted `pauseIntervalsJSON` silently becomes empty array — deferred, pre-existing behavior
+- [x] [Review][Defer] `CampaignDTO.descriptionText` non-optional forward-compatibility — deferred, speculative
 
 ## Dev Notes
 

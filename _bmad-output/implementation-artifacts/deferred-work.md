@@ -78,3 +78,11 @@
 
 - Tag `categoryName` could be an empty string, rendering a blank section header in SessionSummarySheet's grouped tag list. Pre-existing data model concern — all current tag creation paths populate `categoryName` from a TagCategory, but no model-level validation prevents an empty string.
 - Stop recording ViewModel tests (`testStopRecording_callsRecorderStop`, etc.) only verify behavior on a non-recording recorder due to hardware dependency (AVAudioEngine requires a real audio input). The actual stop-while-recording path is covered by integration/manual testing.
+
+## Deferred from: code review of story 3-1 (2026-04-02)
+
+- Race condition on concurrent `serialize()` calls to the same URL can interleave file writes — caller responsibility to serialize access.
+- `deserialize()` does not check if URL is a directory vs a regular file — functionally correct (throws `.bundleCorrupted`) but diagnostics are misleading.
+- `PauseInterval` has no invariant validation (start <= end, non-negative) — pre-existing struct, affects all consumers.
+- Corrupted `pauseIntervalsJSON` on source `Session` silently becomes empty `pauseIntervals` array in `toDTO()` — pre-existing getter behavior in `PauseInterval.swift`.
+- `CampaignDTO.descriptionText` is non-optional `String` — if a future bundle version makes it optional/absent, decode fails instead of defaulting. Forward-compatibility risk.

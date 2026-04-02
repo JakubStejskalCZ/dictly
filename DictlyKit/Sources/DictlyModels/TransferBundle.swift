@@ -12,6 +12,8 @@ public struct SessionDTO: Codable, Equatable {
     public let date: Date
     public let duration: TimeInterval
     public let locationName: String?
+    public let locationLatitude: Double?
+    public let locationLongitude: Double?
     public let summaryNote: String?
     public let pauseIntervals: [PauseInterval]
 
@@ -22,6 +24,8 @@ public struct SessionDTO: Codable, Equatable {
         date: Date,
         duration: TimeInterval,
         locationName: String?,
+        locationLatitude: Double? = nil,
+        locationLongitude: Double? = nil,
         summaryNote: String?,
         pauseIntervals: [PauseInterval]
     ) {
@@ -31,6 +35,8 @@ public struct SessionDTO: Codable, Equatable {
         self.date = date
         self.duration = duration
         self.locationName = locationName
+        self.locationLatitude = locationLatitude
+        self.locationLongitude = locationLongitude
         self.summaryNote = summaryNote
         self.pauseIntervals = pauseIntervals
     }
@@ -118,6 +124,8 @@ public extension Session {
             date: date,
             duration: duration,
             locationName: locationName,
+            locationLatitude: locationLatitude,
+            locationLongitude: locationLongitude,
             summaryNote: summaryNote,
             pauseIntervals: pauseIntervals
         )
@@ -163,6 +171,8 @@ public extension Session {
             date: dto.date,
             duration: dto.duration,
             locationName: dto.locationName,
+            locationLatitude: dto.locationLatitude,
+            locationLongitude: dto.locationLongitude,
             summaryNote: dto.summaryNote
         )
         session.pauseIntervals = dto.pauseIntervals

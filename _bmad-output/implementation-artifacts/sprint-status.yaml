@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-04-01
-last_updated: 2026-04-02 07:35 # story 3.1 review
+last_updated: 2026-04-02 07:42 # story 3.1 done
 project: Dictly
 project_key: NOKEY
 tracking_system: file-system
@@ -63,7 +63,7 @@ development_status:
   epic-2-retrospective: optional
   # Epic 3: Session Transfer & Import
   epic-3: in-progress
-  3-1-dictly-bundle-format-and-serialization: review
+  3-1-dictly-bundle-format-and-serialization: done
   3-2-airdrop-transfer-from-ios: backlog
   3-3-local-network-transfer-bonjour-fallback: backlog
   3-4-mac-import-with-deduplication: backlog
