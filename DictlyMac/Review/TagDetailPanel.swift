@@ -17,6 +17,7 @@ struct TagDetailPanel: View {
     @FocusState private var isEditingLabel: Bool
     @State private var showCategoryPicker: Bool = false
     @State private var showDeleteConfirmation: Bool = false
+    @State private var tagToDeleteFromPanel: Tag?
 
     private let logger = Logger(subsystem: "com.dictly.mac", category: "tagging")
 
@@ -34,18 +35,29 @@ struct TagDetailPanel: View {
         }
         .background(DictlyColors.background)
         .animation(.easeInOut(duration: 0.2), value: selectedTag?.uuid)
-        .onChange(of: selectedTag?.uuid) { _, _ in
+        .onAppear {
             if let tag = selectedTag {
                 editingLabel = tag.label
             }
         }
+        .onChange(of: selectedTag?.uuid) { _, _ in
+            isEditingLabel = false
+            showCategoryPicker = false
+            if let tag = selectedTag {
+                editingLabel = tag.label
+            } else {
+                editingLabel = ""
+            }
+        }
         .alert("Delete Tag?", isPresented: $showDeleteConfirmation) {
             Button("Delete", role: .destructive) {
-                if let tag = selectedTag {
+                if let tag = tagToDeleteFromPanel {
                     deleteTag(tag)
                 }
             }
-            Button("Cancel", role: .cancel) {}
+            Button("Cancel", role: .cancel) {
+                tagToDeleteFromPanel = nil
+            }
         } message: {
             Text("This will permanently remove this tag.")
         }
@@ -182,6 +194,7 @@ struct TagDetailPanel: View {
 
             // Delete Tag — destructive action with confirmation
             Button {
+                tagToDeleteFromPanel = selectedTag
                 showDeleteConfirmation = true
             } label: {
                 Text("Delete Tag")
@@ -238,6 +251,9 @@ struct TagDetailPanel: View {
     // MARK: - Actions
 
     private func commitLabel(tag: Tag) {
+        // Guard against stale captures: if selection changed, the tag parameter
+        // may not match the current selectedTag — skip the write to avoid mutating the wrong object.
+        guard selectedTag?.uuid == tag.uuid else { return }
         let trimmed = editingLabel.trimmingCharacters(in: .whitespaces)
         if trimmed.isEmpty {
             // Revert to previous value — do not allow empty labels
@@ -250,9 +266,11 @@ struct TagDetailPanel: View {
 
     private func deleteTag(_ tag: Tag) {
         logger.info("Tag deleted: \(tag.label, privacy: .public) at \(tag.anchorTime, privacy: .public)")
+        showCategoryPicker = false
         tag.session?.tags.removeAll { $0.uuid == tag.uuid }
         modelContext.delete(tag)
         selectedTag = nil
+        tagToDeleteFromPanel = nil
         AccessibilityNotification.Announcement("Tag deleted").post()
     }
 }

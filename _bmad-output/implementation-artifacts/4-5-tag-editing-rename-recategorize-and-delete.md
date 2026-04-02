@@ -1,6 +1,6 @@
 # Story 4.5: Tag Editing — Rename, Recategorize & Delete
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -327,6 +327,17 @@ claude-sonnet-4-6
 - DictlyMacTests/ReviewTests/TagEditingTests.swift (new)
 - DictlyMacTests/ReviewTests/SessionReviewScreenTests.swift (modified — updated TagDetailPanel init call)
 
+### Review Findings
+
+- [x] [Review][Patch] editingLabel not initialized on first render [TagDetailPanel.swift:37] — Fixed: added `.onAppear` to sync `editingLabel` from `selectedTag.label` on initial display
+- [x] [Review][Patch] isEditingLabel and showCategoryPicker not reset on tag selection change [TagDetailPanel.swift:37-41] — Fixed: `onChange(of: selectedTag?.uuid)` now resets both state vars and clears `editingLabel` to "" when selection becomes nil
+- [x] [Review][Patch] Wrong tag deleted when selectedTag changes between showing and confirming delete alert [TagDetailPanel.swift:42-51] — Fixed: introduced `@State private var tagToDeleteFromPanel: Tag?`; delete button captures current tag at tap time; alert action uses `tagToDeleteFromPanel` not `selectedTag`
+- [x] [Review][Patch] categoryName written to deleted SwiftData object if category picker open during deletion [TagDetailPanel.swift:251] — Fixed: `deleteTag(_:)` sets `showCategoryPicker = false` before deleting, closing the popover and preventing the stale closure from firing
+- [x] [Review][Patch] commitLabel stale tag capture can write to wrong tag after selection change [TagDetailPanel.swift:240] — Fixed: added `guard selectedTag?.uuid == tag.uuid else { return }` at top of `commitLabel(tag:)`
+- [x] [Review][Defer] tag.session == nil on orphaned tag skips removeAll — silent desync possible [TagDetailPanel.swift:253, TagSidebar.swift:154] — deferred, pre-existing SwiftData relationship design
+- [x] [Review][Defer] Concurrent delete from both TagDetailPanel and TagSidebar context menu — double modelContext.delete on same object [TagDetailPanel.swift:254, TagSidebar.swift:155] — deferred, pre-existing; extremely unlikely UX path on macOS
+
 ## Change Log
 
 - 2026-04-02: Implemented story 4-5 tag editing — inline label rename, category picker popover, delete with confirmation, context menu on sidebar rows. All ACs satisfied. 11 unit tests added. Build: ** TEST BUILD SUCCEEDED **.
+- 2026-04-02: Code review patches applied — 5 state/lifecycle fixes in TagDetailPanel: onAppear init, state reset on selection change, delete-alert tag capture, popover dismiss before deletion, commitLabel stale-capture guard.
