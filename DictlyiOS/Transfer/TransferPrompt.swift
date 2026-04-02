@@ -67,7 +67,7 @@ struct TransferPrompt: View {
             autoDismissTask?.cancel()
             noPeersTimerTask?.cancel()
             transferService.reset()
-            localNetworkSender.stopBrowsing()
+            localNetworkSender.reset()
         }
         .presentationDetents([.large])
     }
@@ -353,7 +353,7 @@ struct TransferPrompt: View {
                     .foregroundStyle(DictlyColors.textPrimary)
                     .accessibilityAddTraits(.isHeader)
 
-                ForEach(localNetworkSender.discoveredPeers, id: \.hashValue) { peer in
+                ForEach(localNetworkSender.discoveredPeers, id: \.endpoint) { peer in
                     Button {
                         localNetworkSender.send(session: session, to: peer)
                     } label: {
@@ -422,6 +422,7 @@ struct TransferPrompt: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, DictlySpacing.lg)
         .accessibilityElement(children: .combine)
+        .accessibilityLabel("Sending session via Wi-Fi, \(Int(progress * 100)) percent complete")
     }
 
     private func wifiFailedView(error: Error) -> some View {

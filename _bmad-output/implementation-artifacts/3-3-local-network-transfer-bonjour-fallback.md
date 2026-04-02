@@ -1,6 +1,6 @@
 # Story 3.3: Local Network Transfer (Bonjour Fallback)
 
-Status: review
+Status: done
 
 ## Story
 
@@ -83,6 +83,23 @@ so that I always have a reliable way to get sessions to my Mac.
   - [x] 6.7 Test `receiverState` transitions: `.idle` -> `.listening` -> `.receiving` -> `.received`
   - [x] 6.8 Test that `receivedBundleURL` is set when a bundle is fully received
   - [x] 6.9 Test new `DictlyError.TransferError` cases have non-nil `errorDescription`
+
+### Review Findings
+
+- [x] [Review][Patch] Receiver accepts concurrent connections without guard — added state check in `handleNewConnection` [LocalNetworkReceiver.swift:148]
+- [x] [Review][Patch] `ForEach` uses `\.hashValue` as unstable identity — changed to `\.endpoint` [TransferPrompt.swift:356]
+- [x] [Review][Patch] Truncated payload accepted as valid — added early-close detection in `receivePayload` [LocalNetworkReceiver.swift:212]
+- [x] [Review][Patch] Strong `self` capture in retry Task (retain cycle) — added `[weak self]` [LocalNetworkReceiver.swift:132]
+- [x] [Review][Patch] `onDisappear` calls `stopBrowsing` instead of `reset` — changed to `reset()` to cancel active connections [TransferPrompt.swift:70]
+- [x] [Review][Patch] Temp bundle on sender not cleaned up on `preparePayload` failure — added cleanup on session.json read failure [LocalNetworkSender.swift:199]
+- [x] [Review][Patch] No retry on initial listener creation failure — added retry with delay [LocalNetworkReceiver.swift:97]
+- [x] [Review][Patch] Receiver temp bundles never cleaned up from disk — added `removeItem` in `reset()` [LocalNetworkReceiver.swift:112]
+- [x] [Review][Patch] `wifiSendingView` missing explicit VoiceOver accessibility label — added combined label [TransferPrompt.swift:425]
+- [x] [Review][Patch] Unbounded memory allocation — added 500 MB upper bound on payload size [LocalNetworkReceiver.swift:175]
+- [x] [Review][Defer] No authentication on TCP listener — deferred, spec states MVP without encryption
+- [x] [Review][Defer] UInt32 overflow on payloads > 4GB — deferred, unrealistic for audio sessions
+- [x] [Review][Defer] Audio data double-loaded in memory during payload prep — deferred, inherent to BundleSerializer approach
+- [x] [Review][Defer] `TransferError.timeout` declared but never raised — deferred, added per spec task 1.1
 
 ## Dev Notes
 

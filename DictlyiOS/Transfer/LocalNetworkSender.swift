@@ -196,7 +196,13 @@ final class LocalNetworkSender {
         try serializer.serialize(session: session, audioData: audioData, to: bundleURL)
         tempBundleURL = bundleURL
 
-        let sessionJSON = try Data(contentsOf: bundleURL.appendingPathComponent("session.json"))
+        let sessionJSON: Data
+        do {
+            sessionJSON = try Data(contentsOf: bundleURL.appendingPathComponent("session.json"))
+        } catch {
+            cleanup()
+            throw DictlyError.transfer(.bundleCorrupted)
+        }
 
         // Wire format: [4 bytes: json length][session.json][audio.aac]
         var jsonLength = UInt32(sessionJSON.count).bigEndian

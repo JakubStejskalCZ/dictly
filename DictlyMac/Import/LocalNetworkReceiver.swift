@@ -96,6 +96,11 @@ final class LocalNetworkReceiver {
         } catch {
             logger.error("LocalNetworkReceiver: failed to create listener — \(error)")
             receiverState = .failed(DictlyError.transfer(.connectionFailed))
+            // Retry after brief delay (same as runtime failure handler)
+            Task { [weak self] in
+                try? await Task.sleep(for: .seconds(2))
+                await MainActor.run { self?.startListening() }
+            }
         }
     }
 
@@ -109,6 +114,9 @@ final class LocalNetworkReceiver {
 
     /// Resets state and clears `receivedBundleURL`. Call after consuming the bundle.
     func reset() {
+        if let url = receivedBundleURL {
+            try? FileManager.default.removeItem(at: url)
+        }
         receivedBundleURL = nil
         if case .received = receiverState {
             receiverState = .listening
@@ -129,9 +137,9 @@ final class LocalNetworkReceiver {
             receiverState = .failed(DictlyError.transfer(.connectionFailed))
             // Restart after brief delay
             listener = nil
-            Task {
+            Task { [weak self] in
                 try? await Task.sleep(for: .seconds(2))
-                await MainActor.run { self.startListening() }
+                await MainActor.run { self?.startListening() }
             }
 
         case .cancelled:
@@ -146,6 +154,11 @@ final class LocalNetworkReceiver {
     // MARK: - Connection Handling
 
     private func handleNewConnection(_ connection: NWConnection) {
+        guard case .listening = receiverState else {
+            logger.warning("LocalNetworkReceiver: rejecting connection — already receiving")
+            connection.cancel()
+            return
+        }
         logger.info("LocalNetworkReceiver: new connection from \(String(describing: connection.endpoint))")
         connection.start(queue: .main)
         receiveBundle(on: connection)
@@ -172,6 +185,16 @@ final class LocalNetworkReceiver {
                 }
 
                 let totalLength = Int(data.withUnsafeBytes { $0.load(as: UInt32.self).bigEndian })
+
+                // Reject absurdly large payloads (500 MB upper bound)
+                let maxPayloadSize = 500 * 1024 * 1024
+                guard totalLength > 0, totalLength <= maxPayloadSize else {
+                    self.logger.error("LocalNetworkReceiver: invalid payload size \(totalLength) bytes (max \(maxPayloadSize))")
+                    self.receiverState = .failed(DictlyError.transfer(.bundleCorrupted))
+                    connection.cancel()
+                    return
+                }
+
                 self.logger.info("LocalNetworkReceiver: expecting \(totalLength) bytes")
                 self.receiverState = .receiving(progress: 0.0)
 
@@ -209,8 +232,12 @@ final class LocalNetworkReceiver {
                         self.receiverState = .receiving(progress: progress)
                     }
 
-                    if accumulated.count >= expectedLength || isComplete {
+                    if accumulated.count >= expectedLength {
                         self.processPayload(accumulated, connection: connection)
+                    } else if isComplete {
+                        self.logger.error("LocalNetworkReceiver: connection closed early — received \(accumulated.count)/\(expectedLength) bytes")
+                        self.receiverState = .failed(DictlyError.transfer(.transferInterrupted))
+                        connection.cancel()
                     } else {
                         receiveChunk()
                     }

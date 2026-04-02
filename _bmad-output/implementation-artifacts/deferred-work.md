@@ -94,3 +94,10 @@
 - Multiple `.sheet(item:)` modifiers in `CampaignDetailScreen` (edit, transfer, recording) can queue presentations unexpectedly. Pre-existing pattern — consider enum-based `ActiveSheet` state in a future cleanup.
 - Test audio files are written to real `AudioFileManager.audioStorageDirectory()`, not a sandboxed temp path. A test crash skipping `tearDown` pollutes the app's audio storage. Pre-existing test pattern across transfer tests.
 - `TransferState` Equatable compares `.failed` errors via `localizedDescription` string — lossy and can suppress consecutive distinct error transitions. Pragmatic for mixed UIKit `Error` types but could miss state changes.
+
+## Deferred from: code review of story 3-3 (2026-04-02)
+
+- No authentication on TCP listener — any device on the local network can push data to the receiver. Spec states MVP without encryption; platform-level local network security is sufficient for now.
+- UInt32 overflow on payloads > 4GB — the 4-byte length prefix cannot represent payloads larger than ~4 GB. Unrealistic for audio sessions (a 4-hour session at 128kbps AAC is ~230 MB).
+- Audio data double-loaded in memory during payload prep — `preparePayload` loads audio into `Data` and also writes it to a temp bundle via `BundleSerializer`. Inherent to the approach; the temp bundle is cleaned up on completion.
+- `TransferError.timeout` declared but never raised — added per spec task 1.1 but the 5-second no-peers timeout is handled via UI state (`showNoPeersMessage`) rather than through the error state machine.
