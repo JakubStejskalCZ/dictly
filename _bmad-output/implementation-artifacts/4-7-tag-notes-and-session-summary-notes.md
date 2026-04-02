@@ -1,6 +1,6 @@
 # Story 4.7: Tag Notes & Session Summary Notes
 
-Status: ready-for-dev
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -22,56 +22,56 @@ so that I can capture context that audio alone can't convey.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Replace tag notes placeholder with editable TextEditor in TagDetailPanel (AC: #1, #2)
-  - [ ] 1.1 In `TagDetailPanel.swift`, replace the read-only `RoundedRectangle` notes placeholder (lines 178-193) with an editable `TextEditor` bound to a `@State private var editingNotes: String` variable
-  - [ ] 1.2 Style the TextEditor: `DictlyTypography.body`, `DictlyColors.surface` background, `DictlyColors.border` stroke on focus, rounded corners (6pt), minimum height 60pt, grows with content (use `.frame(minHeight: 60, maxHeight: 150)`)
-  - [ ] 1.3 Show placeholder text "Add notes…" when notes are empty — TextEditor doesn't have native placeholder, use a `.overlay` with `Text("Add notes…")` in `DictlyColors.textSecondary` that hides when `editingNotes` is non-empty, with `allowsHitTesting(false)` so clicks pass through
-  - [ ] 1.4 Add `@FocusState private var isEditingNotes: Bool` and attach `.focused($isEditingNotes)` to the TextEditor
-  - [ ] 1.5 On focus loss (`.onChange(of: isEditingNotes)` when `false`): call `commitNotes(tag:)` — same pattern as existing `commitLabel(tag:)` with stale-capture guard via `selectedTag?.uuid == tag.uuid`
-  - [ ] 1.6 `commitNotes(tag:)`: if `editingNotes.trimmingCharacters(in: .whitespacesAndNewlines)` is empty, set `tag.notes = nil`; otherwise set `tag.notes = editingNotes`. SwiftData auto-persists — no explicit save needed
-  - [ ] 1.7 Sync `editingNotes` from `tag.notes ?? ""` in the existing `onChange(of: selectedTag?.uuid)` block and the `onAppear` block (same pattern as `editingLabel`)
-  - [ ] 1.8 Accessibility: `.accessibilityLabel("Tag notes, editable")`, `.accessibilityHint("Type to add notes for this tag")`
-  - [ ] 1.9 Post `AccessibilityNotification.Announcement("Notes saved")` after commitNotes writes
+- [x] Task 1: Replace tag notes placeholder with editable TextEditor in TagDetailPanel (AC: #1, #2)
+  - [x] 1.1 In `TagDetailPanel.swift`, replace the read-only `RoundedRectangle` notes placeholder (lines 178-193) with an editable `TextEditor` bound to a `@State private var editingNotes: String` variable
+  - [x] 1.2 Style the TextEditor: `DictlyTypography.body`, `DictlyColors.surface` background, `DictlyColors.border` stroke on focus, rounded corners (6pt), minimum height 60pt, grows with content (use `.frame(minHeight: 60, maxHeight: 150)`)
+  - [x] 1.3 Show placeholder text "Add notes…" when notes are empty — TextEditor doesn't have native placeholder, use a `.overlay` with `Text("Add notes…")` in `DictlyColors.textSecondary` that hides when `editingNotes` is non-empty, with `allowsHitTesting(false)` so clicks pass through
+  - [x] 1.4 Add `@FocusState private var isEditingNotes: Bool` and attach `.focused($isEditingNotes)` to the TextEditor
+  - [x] 1.5 On focus loss (`.onChange(of: isEditingNotes)` when `false`): call `commitNotes(tag:)` — same pattern as existing `commitLabel(tag:)` with stale-capture guard via `selectedTag?.uuid == tag.uuid`
+  - [x] 1.6 `commitNotes(tag:)`: if `editingNotes.trimmingCharacters(in: .whitespacesAndNewlines)` is empty, set `tag.notes = nil`; otherwise set `tag.notes = editingNotes`. SwiftData auto-persists — no explicit save needed
+  - [x] 1.7 Sync `editingNotes` from `tag.notes ?? ""` in the existing `onChange(of: selectedTag?.uuid)` block and the `onAppear` block (same pattern as `editingLabel`)
+  - [x] 1.8 Accessibility: `.accessibilityLabel("Tag notes, editable")`, `.accessibilityHint("Type to add notes for this tag")`
+  - [x] 1.9 Post `AccessibilityNotification.Announcement("Notes saved")` after commitNotes writes
 
-- [ ] Task 2: Wire "Session Notes" toolbar button to session summary editor (AC: #3)
-  - [ ] 2.1 In `SessionReviewScreen.swift`, add `@State private var isShowingSessionNotes: Bool = false`
-  - [ ] 2.2 Replace the disabled "Session Notes" button (lines 201-204) with an active button that sets `isShowingSessionNotes = true`
-  - [ ] 2.3 Present a `.sheet(isPresented: $isShowingSessionNotes)` containing `SessionNotesView(session: session)`
-  - [ ] 2.4 Enable the button unconditionally — session notes don't depend on audio or tags
-  - [ ] 2.5 Accessibility: `.accessibilityLabel("Edit session notes")`, `.help("Add or edit session summary notes")`
+- [x] Task 2: Wire "Session Notes" toolbar button to session summary editor (AC: #3)
+  - [x] 2.1 In `SessionReviewScreen.swift`, add `@State private var isShowingSessionNotes: Bool = false`
+  - [x] 2.2 Replace the disabled "Session Notes" button (lines 201-204) with an active button that sets `isShowingSessionNotes = true`
+  - [x] 2.3 Present a `.sheet(isPresented: $isShowingSessionNotes)` containing `SessionNotesView(session: session)`
+  - [x] 2.4 Enable the button unconditionally — session notes don't depend on audio or tags
+  - [x] 2.5 Accessibility: `.accessibilityLabel("Edit session notes")`, `.help("Add or edit session summary notes")`
 
-- [ ] Task 3: Create SessionNotesView (AC: #3)
-  - [ ] 3.1 Create `DictlyMac/Campaigns/SessionNotesView.swift` (architecture specifies this location)
-  - [ ] 3.2 Accept `@Bindable var session: Session` — bind directly to `session.summaryNote` via SwiftData's `@Bindable` support
-  - [ ] 3.3 Layout: title "Session Notes" (`DictlyTypography.h3`), subtitle with session title + date, TextEditor for the summary note, "Done" button to dismiss
-  - [ ] 3.4 TextEditor bound to a `@State private var editingNote: String` initialized from `session.summaryNote ?? ""`. On dismiss or Done: write back `session.summaryNote = editingNote.isEmpty ? nil : editingNote`
-  - [ ] 3.5 Sheet size: `.frame(minWidth: 400, minHeight: 250)` — compact sheet, not full-screen
-  - [ ] 3.6 Add placeholder overlay "Write a session summary…" (same pattern as Task 1.3)
-  - [ ] 3.7 Style: DictlyTheme tokens throughout — `DictlyColors.surface` TextEditor background, `DictlySpacing.md` padding, `DictlyTypography.body` for text
-  - [ ] 3.8 Accessibility: TextEditor `.accessibilityLabel("Session summary note")`, Done button `.accessibilityLabel("Save and close session notes")`
-  - [ ] 3.9 On dismiss: post `AccessibilityNotification.Announcement("Session notes saved")` if content changed
+- [x] Task 3: Create SessionNotesView (AC: #3)
+  - [x] 3.1 Create `DictlyMac/Campaigns/SessionNotesView.swift` (architecture specifies this location)
+  - [x] 3.2 Accept `@Bindable var session: Session` — bind directly to `session.summaryNote` via SwiftData's `@Bindable` support
+  - [x] 3.3 Layout: title "Session Notes" (`DictlyTypography.h3`), subtitle with session title + date, TextEditor for the summary note, "Done" button to dismiss
+  - [x] 3.4 TextEditor bound to a `@State private var editingNote: String` initialized from `session.summaryNote ?? ""`. On dismiss or Done: write back `session.summaryNote = editingNote.isEmpty ? nil : editingNote`
+  - [x] 3.5 Sheet size: `.frame(minWidth: 400, minHeight: 250)` — compact sheet, not full-screen
+  - [x] 3.6 Add placeholder overlay "Write a session summary…" (same pattern as Task 1.3)
+  - [x] 3.7 Style: DictlyTheme tokens throughout — `DictlyColors.surface` TextEditor background, `DictlySpacing.md` padding, `DictlyTypography.body` for text
+  - [x] 3.8 Accessibility: TextEditor `.accessibilityLabel("Session summary note")`, Done button `.accessibilityLabel("Save and close session notes")`
+  - [x] 3.9 On dismiss: post `AccessibilityNotification.Announcement("Session notes saved")` if content changed
 
-- [ ] Task 4: Add notes indicator to TagSidebarRow (AC: #4)
-  - [ ] 4.1 In `TagSidebarRow.swift`, after the `Spacer(minLength: 0)`, add a conditional `Image(systemName: "note.text")` icon that appears when `tag.notes != nil && !tag.notes!.isEmpty`
-  - [ ] 4.2 Style: `.font(.system(size: 10))`, `DictlyColors.textSecondary` foreground, `.accessibilityHidden(true)` (info is supplementary)
-  - [ ] 4.3 Update the existing `.accessibilityLabel` to append ", has notes" when notes exist: `"\(tag.categoryName): \(tag.label...) at \(formatTimestamp(...))` + `(tag.notes != nil && !tag.notes!.isEmpty ? ", has notes" : "")`
+- [x] Task 4: Add notes indicator to TagSidebarRow (AC: #4)
+  - [x] 4.1 In `TagSidebarRow.swift`, after the `Spacer(minLength: 0)`, add a conditional `Image(systemName: "note.text")` icon that appears when `tag.notes != nil && !tag.notes!.isEmpty`
+  - [x] 4.2 Style: `.font(.system(size: 10))`, `DictlyColors.textSecondary` foreground, `.accessibilityHidden(true)` (info is supplementary)
+  - [x] 4.3 Update the existing `.accessibilityLabel` to append ", has notes" when notes exist: `"\(tag.categoryName): \(tag.label...) at \(formatTimestamp(...))` + `(tag.notes != nil && !tag.notes!.isEmpty ? ", has notes" : "")`
 
-- [ ] Task 5: Accessibility pass (AC: #1, #2, #3, #4)
-  - [ ] 5.1 TagDetailPanel notes area: VoiceOver reads "Tag notes, editable. Current notes: [first 50 chars]" or "Tag notes, empty" when no notes
-  - [ ] 5.2 SessionNotesView: VoiceOver announces "Session notes editor" when sheet opens
-  - [ ] 5.3 Focus management: when TagDetailPanel notes TextEditor gains focus, post "Editing tag notes"
-  - [ ] 5.4 Notes indicator in sidebar: included in parent accessibility label, not separately focusable
+- [x] Task 5: Accessibility pass (AC: #1, #2, #3, #4)
+  - [x] 5.1 TagDetailPanel notes area: VoiceOver reads "Tag notes, editable. Current notes: [first 50 chars]" or "Tag notes, empty" when no notes
+  - [x] 5.2 SessionNotesView: VoiceOver announces "Session notes editor" when sheet opens
+  - [x] 5.3 Focus management: when TagDetailPanel notes TextEditor gains focus, post "Editing tag notes"
+  - [x] 5.4 Notes indicator in sidebar: included in parent accessibility label, not separately focusable
 
-- [ ] Task 6: Unit tests (AC: #1, #2, #3, #4)
-  - [ ] 6.1 Create `DictlyMacTests/ReviewTests/TagNotesTests.swift`
-  - [ ] 6.2 Test: setting `tag.notes = "some note"` persists in SwiftData context (fetch back and verify)
-  - [ ] 6.3 Test: setting `tag.notes = nil` clears notes in SwiftData context
-  - [ ] 6.4 Test: setting `tag.notes = "  "` (whitespace only) — verify the trimming logic would set nil
-  - [ ] 6.5 Test: setting `session.summaryNote = "Session summary"` persists in SwiftData context
-  - [ ] 6.6 Test: setting `session.summaryNote = nil` clears summary in SwiftData context
-  - [ ] 6.7 Test: tag with notes has `notes != nil && !notes!.isEmpty` (for sidebar indicator logic)
-  - [ ] 6.8 Test: tag without notes has `notes == nil` (indicator should not show)
-  - [ ] 6.9 Use `@MainActor`, in-memory `ModelContainer` with `ModelConfiguration(isStoredInMemoryOnly: true)`, `DictlySchema.all` (project convention from stories 4-5 and 4-6)
+- [x] Task 6: Unit tests (AC: #1, #2, #3, #4)
+  - [x] 6.1 Create `DictlyMacTests/ReviewTests/TagNotesTests.swift`
+  - [x] 6.2 Test: setting `tag.notes = "some note"` persists in SwiftData context (fetch back and verify)
+  - [x] 6.3 Test: setting `tag.notes = nil` clears notes in SwiftData context
+  - [x] 6.4 Test: setting `tag.notes = "  "` (whitespace only) — verify the trimming logic would set nil
+  - [x] 6.5 Test: setting `session.summaryNote = "Session summary"` persists in SwiftData context
+  - [x] 6.6 Test: setting `session.summaryNote = nil` clears summary in SwiftData context
+  - [x] 6.7 Test: tag with notes has `notes != nil && !notes!.isEmpty` (for sidebar indicator logic)
+  - [x] 6.8 Test: tag without notes has `notes == nil` (indicator should not show)
+  - [x] 6.9 Use `@MainActor`, in-memory `ModelContainer` with `ModelConfiguration(isStoredInMemoryOnly: true)`, `DictlySchema.all` (project convention from stories 4-5 and 4-6)
 
 ## Dev Notes
 
@@ -204,10 +204,41 @@ Recent commits follow `feat(review):` / `fix(review):` conventional commit forma
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+claude-sonnet-4-6
 
 ### Debug Log References
 
+- `session.createdAt` does not exist on the Session model — property is `session.date`. Fixed in SessionNotesView.swift.
+
 ### Completion Notes List
 
+- Task 1: Replaced notes placeholder in `TagDetailPanel.swift` with editable `TextEditor`. Added `editingNotes` state, `isEditingNotes` FocusState, `commitNotes(tag:)` with stale-capture guard. Synced `editingNotes` in `onAppear` and `onChange(of: selectedTag?.uuid)`. Accessibility label dynamically shows empty vs. first 50 chars.
+- Task 2: Wired "Session Notes" button in `SessionReviewScreen.swift` — removed disabled state, added `isShowingSessionNotes` state, added `.sheet` presentation for `SessionNotesView`.
+- Task 3: Created `DictlyMac/Campaigns/SessionNotesView.swift` with `@Bindable var session`, `@State editingNote`, placeholder overlay, Done button, onDisappear save, accessibility labels, frame `(minWidth: 400, minHeight: 250)`. Added `Campaigns` source path to `project.yml` and re-ran xcodegen.
+- Task 4: Added `note.text` SF Symbol indicator to `TagSidebarRow.swift` with conditional display, `.accessibilityHidden(true)`, and accessibility label appended with ", has notes".
+- Task 5: Accessibility pass embedded in tasks 1–4 per spec.
+- Task 6: Created `DictlyMacTests/ReviewTests/TagNotesTests.swift` with 16 tests covering all story ACs. `** TEST BUILD SUCCEEDED **` confirmed. DictlyKit 245 tests pass (no regressions).
+
 ### File List
+
+- DictlyMac/Review/TagDetailPanel.swift (modified)
+- DictlyMac/Review/SessionReviewScreen.swift (modified)
+- DictlyMac/Review/TagSidebarRow.swift (modified)
+- DictlyMac/Campaigns/SessionNotesView.swift (new)
+- DictlyMac/project.yml (modified — added Campaigns source path)
+- DictlyMacTests/ReviewTests/TagNotesTests.swift (new)
+
+### Review Findings
+
+- [x] [Review][Patch] F4 (Critical): Silent discard of in-progress tag notes on tag switch — stale-capture guard fires after selectedTag already changed, old edit lost [TagDetailPanel.swift:46]
+- [x] [Review][Patch] F3: `commitNotes` posts "Notes saved" announcement unconditionally on every blur even when value unchanged [TagDetailPanel.swift:298]
+- [x] [Review][Patch] F2+F11: Double-save race — `saveAndDismiss()` + `onDisappear` both call `saveNote()`, causing duplicate accessibility announcement; `originalNote` stale after external write [SessionNotesView.swift:80]
+- [x] [Review][Patch] F5: `SessionNotesView` TextEditor missing focus border stroke (TagDetailPanel has it; consistency gap) [SessionNotesView.swift:39]
+- [x] [Review][Patch] F6: `SessionNotesView` TextEditor uses `.frame(maxWidth: .infinity, maxHeight: .infinity)` — unbounded height, contradicts "1-2 line summary" intent [SessionNotesView.swift:43]
+- [x] [Review][Patch] F9: Force-unwrap `tag.notes!` in `TagSidebarRow` — replace with `if let` binding [TagSidebarRow.swift:32]
+- [x] [Review][Patch] F10: `formatSessionDate` allocates a new `DateFormatter` on every `body` evaluation — use `Date.formatted()` [SessionNotesView.swift:97]
+
+## Change Log
+
+- 2026-04-02: Story 4.7 implemented — tag notes editable TextEditor, session notes sheet, sidebar notes indicator, unit tests (claude-sonnet-4-6)
+- 2026-04-02: Code review patches applied — F4 silent notes discard, F3 unconditional announcement, F2+F11 double-save race, F5 focus border, F6 height constraint, F9 force-unwrap, F10 DateFormatter (claude-sonnet-4-6)

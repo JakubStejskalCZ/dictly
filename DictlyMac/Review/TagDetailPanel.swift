@@ -43,7 +43,20 @@ struct TagDetailPanel: View {
                 editingNotes = tag.notes ?? ""
             }
         }
-        .onChange(of: selectedTag?.uuid) { _, _ in
+        .onChange(of: selectedTag?.uuid) { oldUUID, _ in
+            // Commit in-progress notes to old tag before switching selection.
+            // The stale-capture guard in commitNotes cannot protect this path because
+            // selectedTag has already changed by the time onChange fires.
+            if isEditingNotes, let oldUUID = oldUUID {
+                let descriptor = FetchDescriptor<Tag>(predicate: #Predicate { $0.uuid == oldUUID })
+                if let oldTag = try? modelContext.fetch(descriptor).first {
+                    let trimmed = editingNotes.trimmingCharacters(in: .whitespacesAndNewlines)
+                    let newNotes: String? = trimmed.isEmpty ? nil : editingNotes
+                    if newNotes != oldTag.notes {
+                        oldTag.notes = newNotes
+                    }
+                }
+            }
             isEditingLabel = false
             isEditingNotes = false
             showCategoryPicker = false
@@ -298,7 +311,9 @@ struct TagDetailPanel: View {
     private func commitNotes(tag: Tag) {
         guard selectedTag?.uuid == tag.uuid else { return }
         let trimmed = editingNotes.trimmingCharacters(in: .whitespacesAndNewlines)
-        tag.notes = trimmed.isEmpty ? nil : editingNotes
+        let newNotes: String? = trimmed.isEmpty ? nil : editingNotes
+        guard newNotes != tag.notes else { return }
+        tag.notes = newNotes
         AccessibilityNotification.Announcement("Notes saved").post()
     }
 

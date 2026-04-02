@@ -12,12 +12,13 @@ struct SessionNotesView: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var editingNote: String = ""
-    private var originalNote: String
+    @State private var originalNote: String = ""
+    @FocusState private var isEditingNote: Bool
 
     init(session: Session) {
         self.session = session
-        self.originalNote = session.summaryNote ?? ""
         self._editingNote = State(initialValue: session.summaryNote ?? "")
+        self._originalNote = State(initialValue: session.summaryNote ?? "")
     }
 
     var body: some View {
@@ -40,8 +41,13 @@ struct SessionNotesView: View {
                     .font(DictlyTypography.body)
                     .scrollContentBackground(.hidden)
                     .background(DictlyColors.surface)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .frame(minHeight: 80, maxHeight: .infinity)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 6)
+                            .strokeBorder(isEditingNote ? DictlyColors.border : Color.clear, lineWidth: 1)
+                    )
                     .clipShape(RoundedRectangle(cornerRadius: 6))
+                    .focused($isEditingNote)
                     .accessibilityLabel("Session summary note")
 
                 if editingNote.isEmpty {
@@ -88,6 +94,7 @@ struct SessionNotesView: View {
         session.summaryNote = newValue
         if editingNote != originalNote {
             AccessibilityNotification.Announcement("Session notes saved").post()
+            originalNote = editingNote  // prevent duplicate announcement on second call (e.g. onDisappear after Done)
         }
     }
 }
@@ -95,8 +102,5 @@ struct SessionNotesView: View {
 // MARK: - Date Formatting
 
 private func formatSessionDate(_ date: Date) -> String {
-    let formatter = DateFormatter()
-    formatter.dateStyle = .medium
-    formatter.timeStyle = .none
-    return formatter.string(from: date)
+    date.formatted(date: .abbreviated, time: .omitted)
 }
