@@ -25,6 +25,7 @@ targets:
     deploymentTarget: "14.0"
     sources:
       - path: App
+      - path: Campaigns
       - path: Import
       - path: Settings
       - path: Review

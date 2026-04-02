@@ -28,10 +28,17 @@ struct TagSidebarRow: View {
             }
 
             Spacer(minLength: 0)
+
+            if tag.notes != nil && !tag.notes!.isEmpty {
+                Image(systemName: "note.text")
+                    .font(.system(size: 10))
+                    .foregroundStyle(DictlyColors.textSecondary)
+                    .accessibilityHidden(true)
+            }
         }
         .padding(.vertical, DictlySpacing.xs)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(tag.categoryName): \(tag.label.isEmpty ? "Untitled Tag" : tag.label) at \(formatTimestamp(tag.anchorTime))")
+        .accessibilityLabel("\(tag.categoryName): \(tag.label.isEmpty ? "Untitled Tag" : tag.label) at \(formatTimestamp(tag.anchorTime))\(tag.notes != nil && !tag.notes!.isEmpty ? ", has notes" : "")")
     }
 
 }

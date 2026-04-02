@@ -24,6 +24,9 @@ struct SessionReviewScreen: View {
     @State private var isCreatingTag: Bool = false
     @State private var newTagAnchorTime: TimeInterval = 0
 
+    // MARK: Session notes state (Story 4.7)
+    @State private var isShowingSessionNotes: Bool = false
+
     private let logger = Logger(subsystem: "com.dictly.mac", category: "playback")
     private let taggingLogger = Logger(subsystem: "com.dictly.mac", category: "tagging")
 
@@ -85,6 +88,10 @@ struct SessionReviewScreen: View {
                     isCreatingTag = false
                 }
             )
+        }
+        // Story 4.7: Session notes sheet
+        .sheet(isPresented: $isShowingSessionNotes) {
+            SessionNotesView(session: session)
         }
     }
 
@@ -198,10 +205,11 @@ struct SessionReviewScreen: View {
                     .accessibilityLabel("Export as Markdown")
                     .help("Markdown export available after export feature (Epic 6)")
 
-                Button("Session Notes") { }
-                    .disabled(true)
-                    .accessibilityLabel("Session notes")
-                    .help("Session notes editing available in story 4.7")
+                Button("Session Notes") {
+                    isShowingSessionNotes = true
+                }
+                .accessibilityLabel("Edit session notes")
+                .help("Add or edit session summary notes")
             }
             .buttonStyle(.bordered)
         }

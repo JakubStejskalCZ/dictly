@@ -15,6 +15,8 @@ struct TagDetailPanel: View {
 
     @State private var editingLabel: String = ""
     @FocusState private var isEditingLabel: Bool
+    @State private var editingNotes: String = ""
+    @FocusState private var isEditingNotes: Bool
     @State private var showCategoryPicker: Bool = false
     @State private var showDeleteConfirmation: Bool = false
     @State private var tagToDeleteFromPanel: Tag?
@@ -38,15 +40,19 @@ struct TagDetailPanel: View {
         .onAppear {
             if let tag = selectedTag {
                 editingLabel = tag.label
+                editingNotes = tag.notes ?? ""
             }
         }
         .onChange(of: selectedTag?.uuid) { _, _ in
             isEditingLabel = false
+            isEditingNotes = false
             showCategoryPicker = false
             if let tag = selectedTag {
                 editingLabel = tag.label
+                editingNotes = tag.notes ?? ""
             } else {
                 editingLabel = ""
+                editingNotes = ""
             }
         }
         .alert("Delete Tag?", isPresented: $showDeleteConfirmation) {
@@ -175,21 +181,46 @@ struct TagDetailPanel: View {
                     )
             }
 
-            // Notes placeholder (story 4.7)
+            // Notes — editable TextEditor (story 4.7)
             VStack(alignment: .leading, spacing: DictlySpacing.xs) {
                 Text("Notes")
                     .font(DictlyTypography.caption)
                     .foregroundStyle(DictlyColors.textSecondary)
-                RoundedRectangle(cornerRadius: 6)
-                    .fill(DictlyColors.surface)
-                    .frame(height: 60)
-                    .overlay(
-                        Text(tag.notes ?? "Add notes here.")
+                ZStack(alignment: .topLeading) {
+                    TextEditor(text: $editingNotes)
+                        .font(DictlyTypography.body)
+                        .scrollContentBackground(.hidden)
+                        .background(DictlyColors.surface)
+                        .frame(minHeight: 60, maxHeight: 150)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 6)
+                                .strokeBorder(isEditingNotes ? DictlyColors.border : Color.clear, lineWidth: 1)
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                        .focused($isEditingNotes)
+                        .onChange(of: isEditingNotes) { _, focused in
+                            if focused {
+                                AccessibilityNotification.Announcement("Editing tag notes").post()
+                            } else {
+                                commitNotes(tag: tag)
+                            }
+                        }
+                        .accessibilityLabel(editingNotes.isEmpty
+                            ? "Tag notes, empty"
+                            : "Tag notes, editable. Current notes: \(String(editingNotes.prefix(50)))")
+                        .accessibilityHint("Type to add notes for this tag")
+
+                    if editingNotes.isEmpty {
+                        Text("Add notes…")
                             .font(DictlyTypography.body)
                             .foregroundStyle(DictlyColors.textSecondary)
-                            .padding(DictlySpacing.sm),
-                        alignment: .topLeading
-                    )
+                            .padding(.top, 8)
+                            .padding(.leading, 5)
+                            .allowsHitTesting(false)
+                    }
+                }
+                .background(DictlyColors.surface)
+                .clipShape(RoundedRectangle(cornerRadius: 6))
             }
 
             // Delete Tag — destructive action with confirmation
@@ -262,6 +293,13 @@ struct TagDetailPanel: View {
             tag.label = trimmed
             AccessibilityNotification.Announcement("Tag label saved").post()
         }
+    }
+
+    private func commitNotes(tag: Tag) {
+        guard selectedTag?.uuid == tag.uuid else { return }
+        let trimmed = editingNotes.trimmingCharacters(in: .whitespacesAndNewlines)
+        tag.notes = trimmed.isEmpty ? nil : editingNotes
+        AccessibilityNotification.Announcement("Notes saved").post()
     }
 
     private func deleteTag(_ tag: Tag) {
