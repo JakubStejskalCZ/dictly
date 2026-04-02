@@ -8,21 +8,47 @@
 
 /* Begin PBXBuildFile section */
 		483EBF5CB15388A4061C741A /* DictlyKit in Frameworks */ = {isa = PBXBuildFile; productRef = C7A8F80EBE71320BD7E63E9E /* DictlyKit */; };
+		5AEEF9E41E6F97CB8725E8FE /* LocalNetworkReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = B98B53E1C627818A5B42932D /* LocalNetworkReceiver.swift */; };
+		6E52A9688ABD53A2D5CCCB88 /* LocalNetworkReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 630711832B38B9EA2231CB37 /* LocalNetworkReceiverTests.swift */; };
 		8026E48D8E51F41B6ACCC2BB /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D79153280CF49C24B46C221 /* ContentView.swift */; };
 		C219054539490DBD3F6F4340 /* PreferencesWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B010B705AA06A5BD1749B44 /* PreferencesWindow.swift */; };
 		C5E3B5BCF8DFDEECC5C4BC6F /* DictlyMacApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95E649BA6DF1539916AFC171 /* DictlyMacApp.swift */; };
+		E89B3FAB32A9A61B34328160 /* DictlyKit in Frameworks */ = {isa = PBXBuildFile; productRef = 6D779627DD09B4C0A1B8FA61 /* DictlyKit */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		34394DDA1F01D11E190DE795 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AF1B8E01C6B7CEFB5471684D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 62761C5198395EC9CF834280;
+			remoteInfo = DictlyMac;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		3B010B705AA06A5BD1749B44 /* PreferencesWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesWindow.swift; sourceTree = "<group>"; };
 		451A0E0AFA5C65057119CDBD /* DictlyMac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DictlyMac.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		630711832B38B9EA2231CB37 /* LocalNetworkReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalNetworkReceiverTests.swift; sourceTree = "<group>"; };
 		8D79153280CF49C24B46C221 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		95E649BA6DF1539916AFC171 /* DictlyMacApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictlyMacApp.swift; sourceTree = "<group>"; };
+		9EB04EFF1D057998274F3D54 /* .gitkeep */ = {isa = PBXFileReference; path = .gitkeep; sourceTree = "<group>"; };
 		A8885E926145C865765F63DE /* .gitkeep */ = {isa = PBXFileReference; path = .gitkeep; sourceTree = "<group>"; };
+		B629B3ADAFBE8F7A1A8C0040 /* DictlyMacTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DictlyMacTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B98B53E1C627818A5B42932D /* LocalNetworkReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalNetworkReceiver.swift; sourceTree = "<group>"; };
 		BC6F035F6865123E34DDB2E6 /* DictlyKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = DictlyKit; path = ../DictlyKit; sourceTree = SOURCE_ROOT; };
+		E39A02E06E7DC2F7802567A6 /* .gitkeep */ = {isa = PBXFileReference; path = .gitkeep; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		072475F78EEBFA21663AE7AD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E89B3FAB32A9A61B34328160 /* DictlyKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		6F4F8BBFC7918469196445B8 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -38,10 +64,21 @@
 			isa = PBXGroup;
 			children = (
 				23E53F03A9B6D0166A5C11F4 /* App */,
+				1B5792082D55330D7949F840 /* Dictly (kopie) */,
+				6DC0A1320FC0A6B2DAB877F0 /* Import */,
 				9B444FB2F46D61DBB2B657F6 /* Packages */,
 				F7C55C541B7F24ACC93E0963 /* Settings */,
 				6F0AAFC1884D885B01A85E4E /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		1B5792082D55330D7949F840 /* Dictly (kopie) */ = {
+			isa = PBXGroup;
+			children = (
+				EADA3E5BACEA271C35C50E06 /* DictlyMacTests */,
+			);
+			name = "Dictly (kopie)";
+			path = ..;
 			sourceTree = "<group>";
 		};
 		23E53F03A9B6D0166A5C11F4 /* App */ = {
@@ -53,10 +90,20 @@
 			path = App;
 			sourceTree = "<group>";
 		};
+		6DC0A1320FC0A6B2DAB877F0 /* Import */ = {
+			isa = PBXGroup;
+			children = (
+				E39A02E06E7DC2F7802567A6 /* .gitkeep */,
+				B98B53E1C627818A5B42932D /* LocalNetworkReceiver.swift */,
+			);
+			path = Import;
+			sourceTree = "<group>";
+		};
 		6F0AAFC1884D885B01A85E4E /* Products */ = {
 			isa = PBXGroup;
 			children = (
 				451A0E0AFA5C65057119CDBD /* DictlyMac.app */,
+				B629B3ADAFBE8F7A1A8C0040 /* DictlyMacTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -67,6 +114,23 @@
 				BC6F035F6865123E34DDB2E6 /* DictlyKit */,
 			);
 			name = Packages;
+			sourceTree = "<group>";
+		};
+		B62165400DC9D7EB7994D7CF /* ImportTests */ = {
+			isa = PBXGroup;
+			children = (
+				630711832B38B9EA2231CB37 /* LocalNetworkReceiverTests.swift */,
+			);
+			path = ImportTests;
+			sourceTree = "<group>";
+		};
+		EADA3E5BACEA271C35C50E06 /* DictlyMacTests */ = {
+			isa = PBXGroup;
+			children = (
+				9EB04EFF1D057998274F3D54 /* .gitkeep */,
+				B62165400DC9D7EB7994D7CF /* ImportTests */,
+			);
+			path = DictlyMacTests;
 			sourceTree = "<group>";
 		};
 		F7C55C541B7F24ACC93E0963 /* Settings */ = {
@@ -100,6 +164,26 @@
 			productReference = 451A0E0AFA5C65057119CDBD /* DictlyMac.app */;
 			productType = "com.apple.product-type.application";
 		};
+		F43878420F28469110FD34CC /* DictlyMacTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5D62CECA7EC9EEAC1B579710 /* Build configuration list for PBXNativeTarget "DictlyMacTests" */;
+			buildPhases = (
+				34352181509A7CD807BC3D05 /* Sources */,
+				072475F78EEBFA21663AE7AD /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				BCB3ED18B872B09E8FA94C80 /* PBXTargetDependency */,
+			);
+			name = DictlyMacTests;
+			packageProductDependencies = (
+				6D779627DD09B4C0A1B8FA61 /* DictlyKit */,
+			);
+			productName = DictlyMacTests;
+			productReference = B629B3ADAFBE8F7A1A8C0040 /* DictlyMacTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -110,6 +194,10 @@
 				LastUpgradeCheck = 1600;
 				TargetAttributes = {
 					62761C5198395EC9CF834280 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+					};
+					F43878420F28469110FD34CC = {
 						DevelopmentTeam = "";
 						ProvisioningStyle = Automatic;
 					};
@@ -133,24 +221,80 @@
 			projectRoot = "";
 			targets = (
 				62761C5198395EC9CF834280 /* DictlyMac */,
+				F43878420F28469110FD34CC /* DictlyMacTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
+		34352181509A7CD807BC3D05 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6E52A9688ABD53A2D5CCCB88 /* LocalNetworkReceiverTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D7B6126F378A7EE9844A0B02 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				8026E48D8E51F41B6ACCC2BB /* ContentView.swift in Sources */,
 				C5E3B5BCF8DFDEECC5C4BC6F /* DictlyMacApp.swift in Sources */,
+				5AEEF9E41E6F97CB8725E8FE /* LocalNetworkReceiver.swift in Sources */,
 				C219054539490DBD3F6F4340 /* PreferencesWindow.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		BCB3ED18B872B09E8FA94C80 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 62761C5198395EC9CF834280 /* DictlyMac */;
+			targetProxy = 34394DDA1F01D11E190DE795 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		522DDC47DB44DFCB9CD16386 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dictly.mac.tests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 6.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/DictlyMac.app/Contents/MacOS/DictlyMac";
+			};
+			name = Debug;
+		};
+		5F88B8F5B85864ABDCF5FF1E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dictly.mac.tests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 6.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/DictlyMac.app/Contents/MacOS/DictlyMac";
+			};
+			name = Release;
+		};
 		96A0AE363181DED22E0FE431 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -317,6 +461,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		5D62CECA7EC9EEAC1B579710 /* Build configuration list for PBXNativeTarget "DictlyMacTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				522DDC47DB44DFCB9CD16386 /* Debug */,
+				5F88B8F5B85864ABDCF5FF1E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		D6E8889CBBFE9E1EED5579B1 /* Build configuration list for PBXProject "DictlyMac" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -345,6 +498,10 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		6D779627DD09B4C0A1B8FA61 /* DictlyKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DictlyKit;
+		};
 		C7A8F80EBE71320BD7E63E9E /* DictlyKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = DictlyKit;

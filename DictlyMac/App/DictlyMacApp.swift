@@ -17,11 +17,13 @@ struct DictlyMacApp: App {
     }()
 
     @State private var syncService = CategorySyncService()
+    @State private var networkReceiver = LocalNetworkReceiver()
 
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .environment(syncService)
+                .environment(networkReceiver)
                 .task {
                     do {
                         try DefaultTagSeeder.seedIfNeeded(context: container.mainContext)
@@ -29,6 +31,7 @@ struct DictlyMacApp: App {
                         logger.error("Failed to seed default tags: \(error)")
                     }
                     syncService.startObserving(context: container.mainContext)
+                    networkReceiver.startListening()
                 }
         }
         .modelContainer(container)

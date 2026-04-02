@@ -20,6 +20,12 @@
 	<string>Dictly records audio during your tabletop sessions so you can tag and review important moments later.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Dictly can optionally save where you played each session for easier recall.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Dictly uses the local network to discover your Mac for session transfer.</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_dictly._tcp</string>
+	</array>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>audio</string>

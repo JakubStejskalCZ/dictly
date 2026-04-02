@@ -1,6 +1,6 @@
 # Story 3.3: Local Network Transfer (Bonjour Fallback)
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -20,69 +20,69 @@ so that I always have a reliable way to get sessions to my Mac.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Add `TransferError` cases for local network failures (AC: #3, #4)
-  - [ ] 1.1 Add `case connectionFailed`, `case transferInterrupted`, `case timeout` to `DictlyError.TransferError` in `DictlyKit/Sources/DictlyModels/DictlyError.swift`
-  - [ ] 1.2 Add `errorDescription` for each new case with user-friendly messages
+- [x] Task 1: Add `TransferError` cases for local network failures (AC: #3, #4)
+  - [x] 1.1 Add `case connectionFailed`, `case transferInterrupted`, `case timeout` to `DictlyError.TransferError` in `DictlyKit/Sources/DictlyModels/DictlyError.swift`
+  - [x] 1.2 Add `errorDescription` for each new case with user-friendly messages
 
-- [ ] Task 2: Create `LocalNetworkReceiver` on Mac (AC: #1)
-  - [ ] 2.1 Create `LocalNetworkReceiver.swift` in `DictlyMac/Import/` as `@Observable @MainActor` class
-  - [ ] 2.2 Create `NWListener` on a system-assigned TCP port advertising Bonjour service type `_dictly._tcp` (domain: `nil`)
-  - [ ] 2.3 Set `listener.service = NWListener.Service(name: "Dictly-Mac", type: "_dictly._tcp")` for discoverability
-  - [ ] 2.4 Implement `listener.stateUpdateHandler` — log state changes, handle `.ready` (port assigned), `.failed` (restart logic)
-  - [ ] 2.5 Implement `listener.newConnectionHandler` — accept incoming `NWConnection`, call `receiveBundle(on:)`
-  - [ ] 2.6 Implement `receiveBundle(on:)`:
+- [x] Task 2: Create `LocalNetworkReceiver` on Mac (AC: #1)
+  - [x] 2.1 Create `LocalNetworkReceiver.swift` in `DictlyMac/Import/` as `@Observable @MainActor` class
+  - [x] 2.2 Create `NWListener` on a system-assigned TCP port advertising Bonjour service type `_dictly._tcp` (domain: `nil`)
+  - [x] 2.3 Set `listener.service = NWListener.Service(name: "Dictly-Mac", type: "_dictly._tcp")` for discoverability
+  - [x] 2.4 Implement `listener.stateUpdateHandler` — log state changes, handle `.ready` (port assigned), `.failed` (restart logic)
+  - [x] 2.5 Implement `listener.newConnectionHandler` — accept incoming `NWConnection`, call `receiveBundle(on:)`
+  - [x] 2.6 Implement `receiveBundle(on:)`:
     - Receive a 4-byte big-endian UInt32 length prefix, then the full `.dictly` bundle as a zip/tar archive byte stream
     - Write received data to temp directory, unarchive to `.dictly` directory
     - Publish received bundle URL via `@Observable` property `receivedBundleURL: URL?` for `ImportService` to consume
-  - [ ] 2.7 Implement `receiverState` observable: `.idle`, `.listening`, `.receiving(progress: Double)`, `.received`, `.failed(Error)`
-  - [ ] 2.8 Add `os.Logger` messages (subsystem: `com.dictly.mac`, category: `transfer`)
-  - [ ] 2.9 Start listener automatically on app launch (call from `DictlyMacApp.swift` or inject via `@Environment`)
+  - [x] 2.7 Implement `receiverState` observable: `.idle`, `.listening`, `.receiving(progress: Double)`, `.received`, `.failed(Error)`
+  - [x] 2.8 Add `os.Logger` messages (subsystem: `com.dictly.mac`, category: `transfer`)
+  - [x] 2.9 Start listener automatically on app launch (call from `DictlyMacApp.swift` or inject via `@Environment`)
 
-- [ ] Task 3: Create `LocalNetworkSender` on iOS (AC: #1, #2, #3, #4)
-  - [ ] 3.1 Create `LocalNetworkSender.swift` in `DictlyiOS/Transfer/` as `@Observable @MainActor` class
-  - [ ] 3.2 Create `NWBrowser` for service type `_dictly._tcp` with `NWParameters.tcp`
-  - [ ] 3.3 Implement `browser.stateUpdateHandler` — handle `.ready`, `.failed`
-  - [ ] 3.4 Implement `browser.browseResultsChangedHandler` — populate `@Observable` property `discoveredPeers: [NWBrowser.Result]`
-  - [ ] 3.5 Implement `startBrowsing()` and `stopBrowsing()` lifecycle methods
-  - [ ] 3.6 Implement `send(session:to:)`:
+- [x] Task 3: Create `LocalNetworkSender` on iOS (AC: #1, #2, #3, #4)
+  - [x] 3.1 Create `LocalNetworkSender.swift` in `DictlyiOS/Transfer/` as `@Observable @MainActor` class
+  - [x] 3.2 Create `NWBrowser` for service type `_dictly._tcp` with `NWParameters.tcp`
+  - [x] 3.3 Implement `browser.stateUpdateHandler` — handle `.ready`, `.failed`
+  - [x] 3.4 Implement `browser.browseResultsChangedHandler` — populate `@Observable` property `discoveredPeers: [NWBrowser.Result]`
+  - [x] 3.5 Implement `startBrowsing()` and `stopBrowsing()` lifecycle methods
+  - [x] 3.6 Implement `send(session:to:)`:
     - Prepare bundle via `BundleSerializer` (reuse same logic as `TransferService._prepareBundleSync`)
     - Archive the `.dictly` directory into a data blob (zip or tar)
     - Create `NWConnection` to the selected `NWBrowser.Result` endpoint
     - Send 4-byte big-endian UInt32 length prefix, then the archive data
     - Track progress via `NWConnection.send` completion
-  - [ ] 3.7 Implement `senderState` observable: `.idle`, `.browsing`, `.connecting`, `.sending(progress: Double)`, `.completed`, `.failed(Error)`
-  - [ ] 3.8 Handle connection errors — set `.failed` with `DictlyError.transfer(.connectionFailed)` or `.transfer(.transferInterrupted)` as appropriate
-  - [ ] 3.9 Add `os.Logger` messages (subsystem: `com.dictly.ios`, category: `transfer`)
-  - [ ] 3.10 Cleanup: cancel browser, cancel connection, remove temp bundle on completion/failure
+  - [x] 3.7 Implement `senderState` observable: `.idle`, `.browsing`, `.connecting`, `.sending(progress: Double)`, `.completed`, `.failed(Error)`
+  - [x] 3.8 Handle connection errors — set `.failed` with `DictlyError.transfer(.connectionFailed)` or `.transfer(.transferInterrupted)` as appropriate
+  - [x] 3.9 Add `os.Logger` messages (subsystem: `com.dictly.ios`, category: `transfer`)
+  - [x] 3.10 Cleanup: cancel browser, cancel connection, remove temp bundle on completion/failure
 
-- [ ] Task 4: Update `TransferPrompt` to offer local network option (AC: #1, #2, #3, #4)
-  - [ ] 4.1 Add `@State private var localNetworkSender = LocalNetworkSender()` to `TransferPrompt`
-  - [ ] 4.2 In `.idle` state, add a secondary "Send via Wi-Fi" button below the AirDrop button (uses `DictlyTypography.body`, `DictlyColors.textSecondary` styling — same as "Transfer Later")
-  - [ ] 4.3 When "Send via Wi-Fi" is tapped, start browsing and show a peer picker:
+- [x] Task 4: Update `TransferPrompt` to offer local network option (AC: #1, #2, #3, #4)
+  - [x] 4.1 Add `@State private var localNetworkSender = LocalNetworkSender()` to `TransferPrompt`
+  - [x] 4.2 In `.idle` state, add a secondary "Send via Wi-Fi" button below the AirDrop button (uses `DictlyTypography.body`, `DictlyColors.textSecondary` styling — same as "Transfer Later")
+  - [x] 4.3 When "Send via Wi-Fi" is tapped, start browsing and show a peer picker:
     - If no peers found after 5 seconds, show "No Mac found on network" with retry
     - If peers found, show list of discovered Mac names for selection
     - On peer selection, call `localNetworkSender.send(session:to:)`
-  - [ ] 4.4 Show transfer progress during send: reuse existing `preparingView` for `.connecting` state, add progress bar for `.sending(progress:)` state
-  - [ ] 4.5 Show `.completed` state — reuse existing green checkmark + auto-dismiss
-  - [ ] 4.6 Show `.failed` state — reuse existing error view with "Retry" and "Transfer Later"
-  - [ ] 4.7 Add VoiceOver accessibility labels on new Wi-Fi transfer elements
+  - [x] 4.4 Show transfer progress during send: reuse existing `preparingView` for `.connecting` state, add progress bar for `.sending(progress:)` state
+  - [x] 4.5 Show `.completed` state — reuse existing green checkmark + auto-dismiss
+  - [x] 4.6 Show `.failed` state — reuse existing error view with "Retry" and "Transfer Later"
+  - [x] 4.7 Add VoiceOver accessibility labels on new Wi-Fi transfer elements
 
-- [ ] Task 5: Info.plist and entitlements (AC: #1)
-  - [ ] 5.1 Add `NSLocalNetworkUsageDescription` to iOS `Info.plist`: "Dictly uses the local network to discover your Mac for session transfer."
-  - [ ] 5.2 Add `NSBonjourServices` array to iOS `Info.plist` with value `["_dictly._tcp"]`
-  - [ ] 5.3 Add `NSLocalNetworkUsageDescription` to Mac `Info.plist`: "Dictly uses the local network to receive sessions from your iPhone."
-  - [ ] 5.4 Add `NSBonjourServices` array to Mac `Info.plist` with value `["_dictly._tcp"]`
+- [x] Task 5: Info.plist and entitlements (AC: #1)
+  - [x] 5.1 Add `NSLocalNetworkUsageDescription` to iOS `Info.plist`: "Dictly uses the local network to discover your Mac for session transfer."
+  - [x] 5.2 Add `NSBonjourServices` array to iOS `Info.plist` with value `["_dictly._tcp"]`
+  - [x] 5.3 Add `NSLocalNetworkUsageDescription` to Mac `Info.plist`: "Dictly uses the local network to receive sessions from your iPhone."
+  - [x] 5.4 Add `NSBonjourServices` array to Mac `Info.plist` with value `["_dictly._tcp"]`
 
-- [ ] Task 6: Unit tests (AC: #1, #2, #3, #4)
-  - [ ] 6.1 Create `LocalNetworkSenderTests.swift` in `DictlyiOS/Tests/TransferTests/`
-  - [ ] 6.2 Test `senderState` transitions: `.idle` -> `.browsing` -> `.connecting` -> `.sending` -> `.completed`
-  - [ ] 6.3 Test `senderState` failure path: `.idle` -> `.browsing` -> `.connecting` -> `.failed`
-  - [ ] 6.4 Test that `stopBrowsing()` cancels the browser and resets state
-  - [ ] 6.5 Test bundle preparation for local network (verify temp `.dictly` directory created)
-  - [ ] 6.6 Create `LocalNetworkReceiverTests.swift` in `DictlyMac/Tests/ImportTests/` (if test target exists) or `DictlyMacTests/ImportTests/`
-  - [ ] 6.7 Test `receiverState` transitions: `.idle` -> `.listening` -> `.receiving` -> `.received`
-  - [ ] 6.8 Test that `receivedBundleURL` is set when a bundle is fully received
-  - [ ] 6.9 Test new `DictlyError.TransferError` cases have non-nil `errorDescription`
+- [x] Task 6: Unit tests (AC: #1, #2, #3, #4)
+  - [x] 6.1 Create `LocalNetworkSenderTests.swift` in `DictlyiOS/Tests/TransferTests/`
+  - [x] 6.2 Test `senderState` transitions: `.idle` -> `.browsing` -> `.connecting` -> `.sending` -> `.completed`
+  - [x] 6.3 Test `senderState` failure path: `.idle` -> `.browsing` -> `.connecting` -> `.failed`
+  - [x] 6.4 Test that `stopBrowsing()` cancels the browser and resets state
+  - [x] 6.5 Test bundle preparation for local network (verify temp `.dictly` directory created)
+  - [x] 6.6 Create `LocalNetworkReceiverTests.swift` in `DictlyMacTests/ImportTests/`
+  - [x] 6.7 Test `receiverState` transitions: `.idle` -> `.listening` -> `.receiving` -> `.received`
+  - [x] 6.8 Test that `receivedBundleURL` is set when a bundle is fully received
+  - [x] 6.9 Test new `DictlyError.TransferError` cases have non-nil `errorDescription`
 
 ## Dev Notes
 
@@ -360,10 +360,38 @@ Modified files:
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+claude-sonnet-4-6
 
 ### Debug Log References
 
+- Fixed missing `handleBrowserStateChange` method in `LocalNetworkSender` (compiler error on first build)
+- Fixed missing `import Network` in `TransferPrompt.swift` (compiler error on NWBrowser type)
+- Mac `DictlyMacTests` cannot be run locally without a development signing certificate (iCloud entitlement on host app requires team provisioning). Mac test target builds cleanly (`** TEST BUILD SUCCEEDED **`). This is a pre-existing project constraint.
+
 ### Completion Notes List
 
+- Implemented full `LocalNetworkReceiver` on Mac using NWListener with `_dictly._tcp` Bonjour service; uses custom two-part wire format `[4 bytes: total len][4 bytes: json len][json][audio]`; publishes `receivedBundleURL` for ImportService (story 3.4) to consume; auto-restarts on failure
+- Implemented full `LocalNetworkSender` on iOS using NWBrowser + NWConnection; chunked sending (64KB chunks) for progress reporting; reuses `BundleSerializer` pattern from `TransferService`; full cleanup on completion/failure
+- Updated `TransferPrompt` with secondary "Send via Wi-Fi" bordered button in idle state; full Wi-Fi flow replaces `actionArea` when `senderState != .idle`; 5-second no-peers timeout; peer picker with Mac computer names; reuses existing `completedView` + auto-dismiss pattern; full VoiceOver support
+- Added `DictlyMacTests` target to Mac `project.yml`; added `Import` directory to DictlyMac app sources; regenerated both Xcode projects with XcodeGen
+- 129 iOS tests pass (18 new `LocalNetworkSenderTests`); 212 DictlyKit tests pass; Mac test target compiles cleanly
+- ACs satisfied: #1 Bonjour discovery (NWBrowser/NWListener _dictly._tcp), #2 direct Wi-Fi bundle send, #3 progress UI (browsing→connecting→sending(progress:)→completed), #4 error messages + retry for all failure cases
+
 ### File List
+
+- `DictlyKit/Sources/DictlyModels/DictlyError.swift` (modified)
+- `DictlyMac/Import/LocalNetworkReceiver.swift` (new)
+- `DictlyMac/App/DictlyMacApp.swift` (modified)
+- `DictlyMac/Resources/Info.plist` (modified)
+- `DictlyMac/project.yml` (modified)
+- `DictlyMac/DictlyMac.xcodeproj/project.pbxproj` (regenerated)
+- `DictlyiOS/Transfer/LocalNetworkSender.swift` (new)
+- `DictlyiOS/Transfer/TransferPrompt.swift` (modified)
+- `DictlyiOS/Resources/Info.plist` (modified)
+- `DictlyiOS/Tests/TransferTests/LocalNetworkSenderTests.swift` (new)
+- `DictlyMacTests/ImportTests/LocalNetworkReceiverTests.swift` (new)
+- `DictlyiOS/DictlyiOS.xcodeproj/project.pbxproj` (regenerated)
+
+### Change Log
+
+- 2026-04-02: Implemented story 3.3 — local network transfer via Bonjour/NWFramework (LocalNetworkReceiver on Mac, LocalNetworkSender on iOS, TransferPrompt Wi-Fi UI, Info.plist keys, unit tests)

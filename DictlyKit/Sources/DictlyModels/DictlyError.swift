@@ -43,12 +43,18 @@ public enum DictlyError: Error, LocalizedError, Equatable {
         case networkUnavailable
         case peerNotFound
         case bundleCorrupted
+        case connectionFailed
+        case transferInterrupted
+        case timeout
 
         public var errorDescription: String? {
             switch self {
             case .networkUnavailable: return "Network unavailable for transfer."
             case .peerNotFound: return "Transfer peer not found."
             case .bundleCorrupted: return "Transfer bundle is corrupted."
+            case .connectionFailed: return "Could not connect to Mac. Check that Dictly is running."
+            case .transferInterrupted: return "Transfer interrupted. Check your Wi-Fi connection and try again."
+            case .timeout: return "Transfer timed out."
             }
         }
     }
