@@ -1,6 +1,6 @@
 # Story 4.4: Tag Sidebar with Category Filtering
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -272,6 +272,18 @@ claude-sonnet-4-6
 - DictlyMac/Review/SessionWaveformTimeline.swift
 - DictlyMacTests/ReviewTests/TagSidebarFilterTests.swift
 
+### Review Findings
+
+- [x] [Review][Patch] Marker column opacity incorrect — 18.75% not 25% for unselected filtered markers [SessionWaveformTimeline.swift:416,430] — Fixed: removed inner `.opacity(isSelected ? 1.0 : 0.75)` from shape view, folded into single outer `.opacity(isFiltered ? 0.25 : (isSelected ? 1.0 : 0.75))` on the ZStack.
+- [x] [Review][Patch] Session change does not clear `selectedTag` — stale tag from old session shown in detail panel [SessionReviewScreen.swift:59] — Fixed: added `selectedTag = nil` to `.onChange(of: session.uuid)` handler.
+- [x] [Review][Patch] `CategoryFilterPill.tagCount` dead parameter — accepted but never referenced in body [TagSidebar.swift] — Fixed: removed `tagCount: Int` parameter and all call-site arguments; accessibility labels already applied externally.
+- [x] [Review][Patch] Magic number `HStack(spacing: 4)` in `CategoryFilterPill` [TagSidebar.swift] — Fixed: replaced with `DictlySpacing.xs` (4pt token).
+- [x] [Review][Defer] `AccessibilityNotification.LayoutChanged` posted on every keystroke — consider debounce [TagSidebar.swift] — deferred, pre-existing accessibility UX concern
+- [x] [Review][Defer] O(n) tag count scan per category pill on every render [TagSidebar.swift] — deferred, micro-optimization for large sessions
+- [x] [Review][Defer] `sessionID` parameter redundant — could be derived as `session.uuid` internally [TagSidebar.swift] — deferred, design smell only
+- [x] [Review][Defer] Test `container`/`context` infrastructure unused by pure-function tests [TagSidebarFilterTests.swift] — deferred, dead test setup
+
 ## Change Log
 
 - 2026-04-02: Implemented story 4-4 tag sidebar with category filtering — functional search field, multi-select category filter pills, waveform marker dimming, filter reset on session change, accessibility notifications, and unit tests.
+- 2026-04-02: Code review patches — corrected marker opacity calculation (18.75%→25%), cleared selectedTag on session change, removed dead tagCount parameter from CategoryFilterPill, replaced magic spacing with DictlySpacing.xs.

@@ -23,6 +23,10 @@ struct SessionWaveformTimeline: View {
     /// Not injected via `@Environment` — `AudioPlayer` is session-scoped, not app-wide.
     let audioPlayer: AudioPlayer
 
+    /// Active category filter from `TagSidebar`. Empty = no filter (all at normal opacity).
+    /// Non-empty = only tags in the set render at normal opacity; others dim to 25%.
+    let activeCategories: Set<String>
+
     // MARK: Private State
 
     @State private var waveformSamples: [Float] = []
@@ -304,10 +308,14 @@ struct SessionWaveformTimeline: View {
         ZStack(alignment: .topLeading) {
             ForEach(tags, id: \.uuid) { tag in
                 let xPos = min(max(0, (tag.anchorTime / duration) * width), width)
+                // Task 3.4–3.5: Dim markers whose category is not in the active filter set.
+                // isFiltered = true when filter is active AND tag category is not selected.
+                let isFiltered = !activeCategories.isEmpty && !activeCategories.contains(tag.categoryName)
                 TagMarkerColumn(
                     tag: tag,
                     height: size.height,
                     isSelected: selectedTag?.uuid == tag.uuid,
+                    isFiltered: isFiltered,
                     onSelect: {
                         withAnimation(.easeInOut(duration: 0.2)) {
                             if selectedTag?.uuid == tag.uuid {
@@ -383,6 +391,8 @@ private struct TagMarkerColumn: View {
     let tag: Tag
     let height: CGFloat
     let isSelected: Bool
+    /// When `true`, this marker's category is not in the active filter — render at 25% opacity.
+    let isFiltered: Bool
     let onSelect: () -> Void
 
     @State private var isHovered = false
@@ -395,7 +405,7 @@ private struct TagMarkerColumn: View {
         let label = tag.label.isEmpty ? "Untitled Tag" : tag.label
 
         ZStack(alignment: .top) {
-            // Vertical indicator line — full column height, 30% opacity
+            // Vertical indicator line — full column height, 30% opacity; dims further when filtered
             Rectangle()
                 .fill(color.opacity(0.3))
                 .frame(width: 1, height: height)
@@ -403,7 +413,6 @@ private struct TagMarkerColumn: View {
             // Category shape with optional selection ring
             ZStack {
                 TagMarkerShapeView(shape: shape, color: color, size: 8)
-                    .opacity(isSelected ? 1.0 : 0.75)
 
                 if isSelected {
                     Circle()
@@ -416,6 +425,9 @@ private struct TagMarkerColumn: View {
             }
             .padding(.top, 4)
         }
+        // Task 3.4: Apply column opacity — filtered markers at 25%; non-filtered use selection-aware opacity.
+        // Folded into a single multiplier so filtered unselected markers hit exactly 25% (not 0.75×0.25=18.75%).
+        .opacity(isFiltered ? 0.25 : (isSelected ? 1.0 : 0.75))
         .frame(width: 20, height: height)
         .contentShape(Rectangle())
         .overlay(alignment: .top) {

@@ -55,7 +55,6 @@ struct TagSidebar: View {
                             label: "All",
                             color: nil,
                             isActive: activeCategories.isEmpty,
-                            tagCount: totalCount,
                             onTap: { activeCategories = [] }
                         )
                         .accessibilityLabel("All categories. \(totalCount) tags total.")
@@ -69,7 +68,6 @@ struct TagSidebar: View {
                                 label: category.name,
                                 color: categoryColor(for: category.name),
                                 isActive: isActive,
-                                tagCount: count,
                                 onTap: { toggleCategory(category.name) }
                             )
                             .accessibilityLabel("\(category.name) filter. \(count) tags.")
@@ -181,12 +179,11 @@ private struct CategoryFilterPill: View {
     let label: String
     let color: Color?
     let isActive: Bool
-    let tagCount: Int
     let onTap: () -> Void
 
     var body: some View {
         Button(action: onTap) {
-            HStack(spacing: 4) {
+            HStack(spacing: DictlySpacing.xs) {
                 // Colored dot (Task 1.4)
                 if let color {
                     Circle()

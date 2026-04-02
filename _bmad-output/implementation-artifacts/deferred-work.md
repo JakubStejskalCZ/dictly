@@ -124,3 +124,10 @@
 - `AVAudioEngineConfigurationChange` not handled — audio route changes (Bluetooth headphones connect/disconnect, USB audio unplugged) stop the engine silently. `isPlaying` stays true with no audio output. Handle in a future story when audio resilience is prioritized.
 - `viewWidth` state may be stale during simultaneous window-resize + drag — gesture uses stored `@State viewWidth` rather than live geometry. Edge case; only affects window-resize-while-dragging scenario.
 - `isPlaying=true` set before `playerNode.play()` potential failure — if the engine stops unexpectedly (route change, resource exhaustion), the timer detects `playerNode.isPlaying=false` and self-corrects via `handlePlaybackFinished`. Pre-existing pattern; acceptable with the route-change deferred above.
+
+## Deferred from: code review of story 4-4 (2026-04-02)
+
+- `AccessibilityNotification.LayoutChanged` posted on every keystroke in search field — consider debounce to avoid interrupting VoiceOver on every character typed. `TagSidebar.swift`.
+- O(n) tag count scan per category pill (`session.tags.filter { $0.categoryName == category.name }.count`) runs on every render pass. Optimize with a single grouped dictionary for sessions with many tags. `TagSidebar.swift`.
+- `sessionID: UUID` parameter in `TagSidebar` is always `session.uuid` at call site — redundant; could be derived internally. `TagSidebar.swift` / `SessionReviewScreen.swift`.
+- `TagSidebarFilterTests`: in-memory `ModelContainer` + `ModelContext` created in `setUp` but never used by pure-function tests — dead infrastructure. Remove or convert to integration tests in a future refactor. `TagSidebarFilterTests.swift`.

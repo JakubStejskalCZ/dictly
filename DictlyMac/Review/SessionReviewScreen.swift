@@ -15,13 +15,14 @@ struct SessionReviewScreen: View {
     @State private var selectedTag: Tag?
     @State private var isSidebarVisible: Bool = true
     @State private var audioPlayer = AudioPlayer()
+    @State private var activeCategories: Set<String> = []
 
     private let logger = Logger(subsystem: "com.dictly.mac", category: "playback")
 
     var body: some View {
         HSplitView {
             if isSidebarVisible {
-                TagSidebar(session: session, selectedTag: $selectedTag)
+                TagSidebar(session: session, sessionID: session.uuid, selectedTag: $selectedTag, activeCategories: $activeCategories)
                     .frame(minWidth: 200, idealWidth: 260, maxWidth: 320)
                     .accessibilityLabel("Tag sidebar")
             }
@@ -54,6 +55,11 @@ struct SessionReviewScreen: View {
                 logger.error("Failed to load audio: \(error.localizedDescription)")
             }
         }
+        // Task 4.1: Reset active category filters and selection when session changes
+        .onChange(of: session.uuid) { _, _ in
+            activeCategories = []
+            selectedTag = nil
+        }
         // Task 2.4: Seek + play when selectedTag changes to non-nil
         .onChange(of: selectedTag) { _, newTag in
             guard let tag = newTag else { return }
@@ -72,7 +78,7 @@ struct SessionReviewScreen: View {
                 .overlay(alignment: .bottom) { Divider() }
 
             // Task 2.3: Pass audioPlayer to waveform (view-scoped, not @Environment)
-            SessionWaveformTimeline(session: session, selectedTag: $selectedTag, audioPlayer: audioPlayer)
+            SessionWaveformTimeline(session: session, selectedTag: $selectedTag, audioPlayer: audioPlayer, activeCategories: activeCategories)
                 .padding(DictlySpacing.md)
 
             Divider()
