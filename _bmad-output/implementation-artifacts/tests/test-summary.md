@@ -264,6 +264,125 @@
 - **Epic 3 AC coverage:** 15/17 acceptance criteria covered in automated tests
 - **Manual-only:** 2 ACs requiring system/UI testing (UTI registration, auto-dismiss UI animation)
 
+---
+
+## Epic 4 — Generated Tests (NEW)
+
+### E2E Integration Tests — DictlyMac (57 tests)
+
+- [x] `DictlyMacTests/ReviewTests/Epic4E2ETests.swift` — 57 tests
+
+#### Story 4.1: Mac Session Review Layout (7 tests)
+- [x] `testStory4_1_sessionReviewScreen_canBeInitialized_withFullSessionData` — AC1: Session with campaign and tags initializes correctly
+- [x] `testStory4_1_sessionToolbar_displaysCorrectMetadata` — AC2: Toolbar shows title, duration, tag count
+- [x] `testStory4_1_tagDetailPanel_showsPlaceholder_whenNoTagSelected` — AC3: Nil tag shows placeholder
+- [x] `testStory4_1_tagsDisplayedChronologically_inSidebar` — AC1,4,5: Tags sorted by anchorTime
+- [x] `testStory4_1_timestampFormatting_coversAllRanges` — AC1: M:SS and H:MM:SS formats
+- [x] `testStory4_1_durationFormatting_coversAllRanges` — AC2: Duration formatting including edge cases
+- [x] `testStory4_1_emptyState_sessionWithNoTags` — AC3: Empty session has 0 tags
+
+#### Story 4.2: Waveform Timeline Rendering with Tag Markers (6 tests)
+- [x] `testStory4_2_waveformDataProvider_extractsSamples_fromAudioFile` — AC1: Sample extraction returns normalized array
+- [x] `testStory4_2_waveformDataProvider_missingFile_returnsEmpty` — AC1: Missing file graceful degradation
+- [x] `testStory4_2_tagMarkerPositioning_mapsAnchorTimeToXCoordinate` — AC2: Marker X = (anchorTime/duration)*width
+- [x] `testStory4_2_markerShapes_mappedPerCategory` — AC2,3: All 5 categories + unknown fallback
+- [x] `testStory4_2_markerShapes_caseInsensitive` — AC3: Case-insensitive category matching
+- [x] `testStory4_2_tagMarkerBoundaryPositions` — AC2: Tags at t=0 and t=duration
+
+#### Story 4.3: Audio Playback & Waveform Navigation (6 tests)
+- [x] `testStory4_3_audioPlayer_loadAndSeekFlow` — AC1,2,4: Load → seek → play → pause flow
+- [x] `testStory4_3_audioPlayer_missingFile_throwsError` — AC1: Missing file throws DictlyError
+- [x] `testStory4_3_audioPlayer_seekClamping` — AC1,5: Negative → 0, over-duration → duration
+- [x] `testStory4_3_playheadPosition_calculation` — AC4: Playhead X-position math
+- [x] `testStory4_3_tapVsDragThreshold` — AC3: 4pt threshold discrimination
+- [x] `testStory4_3_audioPlayer_playAtEOF_restartsFromBeginning` — AC4: Play at end resets to 0
+
+#### Story 4.4: Tag Sidebar with Category Filtering (9 tests)
+- [x] `testStory4_4_noFilter_allTagsChronological` — AC1: No filter → all tags sorted
+- [x] `testStory4_4_singleCategoryFilter_showsOnlyMatchingTags` — AC2: Single category filter
+- [x] `testStory4_4_multipleCategoryFilters` — AC2: Multi-select filter
+- [x] `testStory4_4_searchFilter_caseInsensitiveMatch` — AC2: Search by label
+- [x] `testStory4_4_combinedCategoryAndSearchFilter` — AC2: Category + search combined
+- [x] `testStory4_4_markerDimming_filteredVsUnfiltered` — AC2: Filtered markers at 25% opacity
+- [x] `testStory4_4_markerDimming_noFilter_allNormalOpacity` — AC2: No filter → all normal opacity
+- [x] `testStory4_4_filterReset_onSessionChange` — AC4: Filter reset verified via UUID
+- [x] `testStory4_4_whitespaceSearch_treatedAsNoFilter` — AC2: Whitespace search = no filter
+
+#### Story 4.5: Tag Editing — Rename, Recategorize & Delete (5 tests)
+- [x] `testStory4_5_renameTag_persistsInSwiftData` — AC1: Label rename persists
+- [x] `testStory4_5_emptyLabelGuard_revertsToOriginal` — AC1: Empty label guard
+- [x] `testStory4_5_changeCategoryName_persistsAndUpdatesMarkerShape` — AC2: Category change + marker shape update
+- [x] `testStory4_5_deleteTag_removesFromSessionAndContext` — AC3: Delete removes from session and context
+- [x] `testStory4_5_deleteTag_contextMenuPath_clearsSelectedTag` — AC4: Context menu delete clears selection
+
+#### Story 4.6: Retroactive Tag Placement (8 tests)
+- [x] `testStory4_6_retroactiveTagCreation_atWaveformPosition` — AC1,2: Right-click creates tag at correct time
+- [x] `testStory4_6_retroactiveTag_appearsInSortedPosition` — AC2: Tag inserts in sorted order
+- [x] `testStory4_6_retroactiveTag_isEditableAndDeletable` — AC3: Full editing + deletion cycle
+- [x] `testStory4_6_keyboardShortcut_usesPlayheadTime` — AC1: Cmd+T at playhead position
+- [x] `testStory4_6_anchorTimeClamping` — AC1: Clamping to 0...duration
+- [x] `testStory4_6_emptyLabel_rejectedByValidation` — AC1: Empty/whitespace label validation
+- [x] `testStory4_6_retroactiveTag_rewindDurationIsZero` — AC2: rewindDuration = 0 vs live tags
+- [x] `testStory4_6_retroactiveTag_createdAtIsApproximatelyNow` — AC2: createdAt timestamp
+
+#### Story 4.7: Tag Notes & Session Summary Notes (10 tests)
+- [x] `testStory4_7_tagNotes_persistInSwiftData` — AC1: Notes persist
+- [x] `testStory4_7_tagNotes_editAndClear` — AC2: Edit → update → clear cycle
+- [x] `testStory4_7_commitNotesLogic_whitespaceTrimsToNil` — AC1,2: Whitespace → nil
+- [x] `testStory4_7_commitNotesLogic_validNotePersists` — AC1: Valid note persists as-is
+- [x] `testStory4_7_sessionSummaryNote_persistsInSwiftData` — AC3: Session summary persists
+- [x] `testStory4_7_sessionSummaryNote_editAndClear` — AC3: Summary edit → clear cycle
+- [x] `testStory4_7_sessionSummaryNote_initiallyNil` — AC3: New session has nil summary
+- [x] `testStory4_7_sidebarNotesIndicator_showsWhenNotesExist` — AC4: Indicator logic (has/nil/empty)
+- [x] `testStory4_7_newTags_haveNilNotes` — AC4: New tags start with nil notes
+
+#### Cross-Story Integration (6 tests)
+- [x] `testIntegration_fullReviewWorkflow` — Stories 4.1-4.7: Full workflow with campaign, tags, edit, filter, delete, notes, summary
+- [x] `testIntegration_markerPositioning_withCategoryFilter` — Stories 4.2+4.4: Marker X-position + filter opacity combined
+- [x] `testIntegration_retroactiveTag_editThenAddNotes` — Stories 4.6+4.5+4.7: Create retro tag → edit → add notes
+- [x] `testIntegration_tagSelection_triggersSeekAndDetail` — Stories 4.1+4.2+4.3: Tag select → seek position → detail panel
+- [x] `testIntegration_sessionWithNoAudio_gracefulDegradation` — Stories 4.1-4.7: No audio: tags, notes, editing still work
+- [x] `testIntegration_largeSession_filterPerformance` — Story 4.4: 200 tags filter + search + sort
+
+### Pre-Existing Epic 4 Unit Tests (92 tests)
+
+- [x] `DictlyMacTests/ReviewTests/SessionReviewScreenTests.swift` — 10 tests (Story 4.1)
+- [x] `DictlyMacTests/ReviewTests/WaveformTimelineTests.swift` — 12 tests (Story 4.2)
+- [x] `DictlyMacTests/ReviewTests/AudioPlayerTests.swift` — 13 tests (Story 4.3)
+- [x] `DictlyMacTests/ReviewTests/TagSidebarFilterTests.swift` — 14 tests (Story 4.4)
+- [x] `DictlyMacTests/ReviewTests/TagEditingTests.swift` — 11 tests (Story 4.5)
+- [x] `DictlyMacTests/ReviewTests/RetroactiveTagTests.swift` — 16 tests (Story 4.6)
+- [x] `DictlyMacTests/ReviewTests/TagNotesTests.swift` — 16 tests (Story 4.7)
+
+---
+
+## Epic 4 Acceptance Criteria Coverage
+
+| Story | ACs | Covered | Status |
+|-------|-----|---------|--------|
+| 4.1 Mac Session Review Layout | 5 | 5/5 | Complete |
+| 4.2 Waveform Timeline Rendering | 5 | 5/5 | Complete |
+| 4.3 Audio Playback & Navigation | 5 | 5/5 | Complete |
+| 4.4 Tag Sidebar with Filtering | 4 | 4/4 | Complete |
+| 4.5 Tag Editing | 4 | 4/4 | Complete |
+| 4.6 Retroactive Tag Placement | 3 | 3/3 | Complete |
+| 4.7 Tag Notes & Session Summary | 4 | 4/4 | Complete |
+| **Total** | **30** | **30/30** | **100%** |
+
+> **Note:** DictlyMac test target builds successfully but cannot execute locally without development signing certificate (iCloud entitlement). This is a pre-existing constraint from story 3.3. Audio-dependent tests use `XCTSkip` for headless CI environments.
+
+---
+
+## Updated Coverage Summary
+
+- **Epic 1 tests:** 139 (70 E2E + 69 unit)
+- **Epic 2 tests:** 137 (74 E2E + 63 unit)
+- **Epic 3 tests:** 90 (33 E2E + 57 unit)
+- **Epic 4 tests:** 149 (57 E2E + 92 unit)
+- **Total DictlyKit package tests:** 245 (all passing)
+- **Total project tests:** 515+ (245 DictlyKit + 270+ platform targets)
+- **Epic 4 AC coverage:** 30/30 acceptance criteria covered (100%)
+
 ## Next Steps
 
 - Run tests in CI
