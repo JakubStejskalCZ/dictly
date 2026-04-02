@@ -1,6 +1,6 @@
 # Story 4.6: Retroactive Tag Placement
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -271,6 +271,18 @@ claude-sonnet-4-6
 - `DictlyMac/Review/SessionReviewScreen.swift` — MODIFIED: tag creation state, `createTag()`, sheet, Cmd+T button, `@Environment(\.modelContext)`
 - `DictlyMacTests/ReviewTests/RetroactiveTagTests.swift` — NEW: 16 unit tests for retroactive tag creation
 - `DictlyMac/DictlyMac.xcodeproj` — REGENERATED: xcodegen run to include new source files
+
+### Review Findings
+
+- [x] [Review][Dismiss] F1: Missing `)` on `clipShape` — false positive; actual file has correct `clipShape(RoundedRectangle(cornerRadius: 8))` at line 91
+- [x] [Review][Patch] F2: `RightClickView` not `private` — leaks into module namespace [SessionWaveformTimeline.swift:~510] — fixed: added `private`
+- [x] [Review][Dismiss] F4: `isCreatingTag = false` inside `createTag` closure — safe; SwiftUI batches state mutations until next render cycle
+- [x] [Review][Patch] F7: Empty categories — `submitIfValid()` calls `onCreate` with `categoryName: ""` — fixed: guard in `submitIfValid` + Create button disabled when `effectiveCategory.isEmpty` [NewTagForm.swift:~95]
+- [x] [Review][Patch] F8: Empty categories — no UI feedback in category section — fixed: added empty-state message when `categories.isEmpty` [NewTagForm.swift:~44]
+- [x] [Review][Patch] F9: `newTagAnchorTime` race — fixed: `onCreate` now carries `anchorTime` as third param; `createTag` receives it directly; `isCreatingTag` guarded at both trigger sites [SessionReviewScreen.swift:~78,~178]
+- [x] [Review][Patch] F12: `rightMouseDown` not forwarded — fixed: added `nextResponder?.rightMouseDown(with: event)` [SessionWaveformTimeline.swift:~515]
+- [x] [Review][Patch] F20: Default label "New Tag" pre-fills without auto-select — fixed: empty string default, "New Tag" as placeholder [NewTagForm.swift:~18]
+- [x] [Review][Defer] F13: `convert(event.locationInWindow, from: nil)` incorrect in multi-window scenarios [SessionWaveformTimeline.swift:~516] — deferred, only affects multi-window which is out of scope for this story
 
 ## Change Log
 

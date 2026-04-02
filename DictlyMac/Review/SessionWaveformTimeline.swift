@@ -507,7 +507,7 @@ private struct RightClickOverlay: NSViewRepresentable {
 }
 
 /// Thin transparent NSView subclass that captures right-click events.
-final class RightClickView: NSView {
+private final class RightClickView: NSView {
     var onRightClickAtX: ((CGFloat) -> Void)?
 
     override var acceptsFirstResponder: Bool { false }
@@ -515,6 +515,7 @@ final class RightClickView: NSView {
     override func rightMouseDown(with event: NSEvent) {
         let point = convert(event.locationInWindow, from: nil)
         onRightClickAtX?(point.x)
+        nextResponder?.rightMouseDown(with: event)
     }
 
     /// Forward left-clicks to the next responder so SwiftUI's DragGesture

@@ -12,10 +12,10 @@ import DictlyTheme
 /// On Cancel or Escape: calls `onCancel()` — no state changes.
 struct NewTagForm: View {
     let anchorTime: TimeInterval
-    let onCreate: (String, String) -> Void
+    let onCreate: (String, String, TimeInterval) -> Void
     let onCancel: () -> Void
 
-    @State private var label: String = "New Tag"
+    @State private var label: String = ""
     @State private var selectedCategoryName: String = ""
 
     @FocusState private var labelFocused: Bool
@@ -32,7 +32,7 @@ struct NewTagForm: View {
                 .accessibilityAddTraits(.isHeader)
 
             // MARK: Label field
-            TextField("Tag label", text: $label)
+            TextField("New Tag", text: $label)
                 .font(DictlyTypography.body)
                 .textFieldStyle(.roundedBorder)
                 .focused($labelFocused)
@@ -46,29 +46,36 @@ struct NewTagForm: View {
                     .font(DictlyTypography.caption)
                     .foregroundStyle(DictlyColors.textSecondary)
 
-                ForEach(categories) { category in
-                    Button {
-                        selectedCategoryName = category.name
-                    } label: {
-                        HStack(spacing: DictlySpacing.sm) {
-                            Circle()
-                                .fill(categoryColor(for: category.name))
-                                .frame(width: 8, height: 8)
-                            Text(category.name)
-                                .font(DictlyTypography.body)
-                                .foregroundStyle(DictlyColors.textPrimary)
-                                .fontWeight(category.name == effectiveCategory ? .semibold : .regular)
-                            Spacer()
-                            if category.name == effectiveCategory {
-                                Image(systemName: "checkmark")
-                                    .foregroundStyle(DictlyColors.textSecondary)
+                if categories.isEmpty {
+                    Text("No categories available. Add categories in Settings.")
+                        .font(DictlyTypography.caption)
+                        .foregroundStyle(DictlyColors.textSecondary)
+                        .italic()
+                } else {
+                    ForEach(categories) { category in
+                        Button {
+                            selectedCategoryName = category.name
+                        } label: {
+                            HStack(spacing: DictlySpacing.sm) {
+                                Circle()
+                                    .fill(categoryColor(for: category.name))
+                                    .frame(width: 8, height: 8)
+                                Text(category.name)
+                                    .font(DictlyTypography.body)
+                                    .foregroundStyle(DictlyColors.textPrimary)
+                                    .fontWeight(category.name == effectiveCategory ? .semibold : .regular)
+                                Spacer()
+                                if category.name == effectiveCategory {
+                                    Image(systemName: "checkmark")
+                                        .foregroundStyle(DictlyColors.textSecondary)
+                                }
                             }
+                            .contentShape(Rectangle())
                         }
-                        .contentShape(Rectangle())
+                        .buttonStyle(.plain)
+                        .padding(.vertical, DictlySpacing.xs)
+                        .accessibilityLabel("\(category.name). Double-tap to select.")
                     }
-                    .buttonStyle(.plain)
-                    .padding(.vertical, DictlySpacing.xs)
-                    .accessibilityLabel("\(category.name). Double-tap to select.")
                 }
             }
 
@@ -92,7 +99,7 @@ struct NewTagForm: View {
 
                 Button("Create") { submitIfValid() }
                     .keyboardShortcut(.defaultAction)
-                    .disabled(label.trimmingCharacters(in: .whitespaces).isEmpty)
+                    .disabled(label.trimmingCharacters(in: .whitespaces).isEmpty || effectiveCategory.isEmpty)
                     .buttonStyle(.borderedProminent)
             }
         }
@@ -119,7 +126,7 @@ struct NewTagForm: View {
 
     private func submitIfValid() {
         let trimmed = label.trimmingCharacters(in: .whitespaces)
-        guard !trimmed.isEmpty else { return }
-        onCreate(trimmed, effectiveCategory)
+        guard !trimmed.isEmpty, !effectiveCategory.isEmpty else { return }
+        onCreate(trimmed, effectiveCategory, anchorTime)
     }
 }

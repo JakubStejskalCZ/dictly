@@ -1,5 +1,9 @@
 # Deferred Work
 
+## Deferred from: code review of 4-6-retroactive-tag-placement (2026-04-02)
+
+- F13: `RightClickView.rightMouseDown` uses `convert(event.locationInWindow, from: nil)` which produces incorrect coordinates when the view is in a secondary/non-key window. Only affects multi-window scenarios not in scope for this story.
+
 ## Deferred from: code review of story 1-1 (2026-04-01)
 
 - `fatalError` on `ModelContainer` failure in `DictlyiOSApp.swift` and `DictlyMacApp.swift` — no recovery path if store is corrupted or migration fails. Consider retry-with-delete or error UI in a future story.

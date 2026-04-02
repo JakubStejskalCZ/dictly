@@ -78,8 +78,8 @@ struct SessionReviewScreen: View {
         .sheet(isPresented: $isCreatingTag) {
             NewTagForm(
                 anchorTime: newTagAnchorTime,
-                onCreate: { label, categoryName in
-                    createTag(label: label, categoryName: categoryName)
+                onCreate: { label, categoryName, anchorTime in
+                    createTag(label: label, categoryName: categoryName, anchorTime: anchorTime)
                 },
                 onCancel: {
                     isCreatingTag = false
@@ -90,13 +90,13 @@ struct SessionReviewScreen: View {
 
     // MARK: - Retroactive Tag Creation (Story 4.6)
 
-    /// Creates a Tag at `newTagAnchorTime`, inserts it into SwiftData, appends to session,
+    /// Creates a Tag at `anchorTime`, inserts it into SwiftData, appends to session,
     /// and auto-selects it so `TagDetailPanel` populates immediately.
-    private func createTag(label: String, categoryName: String) {
+    private func createTag(label: String, categoryName: String, anchorTime: TimeInterval) {
         let tag = Tag(
             label: label,
             categoryName: categoryName,
-            anchorTime: newTagAnchorTime,
+            anchorTime: anchorTime,
             rewindDuration: 0
         )
         modelContext.insert(tag)
@@ -124,6 +124,7 @@ struct SessionReviewScreen: View {
                 audioPlayer: audioPlayer,
                 activeCategories: activeCategories,
                 onRequestNewTag: { time in
+                    guard !isCreatingTag else { return }
                     newTagAnchorTime = time
                     isCreatingTag = true
                 }
@@ -176,7 +177,7 @@ struct SessionReviewScreen: View {
             HStack(spacing: DictlySpacing.sm) {
                 // Story 4.6: Add Tag at Playhead (Cmd+T)
                 Button {
-                    guard audioPlayer.isLoaded, session.duration > 0 else { return }
+                    guard audioPlayer.isLoaded, session.duration > 0, !isCreatingTag else { return }
                     newTagAnchorTime = audioPlayer.currentTime
                     isCreatingTag = true
                 } label: {
