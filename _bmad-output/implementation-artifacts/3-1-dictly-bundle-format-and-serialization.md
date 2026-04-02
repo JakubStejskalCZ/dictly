@@ -1,6 +1,6 @@
 # Story 3.1: .dictly Bundle Format & Serialization
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -20,30 +20,30 @@ so that transfer between iOS and Mac preserves all session data in a single file
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create Codable DTOs for transfer serialization (AC: #1, #2, #4)
-  - [ ] 1.1 Create `TransferBundle.swift` in `DictlyKit/Sources/DictlyModels/` with `SessionDTO`, `TagDTO`, `CampaignDTO`, and root `TransferBundle` Codable structs
-  - [ ] 1.2 Add `toDTO()` methods on `Session`, `Tag`, `Campaign` models (extensions in TransferBundle.swift)
-  - [ ] 1.3 Add `init(from dto:)` convenience initializers on models for import path
-  - [ ] 1.4 Include `PauseInterval` array in `SessionDTO` (already Codable)
+- [x] Task 1: Create Codable DTOs for transfer serialization (AC: #1, #2, #4)
+  - [x] 1.1 Create `TransferBundle.swift` in `DictlyKit/Sources/DictlyModels/` with `SessionDTO`, `TagDTO`, `CampaignDTO`, and root `TransferBundle` Codable structs
+  - [x] 1.2 Add `toDTO()` methods on `Session`, `Tag`, `Campaign` models (extensions in TransferBundle.swift)
+  - [x] 1.3 Add `Session.from(_:)`, `Tag.from(_:)`, `Campaign.from(_:)` static factory methods on models for import path (note: @Model macro prevents convenience init in extensions; static factory pattern used instead)
+  - [x] 1.4 Include `PauseInterval` array in `SessionDTO` (already Codable)
 
-- [ ] Task 2: Implement `BundleSerializer` (AC: #1, #2, #3)
-  - [ ] 2.1 Create `BundleSerializer.swift` in `DictlyKit/Sources/DictlyStorage/`
-  - [ ] 2.2 Implement `serialize(session:audioData:to:)` — creates `.dictly` directory with `audio.aac` + `session.json`
-  - [ ] 2.3 Implement `deserialize(from:)` — reads `.dictly` directory, returns `(TransferBundle, Data)` tuple (metadata + audio)
-  - [ ] 2.4 Configure `JSONEncoder`/`JSONDecoder` with `.iso8601` date strategy, `.sortedKeys` output formatting
-  - [ ] 2.5 Add validation: check both `audio.aac` and `session.json` exist before deserializing
+- [x] Task 2: Implement `BundleSerializer` (AC: #1, #2, #3)
+  - [x] 2.1 Create `BundleSerializer.swift` in `DictlyKit/Sources/DictlyStorage/`
+  - [x] 2.2 Implement `serialize(session:audioData:to:)` — creates `.dictly` directory with `audio.aac` + `session.json`
+  - [x] 2.3 Implement `deserialize(from:)` — reads `.dictly` directory, returns `(TransferBundle, Data)` tuple (metadata + audio)
+  - [x] 2.4 Configure `JSONEncoder`/`JSONDecoder` with `.iso8601` date strategy, `.sortedKeys` output formatting
+  - [x] 2.5 Add validation: check both `audio.aac` and `session.json` exist before deserializing
 
-- [ ] Task 3: Error handling for corrupted bundles (AC: #3)
-  - [ ] 3.1 Verify `DictlyError.transfer(.bundleCorrupted)` covers all failure cases (missing files, invalid JSON, empty audio)
-  - [ ] 3.2 Add descriptive error messages to each failure path
+- [x] Task 3: Error handling for corrupted bundles (AC: #3)
+  - [x] 3.1 Verify `DictlyError.transfer(.bundleCorrupted)` covers all failure cases (missing files, invalid JSON, empty audio)
+  - [x] 3.2 Add descriptive error messages to each failure path (os.Logger messages in BundleSerializer before each throw; DictlyError also now Equatable)
 
-- [ ] Task 4: Unit tests (AC: #4)
-  - [ ] 4.1 Create `TransferBundleTests.swift` in `DictlyKit/Tests/DictlyModelsTests/`
-  - [ ] 4.2 Create `BundleSerializerTests.swift` in `DictlyKit/Tests/DictlyStorageTests/`
-  - [ ] 4.3 Test DTO round-trip: model → DTO → JSON → DTO → verify equality
-  - [ ] 4.4 Test BundleSerializer round-trip: session + audio → .dictly directory → deserialize → verify all data intact
-  - [ ] 4.5 Test error cases: missing audio.aac, missing session.json, corrupted JSON, empty directory
-  - [ ] 4.6 Test edge cases: session with zero tags, session with many tags across categories, optional fields nil
+- [x] Task 4: Unit tests (AC: #4)
+  - [x] 4.1 Create `TransferBundleTests.swift` in `DictlyKit/Tests/DictlyModelsTests/`
+  - [x] 4.2 Create `BundleSerializerTests.swift` in `DictlyKit/Tests/DictlyStorageTests/`
+  - [x] 4.3 Test DTO round-trip: model → DTO → JSON → DTO → verify equality
+  - [x] 4.4 Test BundleSerializer round-trip: session + audio → .dictly directory → deserialize → verify all data intact
+  - [x] 4.5 Test error cases: missing audio.aac, missing session.json, corrupted JSON, empty directory
+  - [x] 4.6 Test edge cases: session with zero tags, session with many tags across categories, optional fields nil
 
 ## Dev Notes
 
@@ -225,8 +225,25 @@ These paths match the architecture document's project structure exactly.
 
 ### Agent Model Used
 
+claude-sonnet-4-6
+
 ### Debug Log References
+
+- @Model macro does not support `convenience init` in extensions — used `static func from(_:)` factory methods instead. Compile-time crash (`fatalError` from SwiftMacros plugin) occurs otherwise.
+- `DictlyError` needed `Equatable` conformance for `XCTAssertEqual` in error case tests; added to all nested enums (all have Equatable associated values).
+- Stale `.o` artifact caused spurious link error on incremental build; `swift package clean` resolved it.
 
 ### Completion Notes List
 
+- **Task 1**: Created `TransferBundle.swift` with `SessionDTO`, `TagDTO`, `CampaignDTO`, `TransferBundle` Codable+Equatable structs. Added `toDTO()` extensions and `Session.from()`, `Tag.from()`, `Campaign.from()` static factory methods (import path). `PauseInterval` reused directly from existing Codable struct.
+- **Task 2**: Created `BundleSerializer` (public struct) in `DictlyStorage` with `serialize(session:audioData:to:)` and `deserialize(from:)`. JSONEncoder configured with `.iso8601` date strategy and `.sortedKeys` output. All validation before deserialization.
+- **Task 3**: `DictlyError.transfer(.bundleCorrupted)` thrown at every failure path. Added `Equatable` to all `DictlyError` nested enums. Descriptive `os.Logger` messages at each throw site.
+- **Task 4**: 15 tests in `TransferBundleTests.swift`, 11 tests in `BundleSerializerTests.swift`. All 205 tests pass (0 regressions).
+
 ### File List
+
+DictlyKit/Sources/DictlyModels/TransferBundle.swift (new)
+DictlyKit/Sources/DictlyModels/DictlyError.swift (modified — added Equatable)
+DictlyKit/Sources/DictlyStorage/BundleSerializer.swift (new)
+DictlyKit/Tests/DictlyModelsTests/TransferBundleTests.swift (new)
+DictlyKit/Tests/DictlyStorageTests/BundleSerializerTests.swift (new)

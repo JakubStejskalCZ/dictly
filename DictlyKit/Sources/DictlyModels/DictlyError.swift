@@ -1,6 +1,6 @@
 import Foundation
 
-public enum DictlyError: Error, LocalizedError {
+public enum DictlyError: Error, LocalizedError, Equatable {
     case recording(RecordingError)
     case transfer(TransferError)
     case transcription(TranscriptionError)
@@ -17,7 +17,7 @@ public enum DictlyError: Error, LocalizedError {
         }
     }
 
-    public enum RecordingError: Error, LocalizedError {
+    public enum RecordingError: Error, LocalizedError, Equatable {
         case permissionDenied
         case deviceUnavailable
         case interrupted
@@ -39,7 +39,7 @@ public enum DictlyError: Error, LocalizedError {
         }
     }
 
-    public enum TransferError: Error, LocalizedError {
+    public enum TransferError: Error, LocalizedError, Equatable {
         case networkUnavailable
         case peerNotFound
         case bundleCorrupted
@@ -53,7 +53,7 @@ public enum DictlyError: Error, LocalizedError {
         }
     }
 
-    public enum TranscriptionError: Error, LocalizedError {
+    public enum TranscriptionError: Error, LocalizedError, Equatable {
         case modelNotFound
         case processingFailed
 
@@ -65,7 +65,7 @@ public enum DictlyError: Error, LocalizedError {
         }
     }
 
-    public enum StorageError: Error, LocalizedError {
+    public enum StorageError: Error, LocalizedError, Equatable {
         case diskFull
         case permissionDenied
         case fileNotFound
@@ -81,7 +81,7 @@ public enum DictlyError: Error, LocalizedError {
         }
     }
 
-    public enum ImportError: Error, LocalizedError {
+    public enum ImportError: Error, LocalizedError, Equatable {
         case invalidFormat
         case duplicateDetected
         case missingData
