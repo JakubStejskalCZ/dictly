@@ -27,6 +27,7 @@ targets:
       - path: App
       - path: Import
       - path: Settings
+      - path: Review
     resources:
       - path: Resources
     entitlements:

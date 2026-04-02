@@ -30,6 +30,7 @@ struct DictlyMacApp: App {
                 .environment(syncService)
                 .environment(networkReceiver)
                 .environment(importService)
+                .frame(minWidth: 900, minHeight: 500)
                 .task {
                     do {
                         try DefaultTagSeeder.seedIfNeeded(context: container.mainContext)
@@ -65,6 +66,7 @@ struct DictlyMacApp: App {
                     }
                 }
         }
+        .defaultSize(width: 1200, height: 700)
         .modelContainer(container)
 
         Settings {
