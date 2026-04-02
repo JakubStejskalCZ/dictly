@@ -71,10 +71,11 @@ final class TransferService {
             return
         }
 
+        transferState = .preparing
         logger.info("TransferService: starting AirDrop transfer for session \(session.uuid)")
 
         do {
-            let bundleURL = try await prepareBundle(for: session)
+            let bundleURL = try prepareBundle(for: session)
             temporaryBundleURL = bundleURL
             transferState = .sharing
             logger.info("TransferService: bundle prepared, presenting share sheet")
@@ -90,6 +91,11 @@ final class TransferService {
     ///   - completed: `true` if the user confirmed the AirDrop send.
     ///   - error: Non-nil if the activity failed.
     func handleShareCompletion(completed: Bool, error: Error?) {
+        guard case .sharing = transferState else {
+            logger.warning("TransferService: handleShareCompletion called in unexpected state: \(String(describing: self.transferState))")
+            return
+        }
+
         if let error = error {
             logger.error("TransferService: share failed — \(error)")
             transferState = .failed(error)
@@ -115,13 +121,10 @@ final class TransferService {
 
     /// Creates a temporary `.dictly` bundle for the given session.
     ///
-    /// Transitions state: `.idle` → `.preparing`
-    ///
     /// - Parameter session: Session to serialize.
     /// - Returns: URL of the created `.dictly` directory in `FileManager.temporaryDirectory`.
     /// - Throws: `DictlyError.transfer(.bundleCorrupted)` if audio is missing or serialization fails.
-    func prepareBundle(for session: Session) async throws -> URL {
-        transferState = .preparing
+    private func prepareBundle(for session: Session) throws -> URL {
         logger.info("TransferService: preparing bundle for session \(session.uuid)")
         return try _prepareBundleSync(for: session)
     }
@@ -149,10 +152,13 @@ final class TransferService {
             throw DictlyError.transfer(.bundleCorrupted)
         }
 
-        // Create temp bundle directory
+        // Create temp bundle directory (remove stale if exists)
         let bundleName = "\(session.uuid.uuidString).dictly"
         let bundleURL = FileManager.default.temporaryDirectory
             .appendingPathComponent(bundleName, isDirectory: true)
+        if FileManager.default.fileExists(atPath: bundleURL.path) {
+            try? FileManager.default.removeItem(at: bundleURL)
+        }
 
         // Serialize
         let serializer = BundleSerializer()

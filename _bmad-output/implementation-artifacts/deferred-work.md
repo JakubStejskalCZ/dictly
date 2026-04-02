@@ -86,3 +86,11 @@
 - `PauseInterval` has no invariant validation (start <= end, non-negative) — pre-existing struct, affects all consumers.
 - Corrupted `pauseIntervalsJSON` on source `Session` silently becomes empty `pauseIntervals` array in `toDTO()` — pre-existing getter behavior in `PauseInterval.swift`.
 - `CampaignDTO.descriptionText` is non-optional `String` — if a future bundle version makes it optional/absent, decode fails instead of defaulting. Forward-compatibility risk.
+
+## Deferred from: code review of story 3-2 (2026-04-02)
+
+- Main-thread blocking I/O in `TransferService._prepareBundleSync` — `Data(contentsOf:)` reads entire audio file into memory on the main actor. For large recordings (100+ MB) this freezes UI and risks jetsam kill. Requires `BundleSerializer` API change to accept file URLs instead of `Data`, or an off-main-actor preparation path.
+- Nested 3-level sheet stack: `SessionSummarySheet` → `TransferPrompt` → `ActivityViewControllerRepresentable`. On iOS 16 and earlier, `UIActivityViewController` inside a double-nested SwiftUI sheet may fail to present. Consider flattening to `fullScreenCover` or dismissing parent before presenting.
+- Multiple `.sheet(item:)` modifiers in `CampaignDetailScreen` (edit, transfer, recording) can queue presentations unexpectedly. Pre-existing pattern — consider enum-based `ActiveSheet` state in a future cleanup.
+- Test audio files are written to real `AudioFileManager.audioStorageDirectory()`, not a sandboxed temp path. A test crash skipping `tearDown` pollutes the app's audio storage. Pre-existing test pattern across transfer tests.
+- `TransferState` Equatable compares `.failed` errors via `localizedDescription` string — lossy and can suppress consecutive distinct error transitions. Pragmatic for mixed UIKit `Error` types but could miss state changes.

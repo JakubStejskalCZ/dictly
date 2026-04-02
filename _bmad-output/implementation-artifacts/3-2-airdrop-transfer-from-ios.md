@@ -1,6 +1,6 @@
 # Story 3.2: AirDrop Transfer from iOS
 
-Status: review
+Status: done
 
 ## Story
 
@@ -62,6 +62,24 @@ so that I can review it on the big screen without any file management hassle.
   - [x] 6.4 Test state transitions: `.idle` → `.preparing` → `.failed` when audio file is missing
   - [x] 6.5 Test `cleanupTemporaryBundle()` — verify temp directory removed
   - [x] 6.6 Test that `TransferService` handles a session with zero tags (edge case)
+
+### Review Findings
+
+- [x] [Review][Patch] Share sheet binding setter was no-op — state stuck at `.sharing` permanently if sheet dismissed by swipe [TransferPrompt.swift:247] — **fixed**
+- [x] [Review][Patch] `prepareBundle` was internal, bypassing idle guard; race condition on double-tap [TransferService.swift:123] — **fixed** (made private, moved `.preparing` before suspension)
+- [x] [Review][Patch] `handleShareCompletion` had no state guard — could corrupt state from unexpected calls [TransferService.swift:92] — **fixed**
+- [x] [Review][Patch] Wrong SF Symbol `airplayaudio` (AirPlay) used for AirDrop action [TransferPrompt.swift:142, SessionSummarySheet.swift:49, CampaignDetailScreen.swift:131] — **fixed** (→ `square.and.arrow.up`)
+- [x] [Review][Patch] `onDisappear` called `cleanupTemporaryBundle()` without resetting state [TransferPrompt.swift:61] — **fixed** (→ `reset()`)
+- [x] [Review][Patch] Auto-dismiss cancellation used fragile `try?` + `guard` pattern [TransferPrompt.swift:54] — **fixed** (→ `try await` with `catch return`)
+- [x] [Review][Patch] Stale temp bundle directory not removed before creating new one [TransferService.swift:153] — **fixed**
+- [x] [Review][Patch] Context menu "AirDrop to Mac" button missing icon [CampaignDetailScreen.swift:131] — **fixed**
+- [x] [Review][Patch] Duplicate test `testShareViaAirDrop_setsFailedStateWhenAudioMissing` [TransferServiceTests.swift:150] — **fixed** (removed, added `testStateTransitions_sharingToFailedOnError` for completion error path)
+- [x] [Review][Patch] Missing test for `handleShareCompletion` with non-nil error [TransferServiceTests.swift] — **fixed**
+- [x] [Review][Defer] Main-thread blocking I/O in `_prepareBundleSync` for large audio files [TransferService.swift:131] — deferred, requires BundleSerializer API change to accept file URLs
+- [x] [Review][Defer] Nested 3-level sheet stack (SessionSummarySheet → TransferPrompt → ActivityVC) [TransferPrompt.swift:39] — deferred, architectural refactor needed
+- [x] [Review][Defer] Multiple `.sheet(item:)` modifiers in CampaignDetailScreen can queue unexpectedly [CampaignDetailScreen.swift:55] — deferred, pre-existing pattern across app
+- [x] [Review][Defer] Test audio files written to real `AudioFileManager.audioStorageDirectory()` [TransferServiceTests.swift:33] — deferred, pre-existing test pattern
+- [x] [Review][Defer] `TransferState` Equatable compares errors via `localizedDescription` — lossy [TransferService.swift:23] — deferred, pragmatic for mixed Error types from UIKit
 
 ## Dev Notes
 

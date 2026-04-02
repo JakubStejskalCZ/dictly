@@ -51,15 +51,18 @@ struct TransferPrompt: View {
             if case .completed = newState {
                 autoDismissTask?.cancel()
                 autoDismissTask = Task {
-                    try? await Task.sleep(for: .seconds(2))
-                    guard !Task.isCancelled else { return }
+                    do {
+                        try await Task.sleep(for: .seconds(2))
+                    } catch {
+                        return // Cancelled
+                    }
                     onDismiss()
                 }
             }
         }
         .onDisappear {
             autoDismissTask?.cancel()
-            transferService.cleanupTemporaryBundle()
+            transferService.reset()
         }
         .presentationDetents([.large])
     }
@@ -139,7 +142,7 @@ struct TransferPrompt: View {
             Button {
                 Task { await transferService.shareViaAirDrop(session: session) }
             } label: {
-                Label("AirDrop to Mac", systemImage: "airplayaudio")
+                Label("AirDrop to Mac", systemImage: "square.and.arrow.up")
                     .font(DictlyTypography.h3)
                     .frame(maxWidth: .infinity)
                     .frame(height: DictlySpacing.minTapTarget)
@@ -250,7 +253,12 @@ struct TransferPrompt: View {
                 if case .sharing = transferService.transferState { return true }
                 return false
             },
-            set: { _ in }
+            set: { newValue in
+                if !newValue, case .sharing = transferService.transferState {
+                    // Sheet dismissed without completion callback (e.g. swipe-down)
+                    transferService.handleShareCompletion(completed: false, error: nil)
+                }
+            }
         )
     }
 

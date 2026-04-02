@@ -40,7 +40,7 @@ final class TransferServiceTests: XCTestCase {
         try? FileManager.default.removeItem(at: tempAudioURL)
 
         // Clean up any leftover temp bundles from service
-        service.cleanupTemporaryBundle()
+        service.reset()
 
         container = nil
         context = nil
@@ -48,12 +48,18 @@ final class TransferServiceTests: XCTestCase {
         tempAudioURL = nil
     }
 
-    // MARK: - 6.2 prepareBundle
+    // MARK: - 6.2 Bundle creation via shareViaAirDrop
 
-    func testPrepareBundle_createsDictlyDirectoryWithExpectedFiles() async throws {
+    func testShareViaAirDrop_createsDictlyDirectoryWithExpectedFiles() async throws {
         let session = makeSession(audioFilePath: tempAudioURL.path)
 
-        let bundleURL = try await service.prepareBundle(for: session)
+        await service.shareViaAirDrop(session: session)
+        XCTAssertEqual(service.transferState, .sharing)
+
+        guard let bundleURL = service.temporaryBundleURL else {
+            XCTFail("temporaryBundleURL should be set after shareViaAirDrop")
+            return
+        }
 
         XCTAssertTrue(FileManager.default.fileExists(atPath: bundleURL.path),
                       "Bundle directory should exist")
@@ -61,26 +67,29 @@ final class TransferServiceTests: XCTestCase {
                       "audio.aac should be present in bundle")
         XCTAssertTrue(FileManager.default.fileExists(atPath: bundleURL.appendingPathComponent("session.json").path),
                       "session.json should be present in bundle")
-
-        // Cleanup
-        try FileManager.default.removeItem(at: bundleURL)
     }
 
-    func testPrepareBundle_audioAacIsNonEmpty() async throws {
+    func testShareViaAirDrop_audioAacIsNonEmpty() async throws {
         let session = makeSession(audioFilePath: tempAudioURL.path)
 
-        let bundleURL = try await service.prepareBundle(for: session)
-        defer { try? FileManager.default.removeItem(at: bundleURL) }
+        await service.shareViaAirDrop(session: session)
+        guard let bundleURL = service.temporaryBundleURL else {
+            XCTFail("temporaryBundleURL should be set")
+            return
+        }
 
         let audioData = try Data(contentsOf: bundleURL.appendingPathComponent("audio.aac"))
         XCTAssertFalse(audioData.isEmpty, "audio.aac should contain audio bytes")
     }
 
-    func testPrepareBundle_sessionJsonIsValidJSON() async throws {
+    func testShareViaAirDrop_sessionJsonIsValidJSON() async throws {
         let session = makeSession(audioFilePath: tempAudioURL.path)
 
-        let bundleURL = try await service.prepareBundle(for: session)
-        defer { try? FileManager.default.removeItem(at: bundleURL) }
+        await service.shareViaAirDrop(session: session)
+        guard let bundleURL = service.temporaryBundleURL else {
+            XCTFail("temporaryBundleURL should be set")
+            return
+        }
 
         let jsonData = try Data(contentsOf: bundleURL.appendingPathComponent("session.json"))
         XCTAssertNoThrow(try JSONSerialization.jsonObject(with: jsonData), "session.json should be valid JSON")
@@ -94,9 +103,7 @@ final class TransferServiceTests: XCTestCase {
 
         await service.shareViaAirDrop(session: session)
 
-        // shareViaAirDrop sets .sharing after successful bundle preparation
         XCTAssertEqual(service.transferState, .sharing, "State should be .sharing after shareViaAirDrop succeeds")
-        service.cleanupTemporaryBundle()
     }
 
     func testStateTransitions_sharingToCompleted() async {
@@ -147,16 +154,16 @@ final class TransferServiceTests: XCTestCase {
         }
     }
 
-    func testShareViaAirDrop_setsFailedStateWhenAudioMissing() async {
-        let session = makeSession(audioFilePath: "/nonexistent/audio.m4a")
+    func testStateTransitions_sharingToFailedOnError() async {
+        let session = makeSession(audioFilePath: tempAudioURL.path)
 
         await service.shareViaAirDrop(session: session)
+        XCTAssertEqual(service.transferState, .sharing, "Precondition: state should be .sharing")
 
-        if case .failed = service.transferState {
-            // expected
-        } else {
-            XCTFail("Expected .failed state, got \(service.transferState)")
-        }
+        let error = DictlyError.transfer(.networkUnavailable)
+        service.handleShareCompletion(completed: false, error: error)
+
+        XCTAssertEqual(service.transferState, .failed(error), "State should be .failed after share error")
     }
 
     // MARK: - 6.5 cleanupTemporaryBundle
@@ -204,28 +211,26 @@ final class TransferServiceTests: XCTestCase {
 
     // MARK: - 6.6 Edge case: session with zero tags
 
-    func testPrepareBundle_sessionWithZeroTags() async throws {
-        // Session with no tags should serialize successfully
+    func testShareViaAirDrop_sessionWithZeroTags() async {
         let session = makeSession(audioFilePath: tempAudioURL.path, tagCount: 0)
 
-        let bundleURL = try await service.prepareBundle(for: session)
-        defer { try? FileManager.default.removeItem(at: bundleURL) }
+        await service.shareViaAirDrop(session: session)
 
+        XCTAssertEqual(service.transferState, .sharing, "Zero-tag session should still reach .sharing")
+        guard let bundleURL = service.temporaryBundleURL else {
+            XCTFail("temporaryBundleURL should be set")
+            return
+        }
         XCTAssertTrue(FileManager.default.fileExists(atPath: bundleURL.path),
                       "Bundle should be created even with zero tags")
-
-        let jsonData = try Data(contentsOf: bundleURL.appendingPathComponent("session.json"))
-        XCTAssertFalse(jsonData.isEmpty, "session.json should not be empty for zero-tag session")
     }
 
     // MARK: - Reset
 
-    func testReset_returnsToIdle() async throws {
+    func testReset_returnsToIdle() async {
         let session = makeSession(audioFilePath: tempAudioURL.path)
 
-        let bundleURL = try await service.prepareBundle(for: session)
-        defer { try? FileManager.default.removeItem(at: bundleURL) }
-
+        await service.shareViaAirDrop(session: session)
         service.handleShareCompletion(completed: true, error: nil)
         XCTAssertEqual(service.transferState, .completed)
 

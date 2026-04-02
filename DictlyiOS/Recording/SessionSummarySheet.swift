@@ -46,7 +46,7 @@ struct SessionSummarySheet: View {
         Button {
             isShowingTransferPrompt = true
         } label: {
-            Label("AirDrop to Mac", systemImage: "airplayaudio")
+            Label("AirDrop to Mac", systemImage: "square.and.arrow.up")
                 .font(DictlyTypography.h3)
                 .frame(maxWidth: .infinity)
                 .frame(height: DictlySpacing.minTapTarget)

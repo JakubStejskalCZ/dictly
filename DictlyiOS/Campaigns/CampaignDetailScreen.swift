@@ -128,8 +128,10 @@ struct CampaignDetailScreen: View {
             ForEach(sortedSessions) { session in
                 SessionListRow(session: session)
                     .contextMenu {
-                        Button("AirDrop to Mac") {
+                        Button {
                             sessionToTransfer = session
+                        } label: {
+                            Label("AirDrop to Mac", systemImage: "square.and.arrow.up")
                         }
                         Button("Rename") {
                             sessionToEdit = session
@@ -143,7 +145,7 @@ struct CampaignDetailScreen: View {
                         Button {
                             sessionToTransfer = session
                         } label: {
-                            Label("AirDrop", systemImage: "airplayaudio")
+                            Label("AirDrop", systemImage: "square.and.arrow.up")
                         }
                         .tint(.indigo)
                     }
