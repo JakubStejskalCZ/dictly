@@ -10,6 +10,7 @@
 		001E2D694DC34F6280E2F408 /* DictlyiOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65858E28AFE327CE10E45530 /* DictlyiOSApp.swift */; };
 		00626D62FF83243E41EA8672 /* LiveWaveform.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBEC881D4003B706B4E6BEA6 /* LiveWaveform.swift */; };
 		0B094A68B17F4F92E3898F6B /* CampaignDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85641EA891D651731A1760AB /* CampaignDetailScreen.swift */; };
+		1B6F3065E9D9DEF89E931AB6 /* TransferService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 173176A93CC5C918A4C190BC /* TransferService.swift */; };
 		1F295CA7E2C03CCDD5A46A5E /* RecordingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73718F65C734C27633CC330C /* RecordingViewModel.swift */; };
 		213BE7694C64750A5070F1EE /* DictlyKit in Frameworks */ = {isa = PBXBuildFile; productRef = 73283B2AADDD38B3A8F3CBBF /* DictlyKit */; };
 		290CBBA7B9D50D83D609EEA8 /* TaggingServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC16A18F932FD4A32FFC2733 /* TaggingServiceTests.swift */; };
@@ -19,6 +20,7 @@
 		574B6B47210DD155FC8B8E76 /* SessionRecorderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39B4A3371AF618D04CB8A30C /* SessionRecorderTests.swift */; };
 		57884EC1179A9C26DDB5C2F9 /* TagCategoryListScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 198D76E81C60D43ECDE83E5F /* TagCategoryListScreen.swift */; };
 		5D6E828DB013B7CA72918795 /* CustomTagSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E04998E46B51178FE74A8F6 /* CustomTagSheet.swift */; };
+		6FE4FC43802CF9F047BC8A35 /* TransferServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0600D43140CE2EB73D76DF73 /* TransferServiceTests.swift */; };
 		87A2B544278BCD7C5AB9AA94 /* CampaignListScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A34CAC83B9783FE002294049 /* CampaignListScreen.swift */; };
 		8854FF6C9D361829ACF29674 /* RecordingScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9666E2F7C32949BAE2ABF2D9 /* RecordingScreen.swift */; };
 		99FF4C6FC40557A21A43F80D /* RecordingStatusBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1981874591B00DCDD63972A /* RecordingStatusBar.swift */; };
@@ -36,6 +38,8 @@
 		E36FBA8D45304C6974A693B9 /* Epic2RecordingE2ETests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3CC66E6DEF0CDFAA6D1ED74 /* Epic2RecordingE2ETests.swift */; };
 		EA0AD55B234ED4B6624F9CDF /* StorageManagementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0938A7C42C28B18503D66170 /* StorageManagementView.swift */; };
 		EA1DD70C8D64A1DED9D70F5D /* SessionRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0105A022422D16EDE58A347 /* SessionRecorder.swift */; };
+		EDF51B31EF250DCD582A2095 /* TransferPrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48046B3652EDB5BBB27C3495 /* TransferPrompt.swift */; };
+		F02C9B064EE1C7E9C366CC45 /* ActivityViewControllerRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0B6DEE9A8E905488FC29EB8 /* ActivityViewControllerRepresentable.swift */; };
 		F8515BD4C7618243956A2D5C /* TaggingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73F0ABBEE9F20F6D89AAB3AC /* TaggingService.swift */; };
 /* End PBXBuildFile section */
 
@@ -50,9 +54,11 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0600D43140CE2EB73D76DF73 /* TransferServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferServiceTests.swift; sourceTree = "<group>"; };
 		0938A7C42C28B18503D66170 /* StorageManagementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageManagementView.swift; sourceTree = "<group>"; };
 		1140D16A3FA3BF0E382A17B9 /* CampaignFormSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampaignFormSheet.swift; sourceTree = "<group>"; };
 		1293F57D2A3E00C3C41104D3 /* SessionFormSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionFormSheet.swift; sourceTree = "<group>"; };
+		173176A93CC5C918A4C190BC /* TransferService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferService.swift; sourceTree = "<group>"; };
 		198D76E81C60D43ECDE83E5F /* TagCategoryListScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagCategoryListScreen.swift; sourceTree = "<group>"; };
 		1E04998E46B51178FE74A8F6 /* CustomTagSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTagSheet.swift; sourceTree = "<group>"; };
 		212048F3B21C673F727CF238 /* .gitkeep */ = {isa = PBXFileReference; path = .gitkeep; sourceTree = "<group>"; };
@@ -62,6 +68,7 @@
 		292C56CB086444688FE199C1 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		39B4A3371AF618D04CB8A30C /* SessionRecorderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionRecorderTests.swift; sourceTree = "<group>"; };
 		421DF30DCF157DFEB97DFC73 /* DictlyiOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = DictlyiOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		48046B3652EDB5BBB27C3495 /* TransferPrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferPrompt.swift; sourceTree = "<group>"; };
 		5EB41807FFA88431A85A87EA /* SettingsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsScreen.swift; sourceTree = "<group>"; };
 		65858E28AFE327CE10E45530 /* DictlyiOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictlyiOSApp.swift; sourceTree = "<group>"; };
 		70DEB959750632939DBA599F /* SessionListRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionListRow.swift; sourceTree = "<group>"; };
@@ -70,7 +77,9 @@
 		85641EA891D651731A1760AB /* CampaignDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampaignDetailScreen.swift; sourceTree = "<group>"; };
 		9097885CC399C9C51A2DEF9A /* .gitkeep */ = {isa = PBXFileReference; path = .gitkeep; sourceTree = "<group>"; };
 		9666E2F7C32949BAE2ABF2D9 /* RecordingScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingScreen.swift; sourceTree = "<group>"; };
+		99553988F3F12946529E90BA /* .gitkeep */ = {isa = PBXFileReference; path = .gitkeep; sourceTree = "<group>"; };
 		9BD01AF12F865CDE4934E485 /* SessionSummarySheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionSummarySheet.swift; sourceTree = "<group>"; };
+		A0B6DEE9A8E905488FC29EB8 /* ActivityViewControllerRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityViewControllerRepresentable.swift; sourceTree = "<group>"; };
 		A12AA75E463BAB0350A7B859 /* RecordingViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingViewModelTests.swift; sourceTree = "<group>"; };
 		A34CAC83B9783FE002294049 /* CampaignListScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampaignListScreen.swift; sourceTree = "<group>"; };
 		A3CC66E6DEF0CDFAA6D1ED74 /* Epic2RecordingE2ETests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Epic2RecordingE2ETests.swift; sourceTree = "<group>"; };
@@ -117,6 +126,7 @@
 				DF8A5EE255271BB450480C25 /* Settings */,
 				2164FED092E47251C8E7BD04 /* Tagging */,
 				E4686F2B61D8A6EE7ACAB923 /* Tests */,
+				47ACA6079AE144E38938B410 /* Transfer */,
 				E233D43E11DF5690FCBCBD58 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -145,6 +155,17 @@
 				E36BCB0AD9121F4398559958 /* TagPalette.swift */,
 			);
 			path = Tagging;
+			sourceTree = "<group>";
+		};
+		47ACA6079AE144E38938B410 /* Transfer */ = {
+			isa = PBXGroup;
+			children = (
+				99553988F3F12946529E90BA /* .gitkeep */,
+				A0B6DEE9A8E905488FC29EB8 /* ActivityViewControllerRepresentable.swift */,
+				48046B3652EDB5BBB27C3495 /* TransferPrompt.swift */,
+				173176A93CC5C918A4C190BC /* TransferService.swift */,
+			);
+			path = Transfer;
 			sourceTree = "<group>";
 		};
 		886BF59EFE7C0E102EA1919D /* RecordingTests */ = {
@@ -224,8 +245,17 @@
 			children = (
 				886BF59EFE7C0E102EA1919D /* RecordingTests */,
 				A10299D753ED7BAA7008368F /* TaggingTests */,
+				E541A5F2F1BB0DF26F113F4F /* TransferTests */,
 			);
 			path = Tests;
+			sourceTree = "<group>";
+		};
+		E541A5F2F1BB0DF26F113F4F /* TransferTests */ = {
+			isa = PBXGroup;
+			children = (
+				0600D43140CE2EB73D76DF73 /* TransferServiceTests.swift */,
+			);
+			path = TransferTests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -317,6 +347,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F02C9B064EE1C7E9C366CC45 /* ActivityViewControllerRepresentable.swift in Sources */,
 				0B094A68B17F4F92E3898F6B /* CampaignDetailScreen.swift in Sources */,
 				AFF7496D2EA43AA3D1A40D54 /* CampaignFormSheet.swift in Sources */,
 				87A2B544278BCD7C5AB9AA94 /* CampaignListScreen.swift in Sources */,
@@ -341,6 +372,8 @@
 				50223616BDCB96EA9222C2E4 /* TagListScreen.swift in Sources */,
 				C68F87ED17A55C2191F4DE38 /* TagPalette.swift in Sources */,
 				F8515BD4C7618243956A2D5C /* TaggingService.swift in Sources */,
+				EDF51B31EF250DCD582A2095 /* TransferPrompt.swift in Sources */,
+				1B6F3065E9D9DEF89E931AB6 /* TransferService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -352,6 +385,7 @@
 				DCBCA159CF7BA94948511F91 /* RecordingViewModelTests.swift in Sources */,
 				574B6B47210DD155FC8B8E76 /* SessionRecorderTests.swift in Sources */,
 				290CBBA7B9D50D83D609EEA8 /* TaggingServiceTests.swift in Sources */,
+				6FE4FC43802CF9F047BC8A35 /* TransferServiceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

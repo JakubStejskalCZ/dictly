@@ -16,6 +16,7 @@ struct CampaignDetailScreen: View {
     @State private var sessionToEdit: Session?
     @State private var isShowingManageTags = false
     @State private var activeRecordingSession: Session?
+    @State private var sessionToTransfer: Session?
 
     private var sortedSessions: [Session] {
         campaign.sessions.sorted { $0.date > $1.date }
@@ -53,6 +54,11 @@ struct CampaignDetailScreen: View {
         }
         .sheet(item: $sessionToEdit) { session in
             SessionFormSheet(session: session)
+        }
+        .sheet(item: $sessionToTransfer) { session in
+            TransferPrompt(session: session, onDismiss: {
+                sessionToTransfer = nil
+            })
         }
         .fullScreenCover(item: $activeRecordingSession, onDismiss: {
             activeRecordingSession = nil
@@ -122,6 +128,9 @@ struct CampaignDetailScreen: View {
             ForEach(sortedSessions) { session in
                 SessionListRow(session: session)
                     .contextMenu {
+                        Button("AirDrop to Mac") {
+                            sessionToTransfer = session
+                        }
                         Button("Rename") {
                             sessionToEdit = session
                         }
@@ -129,6 +138,14 @@ struct CampaignDetailScreen: View {
                             sessionToDelete = session
                             isShowingSessionDeleteConfirmation = true
                         }
+                    }
+                    .swipeActions(edge: .leading, allowsFullSwipe: false) {
+                        Button {
+                            sessionToTransfer = session
+                        } label: {
+                            Label("AirDrop", systemImage: "airplayaudio")
+                        }
+                        .tint(.indigo)
                     }
                     .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                         Button(role: .destructive) {

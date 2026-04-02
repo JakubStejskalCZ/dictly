@@ -8,6 +8,8 @@ struct SessionSummarySheet: View {
     let session: Session
     let onDismiss: () -> Void
 
+    @State private var isShowingTransferPrompt = false
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -15,6 +17,7 @@ struct SessionSummarySheet: View {
                     headerSection
                     statsSection
                     tagListSection
+                    airDropButton
                 }
                 .padding(DictlySpacing.md)
             }
@@ -28,7 +31,28 @@ struct SessionSummarySheet: View {
                 }
             }
         }
+        .sheet(isPresented: $isShowingTransferPrompt) {
+            TransferPrompt(session: session, onDismiss: {
+                isShowingTransferPrompt = false
+                onDismiss()
+            })
+        }
         .presentationDetents([.large])
+    }
+
+    // MARK: - AirDrop
+
+    private var airDropButton: some View {
+        Button {
+            isShowingTransferPrompt = true
+        } label: {
+            Label("AirDrop to Mac", systemImage: "airplayaudio")
+                .font(DictlyTypography.h3)
+                .frame(maxWidth: .infinity)
+                .frame(height: DictlySpacing.minTapTarget)
+        }
+        .buttonStyle(.bordered)
+        .accessibilityLabel("AirDrop to Mac — send session bundle via AirDrop")
     }
 
     // MARK: - Sections

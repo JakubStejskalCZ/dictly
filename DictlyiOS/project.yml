@@ -29,6 +29,7 @@ targets:
       - path: Tagging
       - path: Settings
       - path: Recording
+      - path: Transfer
     resources:
       - path: Resources
     entitlements:
