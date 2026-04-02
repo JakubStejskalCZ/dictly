@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-04-01
-last_updated: 2026-04-02 01:08 # story 2.7 done
+last_updated: 2026-04-02 # story 3.1 ready-for-dev
 project: Dictly
 project_key: NOKEY
 tracking_system: file-system
@@ -52,7 +52,7 @@ development_status:
   1-7-storage-management: done
   epic-1-retrospective: optional
   # Epic 2: Session Recording & Live Tagging
-  epic-2: in-progress
+  epic-2: done
   2-1-audio-recording-engine-with-background-persistence: done
   2-2-pause-resume-and-phone-call-interruption-handling: done
   2-3-recording-screen-layout-and-status-indicators: done
@@ -62,8 +62,8 @@ development_status:
   2-7-stop-recording-and-session-summary: done
   epic-2-retrospective: optional
   # Epic 3: Session Transfer & Import
-  epic-3: backlog
-  3-1-dictly-bundle-format-and-serialization: backlog
+  epic-3: in-progress
+  3-1-dictly-bundle-format-and-serialization: ready-for-dev
   3-2-airdrop-transfer-from-ios: backlog
   3-3-local-network-transfer-bonjour-fallback: backlog
   3-4-mac-import-with-deduplication: backlog
