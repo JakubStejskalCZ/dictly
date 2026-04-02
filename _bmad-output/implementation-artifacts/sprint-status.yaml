@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-04-01
-last_updated: 2026-04-02 # story 4.4 done
+last_updated: 2026-04-02 # story 4.5 ready-for-dev
 project: Dictly
 project_key: NOKEY
 tracking_system: file-system
@@ -74,7 +74,7 @@ development_status:
   4-2-waveform-timeline-rendering-with-tag-markers: done
   4-3-audio-playback-and-waveform-navigation: done
   4-4-tag-sidebar-with-category-filtering: done
-  4-5-tag-editing-rename-recategorize-and-delete: backlog
+  4-5-tag-editing-rename-recategorize-and-delete: ready-for-dev
   4-6-retroactive-tag-placement: backlog
   4-7-tag-notes-and-session-summary-notes: backlog
   epic-4-retrospective: optional
