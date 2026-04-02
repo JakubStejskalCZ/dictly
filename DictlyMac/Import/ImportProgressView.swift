@@ -13,32 +13,35 @@ struct ImportProgressView: View {
     @Environment(ImportService.self) private var importService
 
     var body: some View {
-        switch importService.importState {
-        case .idle:
-            EmptyView()
+        Group {
+            switch importService.importState {
+            case .idle:
+                EmptyView()
 
-        case .importing(let progress):
-            importingBanner(progress: progress)
-                .transition(.move(edge: .top).combined(with: .opacity))
+            case .importing(let progress):
+                importingBanner(progress: progress)
+                    .transition(.move(edge: .top).combined(with: .opacity))
 
-        case .completed(let sessionTitle):
-            completedBanner(sessionTitle: sessionTitle)
-                .transition(.move(edge: .top).combined(with: .opacity))
-                .task {
-                    try? await Task.sleep(for: .seconds(3))
-                    if case .completed = importService.importState {
-                        importService.skipDuplicate()
+            case .completed(let sessionTitle):
+                completedBanner(sessionTitle: sessionTitle)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .task {
+                        try? await Task.sleep(for: .seconds(3))
+                        if case .completed = importService.importState {
+                            importService.dismiss()
+                        }
                     }
-                }
 
-        case .duplicate(let sessionTitle):
-            duplicateBanner(sessionTitle: sessionTitle)
-                .transition(.move(edge: .top).combined(with: .opacity))
+            case .duplicate(let sessionTitle):
+                duplicateBanner(sessionTitle: sessionTitle)
+                    .transition(.move(edge: .top).combined(with: .opacity))
 
-        case .failed(let error):
-            failedBanner(error: error)
-                .transition(.move(edge: .top).combined(with: .opacity))
+            case .failed(let error):
+                failedBanner(error: error)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            }
         }
+        .animation(.easeInOut(duration: 0.3), value: importService.importState)
     }
 
     // MARK: - Banner Views

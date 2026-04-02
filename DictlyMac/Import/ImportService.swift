@@ -19,8 +19,8 @@ enum ImportState: Equatable {
         case (.importing(let l), .importing(let r)): return l == r
         case (.completed(let l), .completed(let r)): return l == r
         case (.duplicate(let l), .duplicate(let r)): return l == r
-        case (.failed(let l), .failed(let r)):
-            return l.localizedDescription == r.localizedDescription
+        case (.failed, .failed):
+            return false
         default: return false
         }
     }
@@ -59,6 +59,10 @@ final class ImportService {
     /// Sets `importState` to `.importing(progress: 0.0)` immediately,
     /// then performs dedup check and import asynchronously.
     func importBundle(from url: URL, context: ModelContext) {
+        if case .importing = importState {
+            logger.warning("ImportService: import already in progress, ignoring new request for '\(url.lastPathComponent)'")
+            return
+        }
         logger.info("ImportService: importBundle — \(url.lastPathComponent)")
         lastBundleURL = url
         lastContext = context
@@ -73,6 +77,10 @@ final class ImportService {
     /// Deletes the existing session (cascade deletes its tags) and its audio file,
     /// then re-imports from the same bundle URL.
     func replaceExisting(from url: URL, context: ModelContext) {
+        if case .importing = importState {
+            logger.warning("ImportService: import already in progress, ignoring replace request")
+            return
+        }
         logger.info("ImportService: replaceExisting — \(url.lastPathComponent)")
         lastBundleURL = url
         lastContext = context
@@ -114,9 +122,15 @@ final class ImportService {
     }
 
     /// Resets `importState` to `.idle` without making any data changes.
-    /// Called when user skips a duplicate, or to dismiss a banner.
+    /// Called when user skips a duplicate.
     func skipDuplicate() {
         logger.info("ImportService: skipDuplicate — state → .idle")
+        importState = .idle
+    }
+
+    /// Resets `importState` to `.idle`. Used to dismiss completed/failed banners.
+    func dismiss() {
+        logger.info("ImportService: dismiss — state → .idle")
         importState = .idle
     }
 
@@ -181,9 +195,14 @@ final class ImportService {
             try context.save()
             logger.info("ImportService: session '\(bundle.session.title)' saved to SwiftData")
 
-            // 7. Clean up source bundle temp directory
-            try? FileManager.default.removeItem(at: url)
-            logger.info("ImportService: source bundle cleaned up")
+            // 7. Clean up source bundle if it resides in a temp directory
+            let tempDir = FileManager.default.temporaryDirectory.standardizedFileURL
+            if url.standardizedFileURL.path.hasPrefix(tempDir.path) {
+                try? FileManager.default.removeItem(at: url)
+                logger.info("ImportService: source bundle cleaned up")
+            } else {
+                logger.info("ImportService: source bundle not in temp directory, skipping cleanup")
+            }
 
             importState = .completed(sessionTitle: bundle.session.title)
             logger.info("ImportService: import completed — '\(bundle.session.title)'")

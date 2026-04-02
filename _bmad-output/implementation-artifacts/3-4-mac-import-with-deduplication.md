@@ -1,6 +1,6 @@
 # Story 3.4: Mac Import with Deduplication
 
-Status: review
+Status: done
 
 ## Story
 
@@ -90,6 +90,18 @@ so that import is effortless and I never accidentally duplicate a session.
   - [x] 6.7 Test campaign reuse: import bundle with campaign UUID already in SwiftData → session added to existing campaign
   - [x] 6.8 Test invalid bundle: pass a non-bundle URL → state transitions to `.failed` with appropriate error
   - [x] 6.9 Test audio file storage: verify audio written to `AudioFileManager.audioStorageDirectory()/{uuid}.aac`
+
+### Review Findings
+
+- [x] [Review][Patch] Race condition: concurrent imports corrupt state — add guard to reject imports while `.importing` [ImportService.swift:62]
+- [x] [Review][Patch] `ImportState.failed` Equatable compares `localizedDescription` — `onChange` won't fire on different errors with same description [ImportService.swift:22]
+- [x] [Review][Patch] Completed banner auto-dismiss calls `skipDuplicate()` — misleading semantics, added dedicated `dismiss()` method [ImportService.swift:132, ImportProgressView.swift:31]
+- [x] [Review][Patch] Banner transitions declared but never animated — wrapped body in `Group` with `.animation()` modifier [ImportProgressView.swift:44]
+- [x] [Review][Patch] Source bundle deleted unconditionally — destructive for Finder-opened files, now guards to temp directory only [ImportService.swift:199]
+- [x] [Review][Defer] `lastContext` strong reference to `ModelContext` — stale context risk if container deallocated, acceptable for current app lifecycle — deferred, pre-existing
+- [x] [Review][Defer] Replace flow not atomic — delete-then-reimport can lose data if reimport fails — deferred, pre-existing
+- [x] [Review][Defer] Main thread SwiftData operations — large bundles may block UI, acceptable for typical session sizes — deferred, pre-existing
+- [x] [Review][Defer] Retry after network receiver reset — receiver may clean up temp URL before retry — deferred, pre-existing
 
 ## Dev Notes
 

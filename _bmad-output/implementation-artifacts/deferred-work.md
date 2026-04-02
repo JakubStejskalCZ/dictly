@@ -101,3 +101,10 @@
 - UInt32 overflow on payloads > 4GB — the 4-byte length prefix cannot represent payloads larger than ~4 GB. Unrealistic for audio sessions (a 4-hour session at 128kbps AAC is ~230 MB).
 - Audio data double-loaded in memory during payload prep — `preparePayload` loads audio into `Data` and also writes it to a temp bundle via `BundleSerializer`. Inherent to the approach; the temp bundle is cleaned up on completion.
 - `TransferError.timeout` declared but never raised — added per spec task 1.1 but the 5-second no-peers timeout is handled via UI state (`showNoPeersMessage`) rather than through the error state machine.
+
+## Deferred from: code review of story 3-4 (2026-04-02)
+
+- `lastContext` stores a strong reference to `ModelContext` in `ImportService` — stale context risk if `ModelContainer` is deallocated. Acceptable for current app lifecycle where container is static, but fragile if architecture changes.
+- Replace flow (`replaceExisting`) is not atomic — deletes old session then re-imports. If reimport fails after delete, user's original session is permanently lost with no recovery path.
+- All SwiftData operations (fetch, insert, save, delete) run on `@MainActor` — large bundles with many tags or big audio files may block the UI thread. Consider background `ModelContext` for heavy operations.
+- `retry()` after network receiver failure may use a stale `lastBundleURL` that was already cleaned up by `LocalNetworkReceiver.reset()`. No coordination between receiver cleanup and ImportService retry timing.
