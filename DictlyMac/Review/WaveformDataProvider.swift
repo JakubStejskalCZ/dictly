@@ -76,6 +76,7 @@ struct WaveformDataProvider {
 
                 guard let channelData = buffer.floatChannelData?[0] else { break }
                 let framesRead = Int(buffer.frameLength)
+                guard framesRead > 0 else { break }
 
                 for i in 0..<framesRead {
                     maxInCurrentSample = max(maxInCurrentSample, abs(channelData[i]))

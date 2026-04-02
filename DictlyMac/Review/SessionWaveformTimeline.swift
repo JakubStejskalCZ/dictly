@@ -105,7 +105,7 @@ struct SessionWaveformTimeline: View {
                 )
             }
         }
-        .opacity(skeletonPulse ? 0.5 : 0.2)
+        .opacity(skeletonPulse ? 0.4 : 0.2)
         .animation(
             reduceMotion ? nil : .easeInOut(duration: 0.8).repeatForever(autoreverses: true),
             value: skeletonPulse
@@ -152,7 +152,7 @@ struct SessionWaveformTimeline: View {
 
         ZStack(alignment: .topLeading) {
             ForEach(tags, id: \.uuid) { tag in
-                let xPos = (tag.anchorTime / duration) * width
+                let xPos = min(max(0, (tag.anchorTime / duration) * width), width)
                 TagMarkerColumn(
                     tag: tag,
                     height: size.height,
@@ -182,6 +182,7 @@ struct SessionWaveformTimeline: View {
         let time = size.width > 0 && session.duration > 0
             ? (pos / size.width) * session.duration
             : 0
+        let labelXOffset: CGFloat = pos > size.width - 60 ? -56 : 6
 
         ZStack(alignment: .topLeading) {
             // Vertical line
@@ -198,7 +199,7 @@ struct SessionWaveformTimeline: View {
                 .padding(.vertical, 2)
                 .background(DictlyColors.surface.opacity(0.9))
                 .cornerRadius(4)
-                .offset(x: 6, y: -20)
+                .offset(x: labelXOffset, y: -20)
         }
         .offset(x: pos - 1)
         .accessibilityLabel("Timeline position: \(formatTimestamp(time))")
@@ -219,7 +220,7 @@ struct SessionWaveformTimeline: View {
     private func loadWaveform() async {
         isLoading = true
         waveformSamples = []
-        skeletonPulse = false
+        skeletonPulse = !reduceMotion
 
         guard let path = session.audioFilePath else {
             isLoading = false
@@ -231,7 +232,10 @@ struct SessionWaveformTimeline: View {
             sampleCount: sampleCount
         )
 
-        guard !Task.isCancelled else { return }
+        guard !Task.isCancelled else {
+            isLoading = false
+            return
+        }
 
         withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.3)) {
             waveformSamples = samples
@@ -244,7 +248,7 @@ struct SessionWaveformTimeline: View {
 
 /// A single tag marker column: a thin vertical line with a category shape at the top.
 ///
-/// Interactive: hover shows tooltip popover, tap/Enter/Space toggles selection, focusable via Tab.
+/// Interactive: hover shows tooltip overlay, tap/Enter/Space toggles selection, focusable via Tab.
 private struct TagMarkerColumn: View {
 
     let tag: Tag
@@ -253,6 +257,8 @@ private struct TagMarkerColumn: View {
     let onSelect: () -> Void
 
     @State private var isHovered = false
+    @State private var showTooltip = false
+    @State private var hoverTask: Task<Void, Never>?
 
     var body: some View {
         let color = categoryColor(for: tag.categoryName)
@@ -283,15 +289,29 @@ private struct TagMarkerColumn: View {
         }
         .frame(width: 20, height: height)
         .contentShape(Rectangle())
-        .onHover { isHovered = $0 }
-        .onTapGesture { onSelect() }
-        .popover(
-            isPresented: $isHovered,
-            attachmentAnchor: .point(.top),
-            arrowEdge: .bottom
-        ) {
-            TagMarkerTooltip(tag: tag, label: label)
+        .overlay(alignment: .top) {
+            if showTooltip {
+                TagMarkerTooltip(tag: tag, label: label)
+                    .fixedSize()
+                    .offset(y: -60)
+                    .transition(.opacity)
+                    .allowsHitTesting(false)
+            }
         }
+        .onHover { hovering in
+            isHovered = hovering
+            hoverTask?.cancel()
+            if hovering {
+                hoverTask = Task {
+                    try? await Task.sleep(for: .milliseconds(300))
+                    guard !Task.isCancelled else { return }
+                    withAnimation(.easeInOut(duration: 0.15)) { showTooltip = true }
+                }
+            } else {
+                withAnimation(.easeInOut(duration: 0.15)) { showTooltip = false }
+            }
+        }
+        .onTapGesture { onSelect() }
         .focusable()
         .onKeyPress(.space) { onSelect(); return .handled }
         .onKeyPress(.return) { onSelect(); return .handled }
@@ -305,7 +325,7 @@ private struct TagMarkerColumn: View {
 
 // MARK: - TagMarkerTooltip
 
-/// Popover tooltip shown on hover over a tag marker.
+/// Overlay tooltip shown on hover over a tag marker.
 private struct TagMarkerTooltip: View {
 
     let tag: Tag
@@ -327,10 +347,10 @@ private struct TagMarkerTooltip: View {
         }
         .padding(DictlySpacing.sm)
         .background(DictlyColors.surface)
+        .clipShape(RoundedRectangle(cornerRadius: 8))
         .overlay {
             RoundedRectangle(cornerRadius: 8)
                 .stroke(DictlyColors.border, lineWidth: 1)
         }
-        .cornerRadius(8)
     }
 }

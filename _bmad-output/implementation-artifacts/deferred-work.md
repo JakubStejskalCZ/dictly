@@ -113,3 +113,8 @@
 
 - Negative/NaN `anchorTime` in `formatTimestamp` produces garbled/negative timestamp strings. `Tag.anchorTime` (`TimeInterval`) has no lower-bound constraint in the model. Pre-existing model validation gap.
 - SwiftData model lifecycle: `selectedTag` and `selectedSession` (`@State`) can hold strong references to faulted/deleted objects if a `Session` or `Tag` is deleted externally while the review screen is displayed. Pre-existing pattern across the app.
+
+## Deferred from: code review of story 4-2 (2026-04-02)
+
+- Multi-channel audio only reads channel 0 in `WaveformDataProvider.extractFromFile`. For stereo/surround files, channels 1–N are silently ignored. Pre-existing architectural decision — waveform shows peak of channel 0 only.
+- Missing test for unknown category color (`DictlyColors.textSecondary`) — the color mapping lives in `CategoryColorHelper` (story 4.1), not tested in waveform context.

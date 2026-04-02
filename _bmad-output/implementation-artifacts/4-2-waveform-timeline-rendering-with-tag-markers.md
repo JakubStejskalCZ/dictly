@@ -1,6 +1,6 @@
 # Story 4.2: Waveform Timeline Rendering with Tag Markers
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -338,6 +338,20 @@ claude-sonnet-4-6
 - `DictlyMac/Review/SessionReviewScreen.swift` — MODIFIED (replaced waveformPlaceholder)
 - `DictlyMacTests/ReviewTests/WaveformTimelineTests.swift` — NEW
 
+### Review Findings
+
+- [x] [Review][Patch] Task cancellation in `loadWaveform()` leaves `isLoading` stuck as `true` [SessionWaveformTimeline.swift:234] — fixed: reset `isLoading = false` before early return
+- [x] [Review][Patch] Tag markers rendered off-screen when `anchorTime > duration` or `< 0` [SessionWaveformTimeline.swift:155] — fixed: clamp xPos to [0, width]
+- [x] [Review][Patch] Potential infinite loop in `extractFromFile` if `buffer.frameLength` returns 0 [WaveformDataProvider.swift:78] — fixed: added `guard framesRead > 0 else { break }`
+- [x] [Review][Patch] Skeleton opacity animates 0.2–0.5 instead of spec's ~0.3 center [SessionWaveformTimeline.swift:108] — fixed: changed to 0.2–0.4 range
+- [x] [Review][Patch] `skeletonPulse` reset to `false` in `loadWaveform()` kills animation on task re-trigger [SessionWaveformTimeline.swift:222] — fixed: set `skeletonPulse = !reduceMotion` instead
+- [x] [Review][Patch] `.popover(isPresented: $isHovered)` causes hover flickering on macOS [SessionWaveformTimeline.swift:288] — fixed: replaced with overlay tooltip + debounced 300ms hover delay
+- [x] [Review][Patch] Tooltip `.cornerRadius(8)` applied after `.overlay` clips stroke corners [SessionWaveformTimeline.swift:334] — fixed: reordered to `.clipShape` before `.overlay`
+- [x] [Review][Patch] Scrub cursor timestamp clips at right view edge [SessionWaveformTimeline.swift:201] — fixed: dynamic label offset flips to left side near edge
+- [x] [Review][Defer] Multi-channel audio only reads channel 0 in WaveformDataProvider — deferred, pre-existing architectural choice
+- [x] [Review][Defer] Missing test for unknown category color (`DictlyColors.textSecondary`) — deferred, tests `CategoryColorHelper` from story 4.1
+
 ## Change Log
 
+- 2026-04-02: Code review by claude-opus-4-6. 8 patches applied (task cancellation safety, marker position clamping, infinite loop guard, skeleton opacity fix, animation pulse fix, tooltip hover→overlay, tooltip cornerRadius order, scrub cursor edge clamping). 2 deferred. 10 dismissed as noise/false positives. Build verified clean.
 - 2026-04-02: Story implemented by claude-sonnet-4-6. Added `WaveformDataProvider` (chunk-based AVAudioFile extraction), `TagMarkerShape` (5 category shapes for color-blind accessibility), `SessionWaveformTimeline` (Canvas waveform + animated skeleton + tag marker overlay + scrub cursor + full accessibility). Replaced `waveformPlaceholder` in `SessionReviewScreen`. 12 unit tests added. Build succeeded (`** TEST BUILD SUCCEEDED **`).
