@@ -136,6 +136,52 @@ final class AudioPlayerTests: XCTestCase {
                        "pause() should preserve currentTime within 50ms accuracy")
     }
 
+    // MARK: - play() at end-of-file resets to beginning
+
+    func testPlay_atEndOfFile_restartsFromBeginning() async throws {
+        try await loadPlayerOrSkip()
+
+        // Seek to end of file
+        audioPlayer.seek(to: audioPlayer.duration)
+        XCTAssertEqual(audioPlayer.currentTime, audioPlayer.duration, accuracy: 0.001,
+                       "currentTime should be at duration after seeking to end")
+
+        // Play should restart from 0
+        audioPlayer.play()
+
+        XCTAssertEqual(audioPlayer.currentTime, 0, accuracy: 0.001,
+                       "play() at EOF should reset currentTime to 0 before playing")
+        XCTAssertTrue(audioPlayer.isPlaying, "play() at EOF should start playback from beginning")
+
+        audioPlayer.pause()
+    }
+
+    // MARK: - load() called twice does not throw or corrupt state
+
+    func testLoad_calledTwice_withSameFile_isIdempotent() async throws {
+        let url = try makeTestAudioFileURL()
+        testAudioURL = url
+
+        do {
+            try await audioPlayer.load(filePath: url.path)
+        } catch {
+            throw XCTSkip("Audio engine unavailable in this environment: \(error.localizedDescription)")
+        }
+
+        let durationAfterFirstLoad = audioPlayer.duration
+
+        // Second load of the same file — should skip re-initialization silently
+        do {
+            try await audioPlayer.load(filePath: url.path)
+        } catch {
+            XCTFail("Second load() with same file should not throw: \(error)")
+        }
+
+        XCTAssertTrue(audioPlayer.isLoaded, "isLoaded should still be true after second load")
+        XCTAssertEqual(audioPlayer.duration, durationAfterFirstLoad, accuracy: 0.001,
+                       "duration should be unchanged after idempotent second load")
+    }
+
     // MARK: - 9.8 Playhead X-position calculation
 
     /// The formula `(currentTime / duration) * viewWidth` is used in SessionWaveformTimeline.

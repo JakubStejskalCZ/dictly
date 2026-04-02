@@ -32,6 +32,10 @@ final class AudioPlayer {
     nonisolated(unsafe) private let playerNode = AVAudioPlayerNode()
     private var audioFile: AVAudioFile?
 
+    /// Path of the last successfully loaded audio file. Guards against redundant re-loads
+    /// and enables proper teardown when a different file is requested.
+    private var loadedFilePath: String?
+
     // MARK: - Timing
 
     /// Task that polls playerNode time at ~30Hz during playback.
@@ -59,6 +63,24 @@ final class AudioPlayer {
     ///
     /// Throws `DictlyError.storage(.fileNotFound)` if the file is missing or inaccessible.
     func load(filePath: String) async throws {
+        // Skip if the same file is already loaded — .task may fire multiple times.
+        if loadedFilePath == filePath, isLoaded { return }
+
+        // Tear down previous session if switching to a different file.
+        if isLoaded {
+            stopUpdateTimer()
+            playerNode.stop()
+            engine.stop()
+            engine.detach(playerNode)
+            audioFile = nil
+            loadedFilePath = nil
+            isLoaded = false
+            isPlaying = false
+            currentTime = 0
+            duration = 0
+            playbackStartPosition = 0
+        }
+
         guard FileManager.default.fileExists(atPath: filePath) else {
             logger.error("Audio file not found: \(filePath, privacy: .sensitive)")
             throw DictlyError.storage(.fileNotFound)
@@ -72,13 +94,16 @@ final class AudioPlayer {
         engine.attach(playerNode)
         engine.connect(playerNode, to: engine.mainMixerNode, format: file.processingFormat)
         try engine.start()
+        loadedFilePath = filePath
         isLoaded = true
         logger.info("Audio loaded, duration: \(self.duration, privacy: .public)s")
     }
 
     /// Starts playback from `currentTime`.
+    /// If `currentTime` is at or beyond `duration` (end of file), restarts from the beginning.
     func play() {
         guard isLoaded, audioFile != nil else { return }
+        if currentTime >= duration { currentTime = 0 }
         scheduleAndPlay(from: currentTime)
     }
 

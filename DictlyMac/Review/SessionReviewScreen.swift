@@ -43,8 +43,10 @@ struct SessionReviewScreen: View {
                 .accessibilityLabel(isSidebarVisible ? "Hide sidebar" : "Show sidebar")
             }
         }
-        // Task 2.2: Load audio when session appears
-        .task {
+        // Task 2.2: Load audio when session appears (or re-fires when audioFilePath changes).
+        // Binding id to audioFilePath ensures the task re-fires if a different session is shown
+        // via view recycling (e.g. NavigationStack identity reuse).
+        .task(id: session.audioFilePath) {
             guard let path = session.audioFilePath else { return }
             do {
                 try await audioPlayer.load(filePath: path)

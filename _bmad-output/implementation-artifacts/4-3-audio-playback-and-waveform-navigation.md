@@ -1,6 +1,6 @@
 # Story 4.3: Audio Playback & Waveform Navigation
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -362,6 +362,28 @@ claude-sonnet-4-6
 - `DictlyMac/Review/SessionWaveformTimeline.swift` — MODIFIED
 - `DictlyMacTests/ReviewTests/AudioPlayerTests.swift` — NEW
 
+### Review Findings
+
+All patch findings were automatically applied in YOLO mode (2026-04-02). No decision-needed findings.
+
+- [x] [Review][Patch] `load()` double-call guard — same file returns early; different file tears down and re-initializes engine/node/state. [AudioPlayer.swift:61]
+- [x] [Review][Patch] `play()` at EOF resets to beginning — `if currentTime >= duration { currentTime = 0 }` before `scheduleAndPlay`. [AudioPlayer.swift:82]
+- [x] [Review][Patch] AC1: tag re-tap always seeks+plays — re-tapping same tag calls `audioPlayer.seek+play` directly instead of deselecting. [SessionWaveformTimeline.swift:295]
+- [x] [Review][Patch] Task 6.3: drag-end auto-play race — `audioPlayer.pause()` called before `seek()` on drag-end path to guarantee `wasPlaying=false`. [SessionWaveformTimeline.swift:200]
+- [x] [Review][Patch] Unclamped tap x — `value.location.x` clamped to `0...viewWidth` in tap path. [SessionWaveformTimeline.swift:195]
+- [x] [Review][Patch] `lastScrubDate` not reset on drag end — `lastScrubDate = .distantPast` added to `onEnded`. [SessionWaveformTimeline.swift:207]
+- [x] [Review][Patch] Diamond cap clipped by `.clipShape` — offset changed from `y: -4` to `y: 2`, placing it fully inside waveform bounds. [SessionWaveformTimeline.swift:149]
+- [x] [Review][Patch] Missing a11y announcement on space-bar and `accessibilityAction` toggle — `AccessibilityNotification.Announcement` added to both paths. [SessionWaveformTimeline.swift:87, 108]
+- [x] [Review][Patch] `.task` not id-bound to session — changed to `.task(id: session.audioFilePath)` to re-fire on session change. [SessionReviewScreen.swift:47]
+- [x] [Review][Patch] Missing tests — added `testPlay_atEndOfFile_restartsFromBeginning` and `testLoad_calledTwice_withSameFile_isIdempotent`. [AudioPlayerTests.swift]
+
+Deferred (pre-existing, not caused by this story):
+- [x] [Review][Defer] `AVAudioEngineConfigurationChange` not handled — audio route changes (Bluetooth, USB) will silently stop playback. [AudioPlayer.swift] — deferred, pre-existing
+- [x] [Review][Defer] `viewWidth` state may be stale during simultaneous window-resize + drag [SessionWaveformTimeline.swift] — deferred, pre-existing
+- [x] [Review][Defer] `isPlaying=true` set before `playerNode.play()` fails (self-corrects via timer→handlePlaybackFinished) [AudioPlayer.swift:162] — deferred, pre-existing
+
+Dismissed (7 false positives or non-issues): timer actor safety (Task{} inherits @MainActor context), AVAudioFile thread safety (all access @MainActor), timerTask data race (Task.isCancelled is thread-safe), keyboard shortcut scope (per spec Task 7.4), seek() without isLoaded (clamps harmlessly), double playerNode.stop() in scrub (benign), playbackControls not in body (false positive — it IS in sessionToolbar).
+
 ## Change Log
 
 - **2026-04-02**: Story 4.3 implemented — audio playback and waveform navigation (claude-sonnet-4-6)
@@ -372,3 +394,14 @@ claude-sonnet-4-6
   - Added VoiceOver accessibility actions and `AccessibilityNotification.Announcement`
   - Created `AudioPlayerTests.swift` with 13 unit tests
   - Ran xcodegen to register new files; build: `** TEST BUILD SUCCEEDED **`
+- **2026-04-02**: Story 4.3 code review patches applied (claude-sonnet-4-6, YOLO mode)
+  - Fixed `AudioPlayer.load()` double-call guard (same file skips; different file tears down first)
+  - Fixed `play()` at EOF to restart from beginning
+  - Fixed AC1: tag re-tap always seeks+plays (no longer deselects)
+  - Fixed Task 6.3: `audioPlayer.pause()` before drag-end seek prevents auto-resume
+  - Fixed unclamped tap x and `lastScrubDate` reset on drag end
+  - Fixed diamond cap clipping (y: -4 → y: 2, inside clipShape bounds)
+  - Added `AccessibilityNotification.Announcement` to space-bar and accessibilityAction paths
+  - Bound `.task` to `session.audioFilePath` for session navigation correctness
+  - Added 2 new tests: play-at-EOF restart, load-called-twice idempotency
+  - Build: `** TEST BUILD SUCCEEDED **`

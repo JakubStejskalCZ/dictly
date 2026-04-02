@@ -118,3 +118,9 @@
 
 - Multi-channel audio only reads channel 0 in `WaveformDataProvider.extractFromFile`. For stereo/surround files, channels 1–N are silently ignored. Pre-existing architectural decision — waveform shows peak of channel 0 only.
 - Missing test for unknown category color (`DictlyColors.textSecondary`) — the color mapping lives in `CategoryColorHelper` (story 4.1), not tested in waveform context.
+
+## Deferred from: code review of story 4-3 (2026-04-02)
+
+- `AVAudioEngineConfigurationChange` not handled — audio route changes (Bluetooth headphones connect/disconnect, USB audio unplugged) stop the engine silently. `isPlaying` stays true with no audio output. Handle in a future story when audio resilience is prioritized.
+- `viewWidth` state may be stale during simultaneous window-resize + drag — gesture uses stored `@State viewWidth` rather than live geometry. Edge case; only affects window-resize-while-dragging scenario.
+- `isPlaying=true` set before `playerNode.play()` potential failure — if the engine stops unexpectedly (route change, resource exhaustion), the timer detects `playerNode.isPlaying=false` and self-corrects via `handlePlaybackFinished`. Pre-existing pattern; acceptable with the route-change deferred above.

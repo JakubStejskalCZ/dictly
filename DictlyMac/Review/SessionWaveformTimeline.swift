@@ -86,8 +86,11 @@ struct SessionWaveformTimeline: View {
         .onKeyPress(.space) {
             if audioPlayer.isPlaying {
                 audioPlayer.pause()
+                // Task 8.4: Announce state change for VoiceOver (space-bar path).
+                AccessibilityNotification.Announcement("Paused").post()
             } else {
                 audioPlayer.play()
+                AccessibilityNotification.Announcement("Playing").post()
             }
             return .handled
         }
@@ -104,9 +107,15 @@ struct SessionWaveformTimeline: View {
         .task(id: sampleCount) { await loadWaveform() }
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Session waveform timeline with \(session.tags.count) tag markers")
-        // Task 8.3: VoiceOver custom action for play/pause
+        // Task 8.3: VoiceOver custom action for play/pause with announcement.
         .accessibilityAction(named: "Play/Pause") {
-            audioPlayer.isPlaying ? audioPlayer.pause() : audioPlayer.play()
+            if audioPlayer.isPlaying {
+                audioPlayer.pause()
+                AccessibilityNotification.Announcement("Paused").post()
+            } else {
+                audioPlayer.play()
+                AccessibilityNotification.Announcement("Playing").post()
+            }
         }
     }
 
@@ -143,12 +152,12 @@ struct SessionWaveformTimeline: View {
                 .fill(DictlyColors.textPrimary)
                 .frame(width: 2, height: size.height)
 
-            // Task 4.2: Diamond cap (8pt, filled white) at top of line
-            // Centered on the 2pt line: offset x by -(8-2)/2 = -3, y by -4 (centers diamond on top edge)
+            // Task 4.2: Diamond cap (8pt, filled white) at top of line.
+            // y: 2 places the diamond fully inside the clipped waveform bounds (avoids clipShape cutoff).
             PlayheadDiamond()
                 .fill(DictlyColors.textPrimary)
                 .frame(width: 8, height: 8)
-                .offset(x: -3, y: -4)
+                .offset(x: -3, y: 2)
 
             // Task 4.5: Floating timestamp label above playhead
             Text(formatTimestamp(time))
@@ -192,17 +201,22 @@ struct SessionWaveformTimeline: View {
             .onEnded { value in
                 let distance = hypot(value.translation.width, value.translation.height)
                 if distance < 4 {
-                    // Task 5.1, 5.2: TAP — seek + play
-                    let tappedTime = (Double(value.location.x) / Double(max(1, viewWidth))) * session.duration
+                    // Task 5.1, 5.2: TAP — seek + play; clamp x to view bounds.
+                    let clampedX = min(max(0, value.location.x), viewWidth)
+                    let tappedTime = (Double(clampedX) / Double(max(1, viewWidth))) * session.duration
                     audioPlayer.seek(to: tappedTime)
                     audioPlayer.play()
                 } else {
-                    // Task 6.3: DRAG END — seek only, no auto-play
+                    // Task 6.3: DRAG END — seek only, no auto-play.
+                    // Pause first to ensure seek() doesn't resume playback via wasPlaying check.
+                    audioPlayer.pause()
                     let finalTime = (Double(value.location.x) / Double(max(1, viewWidth))) * session.duration
                     audioPlayer.seek(to: finalTime)
                 }
                 isDragging = false
                 dragPosition = nil
+                // Reset throttle gate so the first scrub of the next drag always fires immediately.
+                lastScrubDate = .distantPast
             }
     }
 
@@ -297,9 +311,12 @@ struct SessionWaveformTimeline: View {
                     onSelect: {
                         withAnimation(.easeInOut(duration: 0.2)) {
                             if selectedTag?.uuid == tag.uuid {
-                                selectedTag = nil
+                                // AC1: Re-tapping same tag always seeks + plays (no deselect).
+                                audioPlayer.seek(to: tag.anchorTime)
+                                audioPlayer.play()
                             } else {
                                 selectedTag = tag
+                                // onChange(of: selectedTag) in SessionReviewScreen handles seek+play.
                             }
                         }
                     }
