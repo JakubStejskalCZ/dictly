@@ -27,6 +27,7 @@
 		C971785B7E3B412A0CD33E79 /* WaveformTimelineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C11C91837FD6C6CD89BFBD8 /* WaveformTimelineTests.swift */; };
 		E86F70A8B0CC20F126937255 /* CategoryColorHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AF6212CC3464C0246405B2D /* CategoryColorHelper.swift */; };
 		E89B3FAB32A9A61B34328160 /* DictlyKit in Frameworks */ = {isa = PBXBuildFile; productRef = 6D779627DD09B4C0A1B8FA61 /* DictlyKit */; };
+		F292C87D2E124E72CC56FBF0 /* TagSidebarFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F6374291370DD5930374CA1 /* TagSidebarFilterTests.swift */; };
 		F4F3492A52C73AD6E109335E /* ImportServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BD4B11F67071DA75BD374EC /* ImportServiceTests.swift */; };
 		F507AFDC15605AECB65C8217 /* AudioPlayerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59F65E68A1AE0ABC255509BE /* AudioPlayerTests.swift */; };
 /* End PBXBuildFile section */
@@ -42,6 +43,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		1F6374291370DD5930374CA1 /* TagSidebarFilterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagSidebarFilterTests.swift; sourceTree = "<group>"; };
 		2BD4B11F67071DA75BD374EC /* ImportServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportServiceTests.swift; sourceTree = "<group>"; };
 		31EA7A2B90B3B83ED8A5A68C /* AudioPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlayer.swift; sourceTree = "<group>"; };
 		37E0598116A25B1CDE9AD437 /* WaveformDataProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveformDataProvider.swift; sourceTree = "<group>"; };
@@ -181,6 +183,7 @@
 			children = (
 				59F65E68A1AE0ABC255509BE /* AudioPlayerTests.swift */,
 				E8E83175BC0B860D8AFE2B7A /* SessionReviewScreenTests.swift */,
+				1F6374291370DD5930374CA1 /* TagSidebarFilterTests.swift */,
 				5C11C91837FD6C6CD89BFBD8 /* WaveformTimelineTests.swift */,
 			);
 			path = ReviewTests;
@@ -298,6 +301,7 @@
 				F4F3492A52C73AD6E109335E /* ImportServiceTests.swift in Sources */,
 				6E52A9688ABD53A2D5CCCB88 /* LocalNetworkReceiverTests.swift in Sources */,
 				575E88988088C8DF2DAA57E5 /* SessionReviewScreenTests.swift in Sources */,
+				F292C87D2E124E72CC56FBF0 /* TagSidebarFilterTests.swift in Sources */,
 				C971785B7E3B412A0CD33E79 /* WaveformTimelineTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

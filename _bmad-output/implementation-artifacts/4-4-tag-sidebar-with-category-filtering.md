@@ -1,6 +1,6 @@
 # Story 4.4: Tag Sidebar with Category Filtering
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -22,57 +22,57 @@ so that I can quickly find and navigate to specific tags.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Replace placeholder search bar with functional search field and category filter pills (AC: #1, #2)
-  - [ ] 1.1 In `TagSidebar.swift`, replace the static placeholder `HStack` (lines 16-30) with a real `TextField("Search tags", text: $searchText)` bound to new `@State private var searchText: String = ""`
-  - [ ] 1.2 Add `@Query(sort: \TagCategory.sortOrder) private var categories: [TagCategory]` to fetch all tag categories from SwiftData
-  - [ ] 1.3 Below the search field, add a horizontally scrollable row of category filter pills using `ScrollView(.horizontal)` + `HStack`
-  - [ ] 1.4 Each pill: colored dot (6pt circle using `categoryColor(for:)`) + category name (`DictlyTypography.caption`), wrapped in `Button`
-  - [ ] 1.5 Use `@State private var activeCategories: Set<String> = []` — empty means "show all" (no filter), non-empty means filter to selected
-  - [ ] 1.6 Tapping a pill toggles its category name in `activeCategories`; re-tapping removes it
-  - [ ] 1.7 Add an "All" pill at the start that clears `activeCategories` to `[]`; highlight it when set is empty
-  - [ ] 1.8 Style active pills with `DictlyColors.surface` background and `DictlyColors.textPrimary` text; inactive pills with `Color.clear` background and `DictlyColors.textSecondary` text; use `Capsule()` clipShape
-  - [ ] 1.9 Accessibility: each pill reads "[Category] filter. [count] tags." with `.accessibilityAddTraits(isSelected ? .isSelected : [])` for active state
+- [x] Task 1: Replace placeholder search bar with functional search field and category filter pills (AC: #1, #2)
+  - [x] 1.1 In `TagSidebar.swift`, replace the static placeholder `HStack` (lines 16-30) with a real `TextField("Search tags", text: $searchText)` bound to new `@State private var searchText: String = ""`
+  - [x] 1.2 Add `@Query(sort: \TagCategory.sortOrder) private var categories: [TagCategory]` to fetch all tag categories from SwiftData
+  - [x] 1.3 Below the search field, add a horizontally scrollable row of category filter pills using `ScrollView(.horizontal)` + `HStack`
+  - [x] 1.4 Each pill: colored dot (6pt circle using `categoryColor(for:)`) + category name (`DictlyTypography.caption`), wrapped in `Button`
+  - [x] 1.5 Use `@State private var activeCategories: Set<String> = []` — empty means "show all" (no filter), non-empty means filter to selected
+  - [x] 1.6 Tapping a pill toggles its category name in `activeCategories`; re-tapping removes it
+  - [x] 1.7 Add an "All" pill at the start that clears `activeCategories` to `[]`; highlight it when set is empty
+  - [x] 1.8 Style active pills with `DictlyColors.surface` background and `DictlyColors.textPrimary` text; inactive pills with `Color.clear` background and `DictlyColors.textSecondary` text; use `Capsule()` clipShape
+  - [x] 1.9 Accessibility: each pill reads "[Category] filter. [count] tags." with `.accessibilityAddTraits(isSelected ? .isSelected : [])` for active state
 
-- [ ] Task 2: Filter sidebar tag list by active categories and search text (AC: #1, #2)
-  - [ ] 2.1 Update `sortedTags` computed property: start with `session.tags.sorted { $0.anchorTime < $1.anchorTime }`
-  - [ ] 2.2 If `activeCategories` is non-empty, filter to tags where `activeCategories.contains(tag.categoryName)`
-  - [ ] 2.3 If `searchText` is non-empty (trimmed), further filter to tags where `tag.label.localizedCaseInsensitiveContains(searchText)`
-  - [ ] 2.4 Update the tag count displayed per category pill: count of `session.tags` (unfiltered) matching each category
-  - [ ] 2.5 Update empty state: if filters/search produce no results but session has tags, show "No matching tags. Try adjusting your filters." instead of the retroactive-tag prompt
+- [x] Task 2: Filter sidebar tag list by active categories and search text (AC: #1, #2)
+  - [x] 2.1 Update `sortedTags` computed property: start with `session.tags.sorted { $0.anchorTime < $1.anchorTime }`
+  - [x] 2.2 If `activeCategories` is non-empty, filter to tags where `activeCategories.contains(tag.categoryName)`
+  - [x] 2.3 If `searchText` is non-empty (trimmed), further filter to tags where `tag.label.localizedCaseInsensitiveContains(searchText)`
+  - [x] 2.4 Update the tag count displayed per category pill: count of `session.tags` (unfiltered) matching each category
+  - [x] 2.5 Update empty state: if filters/search produce no results but session has tags, show "No matching tags. Try adjusting your filters." instead of the retroactive-tag prompt
 
-- [ ] Task 3: Expose active filter state to `SessionWaveformTimeline` for marker dimming (AC: #2)
-  - [ ] 3.1 Add `activeCategories: Set<String>` parameter to `TagSidebar` initializer (binding from parent) — change from `@State` to `@Binding var activeCategories: Set<String>`
-  - [ ] 3.2 In `SessionReviewScreen`, add `@State private var activeCategories: Set<String> = []` and pass as binding to `TagSidebar`
-  - [ ] 3.3 Pass `activeCategories` to `SessionWaveformTimeline` as a new `let activeCategories: Set<String>` parameter
-  - [ ] 3.4 In `SessionWaveformTimeline.tagMarkersLayer`, when `activeCategories` is non-empty: markers whose `tag.categoryName` is NOT in `activeCategories` render at 25% opacity; markers in `activeCategories` render at full (75% default / 100% selected) opacity
-  - [ ] 3.5 When `activeCategories` is empty (no filter), all markers render at normal opacity (existing behavior)
+- [x] Task 3: Expose active filter state to `SessionWaveformTimeline` for marker dimming (AC: #2)
+  - [x] 3.1 Add `activeCategories: Set<String>` parameter to `TagSidebar` initializer (binding from parent) — change from `@State` to `@Binding var activeCategories: Set<String>`
+  - [x] 3.2 In `SessionReviewScreen`, add `@State private var activeCategories: Set<String> = []` and pass as binding to `TagSidebar`
+  - [x] 3.3 Pass `activeCategories` to `SessionWaveformTimeline` as a new `let activeCategories: Set<String>` parameter
+  - [x] 3.4 In `SessionWaveformTimeline.tagMarkersLayer`, when `activeCategories` is non-empty: markers whose `tag.categoryName` is NOT in `activeCategories` render at 25% opacity; markers in `activeCategories` render at full (75% default / 100% selected) opacity
+  - [x] 3.5 When `activeCategories` is empty (no filter), all markers render at normal opacity (existing behavior)
 
-- [ ] Task 4: Reset filters on session change (AC: #4)
-  - [ ] 4.1 In `SessionReviewScreen`, add `.onChange(of: session)` (or key off `session.uuid`) to reset `activeCategories = []` and propagate to sidebar
-  - [ ] 4.2 Also reset `searchText` in `TagSidebar` — add `let sessionID: UUID` parameter and use `.onChange(of: sessionID)` to reset `searchText = ""` and clear filters
+- [x] Task 4: Reset filters on session change (AC: #4)
+  - [x] 4.1 In `SessionReviewScreen`, add `.onChange(of: session)` (or key off `session.uuid`) to reset `activeCategories = []` and propagate to sidebar
+  - [x] 4.2 Also reset `searchText` in `TagSidebar` — add `let sessionID: UUID` parameter and use `.onChange(of: sessionID)` to reset `searchText = ""` and clear filters
 
-- [ ] Task 5: Tag sidebar click triggers waveform jump, marker highlight, and detail panel (AC: #3)
-  - [ ] 5.1 Verify existing behavior: `selectedTag` binding already wires sidebar selection to `SessionReviewScreen.selectedTag`, which triggers `.onChange(of: selectedTag)` → `audioPlayer.seek(to:)` + `audioPlayer.play()` (story 4.3), marker highlight in `SessionWaveformTimeline`, and `TagDetailPanel(tag: selectedTag)`. **No new code needed if existing wiring works.**
-  - [ ] 5.2 If tag is filtered out (not visible in sidebar), clicking a waveform marker should still select it and show detail — filtering is sidebar-only, waveform markers remain clickable at reduced opacity
+- [x] Task 5: Tag sidebar click triggers waveform jump, marker highlight, and detail panel (AC: #3)
+  - [x] 5.1 Verify existing behavior: `selectedTag` binding already wires sidebar selection to `SessionReviewScreen.selectedTag`, which triggers `.onChange(of: selectedTag)` → `audioPlayer.seek(to:)` + `audioPlayer.play()` (story 4.3), marker highlight in `SessionWaveformTimeline`, and `TagDetailPanel(tag: selectedTag)`. **No new code needed if existing wiring works.**
+  - [x] 5.2 If tag is filtered out (not visible in sidebar), clicking a waveform marker should still select it and show detail — filtering is sidebar-only, waveform markers remain clickable at reduced opacity
 
-- [ ] Task 6: Accessibility for filter interactions (AC: #2)
-  - [ ] 6.1 Filter pill row: wrap in `.accessibilityElement(children: .contain)` with label "Category filters"
-  - [ ] 6.2 Each pill: `.accessibilityLabel("[Category] filter. [count] tags.")` and `.accessibilityAddTraits(isActive ? .isSelected : [])`
-  - [ ] 6.3 "All" pill: `.accessibilityLabel("All categories. \(session.tags.count) tags total.")`
-  - [ ] 6.4 Search field: `.accessibilityLabel("Search tags by name")`
-  - [ ] 6.5 When filter changes, consider posting `AccessibilityNotification.LayoutChanged` so VoiceOver re-reads the updated list
-  - [ ] 6.6 Sidebar tag count summary: add `.accessibilityLabel("Showing \(filteredCount) of \(totalCount) tags")` to the list container
+- [x] Task 6: Accessibility for filter interactions (AC: #2)
+  - [x] 6.1 Filter pill row: wrap in `.accessibilityElement(children: .contain)` with label "Category filters"
+  - [x] 6.2 Each pill: `.accessibilityLabel("[Category] filter. [count] tags.")` and `.accessibilityAddTraits(isActive ? .isSelected : [])`
+  - [x] 6.3 "All" pill: `.accessibilityLabel("All categories. \(session.tags.count) tags total.")`
+  - [x] 6.4 Search field: `.accessibilityLabel("Search tags by name")`
+  - [x] 6.5 When filter changes, consider posting `AccessibilityNotification.LayoutChanged` so VoiceOver re-reads the updated list
+  - [x] 6.6 Sidebar tag count summary: add `.accessibilityLabel("Showing \(filteredCount) of \(totalCount) tags")` to the list container
 
-- [ ] Task 7: Unit tests (AC: #1, #2, #3, #4)
-  - [ ] 7.1 Create `TagSidebarFilterTests.swift` in `DictlyMacTests/ReviewTests/`
-  - [ ] 7.2 Test: no active categories → all tags shown (default state)
-  - [ ] 7.3 Test: single category active → only matching tags shown
-  - [ ] 7.4 Test: multiple categories active → tags from all selected categories shown
-  - [ ] 7.5 Test: search text filters by label (case-insensitive)
-  - [ ] 7.6 Test: combined category + search filter works correctly
-  - [ ] 7.7 Test: marker opacity logic — `activeCategories` non-empty, tag in set → normal opacity; tag not in set → 0.25
-  - [ ] 7.8 Test: marker opacity logic — `activeCategories` empty → all normal opacity
-  - [ ] 7.9 Use `@MainActor`, in-memory `ModelContainer` with `ModelConfiguration(isStoredInMemoryOnly: true)` (project convention)
+- [x] Task 7: Unit tests (AC: #1, #2, #3, #4)
+  - [x] 7.1 Create `TagSidebarFilterTests.swift` in `DictlyMacTests/ReviewTests/`
+  - [x] 7.2 Test: no active categories → all tags shown (default state)
+  - [x] 7.3 Test: single category active → only matching tags shown
+  - [x] 7.4 Test: multiple categories active → tags from all selected categories shown
+  - [x] 7.5 Test: search text filters by label (case-insensitive)
+  - [x] 7.6 Test: combined category + search filter works correctly
+  - [x] 7.7 Test: marker opacity logic — `activeCategories` non-empty, tag in set → normal opacity; tag not in set → 0.25
+  - [x] 7.8 Test: marker opacity logic — `activeCategories` empty → all normal opacity
+  - [x] 7.9 Use `@MainActor`, in-memory `ModelContainer` with `ModelConfiguration(isStoredInMemoryOnly: true)` (project convention)
 
 ## Dev Notes
 
@@ -249,10 +249,29 @@ Recent commits follow `feat(scope):` / `fix(scope):` conventional commit format.
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+claude-sonnet-4-6
 
 ### Debug Log References
 
+- `** TEST BUILD SUCCEEDED **` — test target builds cleanly. Runtime test execution blocked by pre-existing iCloud entitlement signing constraint (consistent with stories 4.2, 4.3).
+
 ### Completion Notes List
 
+- Rewrote `TagSidebar.swift`: replaced placeholder search `HStack` with real `TextField`, added `@Query`-driven category filter pills using `CategoryFilterPill` private component, implemented `filteredTags` computed property composing both category and search filters.
+- `activeCategories` lifted to `@Binding` in `TagSidebar` and owned as `@State` in `SessionReviewScreen`; passed as `let` to `SessionWaveformTimeline`.
+- `SessionWaveformTimeline.tagMarkersLayer`: added `isFiltered` flag per marker (`!activeCategories.isEmpty && !activeCategories.contains(tag.categoryName)`); `TagMarkerColumn` dims to 25% opacity when filtered.
+- Filter reset: `SessionReviewScreen.onChange(of: session.uuid)` clears `activeCategories`; `TagSidebar.onChange(of: sessionID)` clears `searchText`.
+- Task 5 (AC #3): verified existing `List(selection:)` → `onChange(of: selectedTag)` → seek+play wiring works with no code changes.
+- Accessibility: pill row labeled "Category filters", each pill has count + selected trait, "All" pill labeled with total count, search field labeled, `AccessibilityNotification.LayoutChanged` posted on filter/search change, list container labeled with filtered/total counts.
+- Created `TagSidebarFilterTests.swift` with 14 tests covering filter logic and marker opacity as pure functions. Build verified: `** TEST BUILD SUCCEEDED **`.
+
 ### File List
+
+- DictlyMac/Review/TagSidebar.swift
+- DictlyMac/Review/SessionReviewScreen.swift
+- DictlyMac/Review/SessionWaveformTimeline.swift
+- DictlyMacTests/ReviewTests/TagSidebarFilterTests.swift
+
+## Change Log
+
+- 2026-04-02: Implemented story 4-4 tag sidebar with category filtering — functional search field, multi-select category filter pills, waveform marker dimming, filter reset on session change, accessibility notifications, and unit tests.

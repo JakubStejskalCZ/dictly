@@ -1,69 +1,218 @@
 import SwiftUI
+import SwiftData
 import DictlyModels
 import DictlyTheme
 
-/// Scrollable sidebar listing all tags in a session, sorted by `anchorTime`.
+/// Scrollable sidebar listing tags in a session with live search and category filtering.
 ///
-/// Includes a placeholder search field at top (non-functional; full filtering in story 4.4).
-/// Handles empty state when the session has no tags.
+/// - `searchText`: filters tags by label substring (case-insensitive).
+/// - `activeCategories`: multi-select set; empty = show all, non-empty = whitelist.
+/// Both filters compose: a tag must pass both to appear.
 struct TagSidebar: View {
     let session: Session
+    let sessionID: UUID
     @Binding var selectedTag: Tag?
+    @Binding var activeCategories: Set<String>
+
+    @Query(sort: \TagCategory.sortOrder) private var categories: [TagCategory]
+    @State private var searchText: String = ""
 
     var body: some View {
         VStack(spacing: 0) {
-            // Placeholder search field (non-functional — story 4.4 implements filtering)
+            // Search field (Task 1.1)
             HStack(spacing: DictlySpacing.sm) {
                 Image(systemName: "magnifyingglass")
                     .foregroundStyle(DictlyColors.textSecondary)
                     .accessibilityHidden(true)
-                Text("Search tags")
+                TextField("Search tags", text: $searchText)
                     .font(DictlyTypography.caption)
-                    .foregroundStyle(DictlyColors.textSecondary)
-                Spacer()
+                    .textFieldStyle(.plain)
+                    .accessibilityLabel("Search tags by name")
+                if !searchText.isEmpty {
+                    Button {
+                        searchText = ""
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(DictlyColors.textSecondary)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Clear search")
+                }
             }
             .padding(.horizontal, DictlySpacing.md)
             .padding(.vertical, DictlySpacing.sm)
             .background(DictlyColors.surface)
-            .overlay(alignment: .bottom) {
+
+            Divider()
+
+            // Category filter pills (Tasks 1.3–1.9, 6.1–6.3)
+            if !categories.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: DictlySpacing.sm) {
+                        // "All" pill (Task 1.7)
+                        let totalCount = session.tags.count
+                        CategoryFilterPill(
+                            label: "All",
+                            color: nil,
+                            isActive: activeCategories.isEmpty,
+                            tagCount: totalCount,
+                            onTap: { activeCategories = [] }
+                        )
+                        .accessibilityLabel("All categories. \(totalCount) tags total.")
+                        .accessibilityAddTraits(activeCategories.isEmpty ? .isSelected : [])
+
+                        // Per-category pills (Task 1.4, 2.4)
+                        ForEach(categories) { category in
+                            let count = session.tags.filter { $0.categoryName == category.name }.count
+                            let isActive = activeCategories.contains(category.name)
+                            CategoryFilterPill(
+                                label: category.name,
+                                color: categoryColor(for: category.name),
+                                isActive: isActive,
+                                tagCount: count,
+                                onTap: { toggleCategory(category.name) }
+                            )
+                            .accessibilityLabel("\(category.name) filter. \(count) tags.")
+                            .accessibilityAddTraits(isActive ? .isSelected : [])
+                        }
+                    }
+                    .padding(.horizontal, DictlySpacing.md)
+                    .padding(.vertical, DictlySpacing.xs)
+                }
+                .accessibilityElement(children: .contain)
+                .accessibilityLabel("Category filters")
+
                 Divider()
             }
 
-            if sortedTags.isEmpty {
-                emptyState
+            // Tag list or empty state
+            let tags = filteredTags
+            let totalCount = session.tags.count
+            if tags.isEmpty {
+                emptyState(hasFilters: !searchText.trimmingCharacters(in: .whitespaces).isEmpty || !activeCategories.isEmpty, hasTags: totalCount > 0)
             } else {
-                tagList
+                tagList(tags: tags, totalCount: totalCount)
             }
         }
         .background(DictlyColors.background)
+        // Task 4.2: Reset searchText on session change
+        .onChange(of: sessionID) { _, _ in
+            searchText = ""
+        }
+        // Task 6.5: Notify VoiceOver when filter changes so it re-reads the updated list
+        .onChange(of: activeCategories) { _, _ in
+            AccessibilityNotification.LayoutChanged().post()
+        }
+        .onChange(of: searchText) { _, _ in
+            AccessibilityNotification.LayoutChanged().post()
+        }
+    }
+
+    // MARK: - Filter Logic (Tasks 2.1–2.3)
+
+    private var filteredTags: [Tag] {
+        var tags = session.tags.sorted { $0.anchorTime < $1.anchorTime }
+        if !activeCategories.isEmpty {
+            tags = tags.filter { activeCategories.contains($0.categoryName) }
+        }
+        let trimmed = searchText.trimmingCharacters(in: .whitespaces)
+        if !trimmed.isEmpty {
+            tags = tags.filter { $0.label.localizedCaseInsensitiveContains(trimmed) }
+        }
+        return tags
+    }
+
+    // MARK: - Toggle (Task 1.6)
+
+    private func toggleCategory(_ name: String) {
+        if activeCategories.contains(name) {
+            activeCategories.remove(name)
+        } else {
+            activeCategories.insert(name)
+        }
     }
 
     // MARK: - Subviews
 
-    private var tagList: some View {
-        List(sortedTags, id: \.uuid, selection: $selectedTag) { tag in
+    private func tagList(tags: [Tag], totalCount: Int) -> some View {
+        List(tags, id: \.uuid, selection: $selectedTag) { tag in
             TagSidebarRow(tag: tag)
                 .tag(tag)
         }
         .listStyle(.sidebar)
+        // Task 6.6: Summary for VoiceOver
+        .accessibilityLabel("Showing \(tags.count) of \(totalCount) tags")
     }
 
-    private var emptyState: some View {
+    private func emptyState(hasFilters: Bool, hasTags: Bool) -> some View {
         VStack(spacing: DictlySpacing.md) {
             Spacer()
-            Text("No tags in this session. Place retroactive tags by scrubbing the waveform.")
-                .font(DictlyTypography.caption)
-                .foregroundStyle(DictlyColors.textSecondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, DictlySpacing.md)
+            // Task 2.5: Distinguish filter-empty from session-empty
+            if hasFilters && hasTags {
+                Text("No matching tags. Try adjusting your filters.")
+                    .font(DictlyTypography.caption)
+                    .foregroundStyle(DictlyColors.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, DictlySpacing.md)
+            } else {
+                Text("No tags in this session. Place retroactive tags by scrubbing the waveform.")
+                    .font(DictlyTypography.caption)
+                    .foregroundStyle(DictlyColors.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, DictlySpacing.md)
+            }
             Spacer()
         }
-        .accessibilityLabel("No tags in this session. Place retroactive tags by scrubbing the waveform.")
+        .accessibilityLabel(
+            hasFilters && hasTags
+                ? "No matching tags. Try adjusting your filters."
+                : "No tags in this session. Place retroactive tags by scrubbing the waveform."
+        )
     }
+}
 
-    // MARK: - Helpers
+// MARK: - CategoryFilterPill
 
-    private var sortedTags: [Tag] {
-        session.tags.sorted { $0.anchorTime < $1.anchorTime }
+/// A single pill button for category filtering.
+///
+/// Displays a colored dot (if `color` is non-nil) + category name.
+/// Active pills use `DictlyColors.surface` background; inactive use `Color.clear`.
+private struct CategoryFilterPill: View {
+    let label: String
+    let color: Color?
+    let isActive: Bool
+    let tagCount: Int
+    let onTap: () -> Void
+
+    var body: some View {
+        Button(action: onTap) {
+            HStack(spacing: 4) {
+                // Colored dot (Task 1.4)
+                if let color {
+                    Circle()
+                        .fill(color)
+                        .frame(width: 6, height: 6)
+                }
+                Text(label)
+                    .font(DictlyTypography.caption)
+                    .foregroundStyle(
+                        isActive ? DictlyColors.textPrimary : DictlyColors.textSecondary
+                    )
+            }
+            .padding(.horizontal, DictlySpacing.sm)
+            .padding(.vertical, DictlySpacing.xs)
+            .background(
+                isActive ? DictlyColors.surface : Color.clear
+            )
+            .clipShape(Capsule())
+            .overlay(
+                Capsule()
+                    .stroke(
+                        isActive ? DictlyColors.border : Color.clear,
+                        lineWidth: 1
+                    )
+            )
+        }
+        .buttonStyle(.plain)
     }
 }
