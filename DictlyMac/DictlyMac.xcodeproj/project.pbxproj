@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1C35AC660D5017BEC6A7FC58 /* AudioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31EA7A2B90B3B83ED8A5A68C /* AudioPlayer.swift */; };
 		40816E881BE86220CA30874C /* SessionWaveformTimeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A673C944E5921822E34E28D /* SessionWaveformTimeline.swift */; };
 		4129E7F111CE793CD064507F /* TagSidebarRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF8CFA5751B76EDD4C38AC42 /* TagSidebarRow.swift */; };
 		483EBF5CB15388A4061C741A /* DictlyKit in Frameworks */ = {isa = PBXBuildFile; productRef = C7A8F80EBE71320BD7E63E9E /* DictlyKit */; };
@@ -27,6 +28,7 @@
 		E86F70A8B0CC20F126937255 /* CategoryColorHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AF6212CC3464C0246405B2D /* CategoryColorHelper.swift */; };
 		E89B3FAB32A9A61B34328160 /* DictlyKit in Frameworks */ = {isa = PBXBuildFile; productRef = 6D779627DD09B4C0A1B8FA61 /* DictlyKit */; };
 		F4F3492A52C73AD6E109335E /* ImportServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BD4B11F67071DA75BD374EC /* ImportServiceTests.swift */; };
+		F507AFDC15605AECB65C8217 /* AudioPlayerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59F65E68A1AE0ABC255509BE /* AudioPlayerTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -41,9 +43,11 @@
 
 /* Begin PBXFileReference section */
 		2BD4B11F67071DA75BD374EC /* ImportServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportServiceTests.swift; sourceTree = "<group>"; };
+		31EA7A2B90B3B83ED8A5A68C /* AudioPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlayer.swift; sourceTree = "<group>"; };
 		37E0598116A25B1CDE9AD437 /* WaveformDataProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveformDataProvider.swift; sourceTree = "<group>"; };
 		3B010B705AA06A5BD1749B44 /* PreferencesWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesWindow.swift; sourceTree = "<group>"; };
 		451A0E0AFA5C65057119CDBD /* DictlyMac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DictlyMac.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		59F65E68A1AE0ABC255509BE /* AudioPlayerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlayerTests.swift; sourceTree = "<group>"; };
 		5AF6212CC3464C0246405B2D /* CategoryColorHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryColorHelper.swift; sourceTree = "<group>"; };
 		5C11C91837FD6C6CD89BFBD8 /* WaveformTimelineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveformTimelineTests.swift; sourceTree = "<group>"; };
 		630711832B38B9EA2231CB37 /* LocalNetworkReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalNetworkReceiverTests.swift; sourceTree = "<group>"; };
@@ -142,6 +146,7 @@
 			isa = PBXGroup;
 			children = (
 				E093A48C431BE0333F497950 /* .gitkeep */,
+				31EA7A2B90B3B83ED8A5A68C /* AudioPlayer.swift */,
 				5AF6212CC3464C0246405B2D /* CategoryColorHelper.swift */,
 				DB85059BE85A27C7184F5C28 /* SessionReviewScreen.swift */,
 				8A673C944E5921822E34E28D /* SessionWaveformTimeline.swift */,
@@ -174,6 +179,7 @@
 		B7CD48FC44C1F659CA8FB0E4 /* ReviewTests */ = {
 			isa = PBXGroup;
 			children = (
+				59F65E68A1AE0ABC255509BE /* AudioPlayerTests.swift */,
 				E8E83175BC0B860D8AFE2B7A /* SessionReviewScreenTests.swift */,
 				5C11C91837FD6C6CD89BFBD8 /* WaveformTimelineTests.swift */,
 			);
@@ -288,6 +294,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F507AFDC15605AECB65C8217 /* AudioPlayerTests.swift in Sources */,
 				F4F3492A52C73AD6E109335E /* ImportServiceTests.swift in Sources */,
 				6E52A9688ABD53A2D5CCCB88 /* LocalNetworkReceiverTests.swift in Sources */,
 				575E88988088C8DF2DAA57E5 /* SessionReviewScreenTests.swift in Sources */,
@@ -299,6 +306,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1C35AC660D5017BEC6A7FC58 /* AudioPlayer.swift in Sources */,
 				E86F70A8B0CC20F126937255 /* CategoryColorHelper.swift in Sources */,
 				8026E48D8E51F41B6ACCC2BB /* ContentView.swift in Sources */,
 				C5E3B5BCF8DFDEECC5C4BC6F /* DictlyMacApp.swift in Sources */,

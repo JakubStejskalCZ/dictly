@@ -1,18 +1,22 @@
 import SwiftUI
 import DictlyModels
 import DictlyTheme
+import os
 
 /// Main three-panel review layout for a session on Mac.
 ///
 /// Uses `HSplitView` for the tag sidebar + main content split to avoid
 /// nested `NavigationSplitView` issues when embedded in `ContentView`.
 ///
-/// Layout: [TagSidebar 260pt] | [Toolbar + WaveformPlaceholder + TagDetailPanel]
+/// Layout: [TagSidebar 260pt] | [Toolbar + WaveformTimeline + TagDetailPanel]
 struct SessionReviewScreen: View {
     let session: Session
 
     @State private var selectedTag: Tag?
     @State private var isSidebarVisible: Bool = true
+    @State private var audioPlayer = AudioPlayer()
+
+    private let logger = Logger(subsystem: "com.dictly.mac", category: "playback")
 
     var body: some View {
         HSplitView {
@@ -39,6 +43,21 @@ struct SessionReviewScreen: View {
                 .accessibilityLabel(isSidebarVisible ? "Hide sidebar" : "Show sidebar")
             }
         }
+        // Task 2.2: Load audio when session appears
+        .task {
+            guard let path = session.audioFilePath else { return }
+            do {
+                try await audioPlayer.load(filePath: path)
+            } catch {
+                logger.error("Failed to load audio: \(error.localizedDescription)")
+            }
+        }
+        // Task 2.4: Seek + play when selectedTag changes to non-nil
+        .onChange(of: selectedTag) { _, newTag in
+            guard let tag = newTag else { return }
+            audioPlayer.seek(to: tag.anchorTime)
+            audioPlayer.play()
+        }
     }
 
     // MARK: - Main Content Area
@@ -50,7 +69,8 @@ struct SessionReviewScreen: View {
                 .background(DictlyColors.surface)
                 .overlay(alignment: .bottom) { Divider() }
 
-            SessionWaveformTimeline(session: session, selectedTag: $selectedTag)
+            // Task 2.3: Pass audioPlayer to waveform (view-scoped, not @Environment)
+            SessionWaveformTimeline(session: session, selectedTag: $selectedTag, audioPlayer: audioPlayer)
                 .padding(DictlySpacing.md)
 
             Divider()
@@ -60,7 +80,7 @@ struct SessionReviewScreen: View {
         }
     }
 
-    // MARK: - Session Toolbar (Task 2)
+    // MARK: - Session Toolbar (Tasks 2, 3)
 
     private var sessionToolbar: some View {
         HStack(alignment: .center, spacing: DictlySpacing.md) {
@@ -90,6 +110,11 @@ struct SessionReviewScreen: View {
 
             Spacer()
 
+            // Task 3: Playback transport controls
+            playbackControls
+
+            Spacer()
+
             // Trailing: action buttons (disabled stubs — wired in later stories)
             HStack(spacing: DictlySpacing.sm) {
                 Button("Transcribe All") { }
@@ -111,7 +136,36 @@ struct SessionReviewScreen: View {
         }
     }
 
+    // MARK: - Playback Controls (Task 3)
 
+    private var playbackControls: some View {
+        HStack(spacing: DictlySpacing.sm) {
+            // Task 3.1: Play/pause toggle button
+            Button {
+                // Task 8.4: Announce state change for VoiceOver
+                if audioPlayer.isPlaying {
+                    audioPlayer.pause()
+                    AccessibilityNotification.Announcement("Paused").post()
+                } else {
+                    audioPlayer.play()
+                    AccessibilityNotification.Announcement("Playing").post()
+                }
+            } label: {
+                Image(systemName: audioPlayer.isPlaying ? "pause.fill" : "play.fill")
+            }
+            // Task 3.5: Disable when not loaded or no audio file
+            .disabled(!audioPlayer.isLoaded || session.audioFilePath == nil)
+            // Task 8.1: Accessibility label reflects current state
+            .accessibilityLabel(audioPlayer.isPlaying ? "Pause" : "Play")
+            .help(audioPlayer.isPlaying ? "Pause playback" : "Play session audio")
+
+            // Task 3.2: Current position / total duration timestamp
+            Text("\(formatTimestamp(audioPlayer.currentTime)) / \(formatTimestamp(audioPlayer.duration))")
+                .font(DictlyTypography.caption)
+                .foregroundStyle(DictlyColors.textSecondary)
+                .monospacedDigit()
+        }
+    }
 }
 
 // MARK: - Duration Formatting
