@@ -1,18 +1,29 @@
 import SwiftUI
+import SwiftData
 import DictlyModels
 import DictlyTheme
+import os
 
 /// Contextual detail area displayed below the waveform timeline.
 ///
-/// When `tag` is nil, shows a placeholder prompt. When a tag is selected,
-/// displays tag info in a two-column layout (collapses to single column at < 1100pt).
+/// When `selectedTag` is nil, shows a placeholder prompt. When a tag is selected,
+/// displays tag info in a two-column layout (collapses to single column at < 600pt).
+/// Supports inline label editing, category recategorization via popover, and deletion.
 struct TagDetailPanel: View {
-    let tag: Tag?
+    @Binding var selectedTag: Tag?
+    @Environment(\.modelContext) private var modelContext
+
+    @State private var editingLabel: String = ""
+    @FocusState private var isEditingLabel: Bool
+    @State private var showCategoryPicker: Bool = false
+    @State private var showDeleteConfirmation: Bool = false
+
+    private let logger = Logger(subsystem: "com.dictly.mac", category: "tagging")
 
     var body: some View {
         GeometryReader { geometry in
             Group {
-                if let tag {
+                if let tag = selectedTag {
                     tagDetailContent(tag: tag, isNarrow: geometry.size.width < 600)
                         .animation(.easeInOut(duration: 0.2), value: tag.uuid)
                 } else {
@@ -22,7 +33,22 @@ struct TagDetailPanel: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .background(DictlyColors.background)
-        .animation(.easeInOut(duration: 0.2), value: tag?.uuid)
+        .animation(.easeInOut(duration: 0.2), value: selectedTag?.uuid)
+        .onChange(of: selectedTag?.uuid) { _, _ in
+            if let tag = selectedTag {
+                editingLabel = tag.label
+            }
+        }
+        .alert("Delete Tag?", isPresented: $showDeleteConfirmation) {
+            Button("Delete", role: .destructive) {
+                if let tag = selectedTag {
+                    deleteTag(tag)
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This will permanently remove this tag.")
+        }
     }
 
     // MARK: - No Selection Placeholder
@@ -66,18 +92,49 @@ struct TagDetailPanel: View {
     @ViewBuilder
     private func leftColumn(tag: Tag) -> some View {
         VStack(alignment: .leading, spacing: DictlySpacing.md) {
-            // Tag label (editable TextField — story 4.5 activates editing)
+            // Tag label — inline editable TextField
             VStack(alignment: .leading, spacing: DictlySpacing.xs) {
                 Text("Label")
                     .font(DictlyTypography.caption)
                     .foregroundStyle(DictlyColors.textSecondary)
-                Text(tag.label.isEmpty ? "Untitled Tag" : tag.label)
+                TextField("Tag label", text: $editingLabel)
                     .font(DictlyTypography.h3)
                     .foregroundStyle(DictlyColors.textPrimary)
+                    .textFieldStyle(.plain)
+                    .focused($isEditingLabel)
+                    .onSubmit { commitLabel(tag: tag) }
+                    .onChange(of: isEditingLabel) { _, focused in
+                        if focused {
+                            AccessibilityNotification.Announcement("Editing tag label").post()
+                        } else {
+                            commitLabel(tag: tag)
+                        }
+                    }
+                    .overlay(alignment: .bottom) {
+                        if isEditingLabel {
+                            Rectangle()
+                                .fill(DictlyColors.border)
+                                .frame(height: 1)
+                        }
+                    }
+                    .accessibilityLabel("Tag label, editable. Current value: \(tag.label)")
+                    .accessibilityHint("Click to edit")
             }
 
-            // Category badge
-            categoryBadge(for: tag.categoryName)
+            // Category badge — tappable, opens category picker popover
+            Button {
+                showCategoryPicker = true
+            } label: {
+                categoryBadge(for: tag.categoryName)
+            }
+            .buttonStyle(.plain)
+            .popover(isPresented: $showCategoryPicker) {
+                CategoryPickerPopover(currentCategory: tag.categoryName) { newCategory in
+                    tag.categoryName = newCategory
+                }
+            }
+            .accessibilityLabel("Category: \(tag.categoryName). Click to change.")
+            .accessibilityHint("Opens category picker")
 
             // Timestamp
             VStack(alignment: .leading, spacing: DictlySpacing.xs) {
@@ -89,7 +146,7 @@ struct TagDetailPanel: View {
                     .foregroundStyle(DictlyColors.textPrimary)
             }
 
-            // Transcription placeholder (stories 4.5/4.7)
+            // Transcription placeholder (story 5.x)
             VStack(alignment: .leading, spacing: DictlySpacing.xs) {
                 Text("Transcription")
                     .font(DictlyTypography.caption)
@@ -106,7 +163,7 @@ struct TagDetailPanel: View {
                     )
             }
 
-            // Notes placeholder (stories 4.7)
+            // Notes placeholder (story 4.7)
             VStack(alignment: .leading, spacing: DictlySpacing.xs) {
                 Text("Notes")
                     .font(DictlyTypography.caption)
@@ -122,6 +179,17 @@ struct TagDetailPanel: View {
                         alignment: .topLeading
                     )
             }
+
+            // Delete Tag — destructive action with confirmation
+            Button {
+                showDeleteConfirmation = true
+            } label: {
+                Text("Delete Tag")
+                    .font(DictlyTypography.caption)
+                    .foregroundStyle(DictlyColors.destructive)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Delete tag")
         }
     }
 
@@ -167,4 +235,64 @@ struct TagDetailPanel: View {
             )
     }
 
+    // MARK: - Actions
+
+    private func commitLabel(tag: Tag) {
+        let trimmed = editingLabel.trimmingCharacters(in: .whitespaces)
+        if trimmed.isEmpty {
+            // Revert to previous value — do not allow empty labels
+            editingLabel = tag.label
+        } else {
+            tag.label = trimmed
+            AccessibilityNotification.Announcement("Tag label saved").post()
+        }
+    }
+
+    private func deleteTag(_ tag: Tag) {
+        logger.info("Tag deleted: \(tag.label, privacy: .public) at \(tag.anchorTime, privacy: .public)")
+        tag.session?.tags.removeAll { $0.uuid == tag.uuid }
+        modelContext.delete(tag)
+        selectedTag = nil
+        AccessibilityNotification.Announcement("Tag deleted").post()
+    }
+}
+
+// MARK: - CategoryPickerPopover
+
+private struct CategoryPickerPopover: View {
+    let currentCategory: String
+    let onSelect: (String) -> Void
+    @Query(sort: \TagCategory.sortOrder) private var categories: [TagCategory]
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            ForEach(categories) { category in
+                Button {
+                    onSelect(category.name)
+                    dismiss()
+                } label: {
+                    HStack(spacing: DictlySpacing.sm) {
+                        Circle()
+                            .fill(categoryColor(for: category.name))
+                            .frame(width: 8, height: 8)
+                        Text(category.name)
+                            .font(DictlyTypography.body)
+                            .foregroundStyle(DictlyColors.textPrimary)
+                            .fontWeight(category.name == currentCategory ? .semibold : .regular)
+                        Spacer()
+                        if category.name == currentCategory {
+                            Image(systemName: "checkmark")
+                                .foregroundStyle(DictlyColors.textSecondary)
+                        }
+                    }
+                    .padding(.horizontal, DictlySpacing.md)
+                    .padding(.vertical, DictlySpacing.sm)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("\(category.name). Double-tap to select.")
+            }
+        }
+        .frame(minWidth: 180)
+    }
 }

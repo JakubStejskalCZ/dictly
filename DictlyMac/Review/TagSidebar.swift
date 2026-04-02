@@ -14,8 +14,11 @@ struct TagSidebar: View {
     @Binding var selectedTag: Tag?
     @Binding var activeCategories: Set<String>
 
+    @Environment(\.modelContext) private var modelContext
     @Query(sort: \TagCategory.sortOrder) private var categories: [TagCategory]
     @State private var searchText: String = ""
+    @State private var tagToDelete: Tag?
+    @State private var showDeleteAlert: Bool = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -104,6 +107,18 @@ struct TagSidebar: View {
         .onChange(of: searchText) { _, _ in
             AccessibilityNotification.LayoutChanged().post()
         }
+        .alert("Delete Tag?", isPresented: $showDeleteAlert) {
+            Button("Delete", role: .destructive) {
+                if let tag = tagToDelete {
+                    deleteTagFromContextMenu(tag)
+                }
+            }
+            Button("Cancel", role: .cancel) {
+                tagToDelete = nil
+            }
+        } message: {
+            Text("This will permanently remove this tag.")
+        }
     }
 
     // MARK: - Filter Logic (Tasks 2.1–2.3)
@@ -130,12 +145,47 @@ struct TagSidebar: View {
         }
     }
 
+    // MARK: - Delete (Task 4.5, 4.7)
+
+    private func deleteTagFromContextMenu(_ tag: Tag) {
+        if selectedTag?.uuid == tag.uuid {
+            selectedTag = nil
+        }
+        tag.session?.tags.removeAll { $0.uuid == tag.uuid }
+        modelContext.delete(tag)
+        tagToDelete = nil
+        AccessibilityNotification.Announcement("Tag deleted").post()
+    }
+
     // MARK: - Subviews
 
     private func tagList(tags: [Tag], totalCount: Int) -> some View {
         List(tags, id: \.uuid, selection: $selectedTag) { tag in
             TagSidebarRow(tag: tag)
                 .tag(tag)
+                .contextMenu {
+                    Button {
+                        selectedTag = tag
+                    } label: {
+                        Label("Edit Label", systemImage: "pencil")
+                    }
+                    .accessibilityHint("Selects tag and opens detail panel for editing")
+
+                    Button {
+                        selectedTag = tag
+                    } label: {
+                        Label("Change Category", systemImage: "tag")
+                    }
+
+                    Divider()
+
+                    Button(role: .destructive) {
+                        tagToDelete = tag
+                        showDeleteAlert = true
+                    } label: {
+                        Label("Delete Tag", systemImage: "trash")
+                    }
+                }
         }
         .listStyle(.sidebar)
         // Task 6.6: Summary for VoiceOver

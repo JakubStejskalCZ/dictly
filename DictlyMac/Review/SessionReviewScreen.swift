@@ -83,7 +83,7 @@ struct SessionReviewScreen: View {
 
             Divider()
 
-            TagDetailPanel(tag: selectedTag)
+            TagDetailPanel(selectedTag: $selectedTag)
                 .frame(minHeight: 200)
         }
     }

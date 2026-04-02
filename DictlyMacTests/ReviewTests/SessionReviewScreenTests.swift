@@ -50,7 +50,7 @@ final class SessionReviewScreenTests: XCTestCase {
         // TagDetailPanel with nil tag should present "Select a tag to view details"
         // The placeholder state is driven by tag == nil — verified at compile time via
         // the @ViewBuilder conditional. Here we verify the model contract.
-        let panel = TagDetailPanel(tag: nil)
+        let panel = TagDetailPanel(selectedTag: .constant(nil))
         // View is initialized without crashing
         XCTAssertNotNil(panel)
     }
