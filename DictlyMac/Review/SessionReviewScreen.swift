@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 import DictlyModels
 import DictlyTheme
 import os
@@ -12,12 +13,19 @@ import os
 struct SessionReviewScreen: View {
     let session: Session
 
+    @Environment(\.modelContext) private var modelContext
+
     @State private var selectedTag: Tag?
     @State private var isSidebarVisible: Bool = true
     @State private var audioPlayer = AudioPlayer()
     @State private var activeCategories: Set<String> = []
 
+    // MARK: Retroactive tag creation state (Story 4.6)
+    @State private var isCreatingTag: Bool = false
+    @State private var newTagAnchorTime: TimeInterval = 0
+
     private let logger = Logger(subsystem: "com.dictly.mac", category: "playback")
+    private let taggingLogger = Logger(subsystem: "com.dictly.mac", category: "tagging")
 
     var body: some View {
         HSplitView {
@@ -66,6 +74,37 @@ struct SessionReviewScreen: View {
             audioPlayer.seek(to: tag.anchorTime)
             audioPlayer.play()
         }
+        // Story 4.6: NewTagForm sheet for retroactive tag creation
+        .sheet(isPresented: $isCreatingTag) {
+            NewTagForm(
+                anchorTime: newTagAnchorTime,
+                onCreate: { label, categoryName in
+                    createTag(label: label, categoryName: categoryName)
+                },
+                onCancel: {
+                    isCreatingTag = false
+                }
+            )
+        }
+    }
+
+    // MARK: - Retroactive Tag Creation (Story 4.6)
+
+    /// Creates a Tag at `newTagAnchorTime`, inserts it into SwiftData, appends to session,
+    /// and auto-selects it so `TagDetailPanel` populates immediately.
+    private func createTag(label: String, categoryName: String) {
+        let tag = Tag(
+            label: label,
+            categoryName: categoryName,
+            anchorTime: newTagAnchorTime,
+            rewindDuration: 0
+        )
+        modelContext.insert(tag)
+        session.tags.append(tag)
+        selectedTag = tag
+        isCreatingTag = false
+        taggingLogger.info("Retroactive tag created: \(tag.label, privacy: .public) at \(tag.anchorTime, privacy: .public)")
+        AccessibilityNotification.Announcement("Tag created: \(tag.label)").post()
     }
 
     // MARK: - Main Content Area
@@ -78,8 +117,18 @@ struct SessionReviewScreen: View {
                 .overlay(alignment: .bottom) { Divider() }
 
             // Task 2.3: Pass audioPlayer to waveform (view-scoped, not @Environment)
-            SessionWaveformTimeline(session: session, selectedTag: $selectedTag, audioPlayer: audioPlayer, activeCategories: activeCategories)
-                .padding(DictlySpacing.md)
+            // Story 4.6: Pass onRequestNewTag so right-click opens NewTagForm
+            SessionWaveformTimeline(
+                session: session,
+                selectedTag: $selectedTag,
+                audioPlayer: audioPlayer,
+                activeCategories: activeCategories,
+                onRequestNewTag: { time in
+                    newTagAnchorTime = time
+                    isCreatingTag = true
+                }
+            )
+            .padding(DictlySpacing.md)
 
             Divider()
 
@@ -123,8 +172,21 @@ struct SessionReviewScreen: View {
 
             Spacer()
 
-            // Trailing: action buttons (disabled stubs — wired in later stories)
+            // Trailing: action buttons
             HStack(spacing: DictlySpacing.sm) {
+                // Story 4.6: Add Tag at Playhead (Cmd+T)
+                Button {
+                    guard audioPlayer.isLoaded, session.duration > 0 else { return }
+                    newTagAnchorTime = audioPlayer.currentTime
+                    isCreatingTag = true
+                } label: {
+                    Label("Add Tag", systemImage: "tag")
+                }
+                .keyboardShortcut("t", modifiers: .command)
+                .disabled(!audioPlayer.isLoaded || session.duration == 0)
+                .accessibilityLabel("Add tag at current playhead position")
+                .help("Add tag at current playhead position (⌘T)")
+
                 Button("Transcribe All") { }
                     .disabled(true)
                     .accessibilityLabel("Transcribe all tags")

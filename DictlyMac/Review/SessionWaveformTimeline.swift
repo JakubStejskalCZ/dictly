@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 import DictlyModels
 import DictlyTheme
 
@@ -26,6 +27,10 @@ struct SessionWaveformTimeline: View {
     /// Active category filter from `TagSidebar`. Empty = no filter (all at normal opacity).
     /// Non-empty = only tags in the set render at normal opacity; others dim to 25%.
     let activeCategories: Set<String>
+
+    /// Called when the DM right-clicks the waveform. Provides the computed timestamp
+    /// (in seconds) at the click position, clamped to `0...session.duration`.
+    var onRequestNewTag: ((TimeInterval) -> Void)?
 
     // MARK: Private State
 
@@ -84,6 +89,20 @@ struct SessionWaveformTimeline: View {
         .frame(minHeight: 120)
         .background(DictlyColors.surface)
         .clipShape(RoundedRectangle(cornerRadius: 8))
+        // Right-click overlay: captures secondary-click position and converts to a timestamp.
+        // Uses NSViewRepresentable because SwiftUI has no secondary-click spatial gesture on macOS.
+        .overlay {
+            if onRequestNewTag != nil {
+                RightClickOverlay { xPos in
+                    guard viewWidth > 0, session.duration > 0 else { return }
+                    let time = (xPos / viewWidth) * session.duration
+                    let clamped = max(0, min(session.duration, time))
+                    onRequestNewTag?(clamped)
+                }
+                .accessibilityLabel("Add tag at this position")
+                .accessibilityHidden(true)
+            }
+        }
         .gesture(waveformGesture)
         // Task 7: Keyboard shortcuts — only fires when waveform has focus
         .focusable()
@@ -461,6 +480,47 @@ private struct TagMarkerColumn: View {
             "\(tag.categoryName): \(label) at \(formatTimestamp(tag.anchorTime))"
         )
         .accessibilityAddTraits(.isButton)
+    }
+}
+
+// MARK: - RightClickOverlay
+
+/// Transparent NSViewRepresentable overlay that captures right-click events from AppKit
+/// and reports the horizontal click position to SwiftUI.
+///
+/// SwiftUI has no secondary-click spatial gesture on macOS (as of 14.x), so we
+/// use a thin AppKit bridge. The overlay only intercepts `rightMouseDown`; all
+/// left-click events are forwarded to the next responder so SwiftUI's DragGesture
+/// continues to handle playhead scrubbing normally.
+private struct RightClickOverlay: NSViewRepresentable {
+    let onRightClickAtX: (CGFloat) -> Void
+
+    func makeNSView(context: Context) -> RightClickView {
+        let view = RightClickView()
+        view.onRightClickAtX = onRightClickAtX
+        return view
+    }
+
+    func updateNSView(_ nsView: RightClickView, context: Context) {
+        nsView.onRightClickAtX = onRightClickAtX
+    }
+}
+
+/// Thin transparent NSView subclass that captures right-click events.
+final class RightClickView: NSView {
+    var onRightClickAtX: ((CGFloat) -> Void)?
+
+    override var acceptsFirstResponder: Bool { false }
+
+    override func rightMouseDown(with event: NSEvent) {
+        let point = convert(event.locationInWindow, from: nil)
+        onRightClickAtX?(point.x)
+    }
+
+    /// Forward left-clicks to the next responder so SwiftUI's DragGesture
+    /// (playhead scrubbing) still fires when the overlay is present.
+    override func mouseDown(with event: NSEvent) {
+        nextResponder?.mouseDown(with: event)
     }
 }
 

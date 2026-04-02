@@ -1,6 +1,6 @@
 # Story 4.6: Retroactive Tag Placement
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -20,35 +20,35 @@ so that I can tag things I missed during the live session.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Add right-click context menu to SessionWaveformTimeline (AC: #1)
-  - [ ] 1.1 In `SessionWaveformTimeline.swift`, add a `.contextMenu` or `NSMenu`-based right-click handler to the waveform gesture area. Since SwiftUI `.contextMenu` doesn't provide click coordinates, use an overlay with a secondary-click gesture (`SpatialTapGesture(count: 1)` filtered to `.secondary`) or a custom `NSViewRepresentable` right-click handler that captures the click location in the coordinate space
-  - [ ] 1.2 Convert the click X coordinate to a `TimeInterval` using the existing formula: `anchorTime = (clickX / viewWidth) * session.duration`. Clamp to `0...session.duration`
-  - [ ] 1.3 Store the computed time in a new callback: `var onRequestNewTag: ((TimeInterval) -> Void)?` passed from `SessionReviewScreen`
-  - [ ] 1.4 On right-click, call `onRequestNewTag?(anchorTime)` to delegate tag creation to the parent
+- [x] Task 1: Add right-click context menu to SessionWaveformTimeline (AC: #1)
+  - [x] 1.1 In `SessionWaveformTimeline.swift`, add a `.contextMenu` or `NSMenu`-based right-click handler to the waveform gesture area. Since SwiftUI `.contextMenu` doesn't provide click coordinates, use an overlay with a secondary-click gesture (`SpatialTapGesture(count: 1)` filtered to `.secondary`) or a custom `NSViewRepresentable` right-click handler that captures the click location in the coordinate space
+  - [x] 1.2 Convert the click X coordinate to a `TimeInterval` using the existing formula: `anchorTime = (clickX / viewWidth) * session.duration`. Clamp to `0...session.duration`
+  - [x] 1.3 Store the computed time in a new callback: `var onRequestNewTag: ((TimeInterval) -> Void)?` passed from `SessionReviewScreen`
+  - [x] 1.4 On right-click, call `onRequestNewTag?(anchorTime)` to delegate tag creation to the parent
 
-- [ ] Task 2: Add tag creation state and popover in SessionReviewScreen (AC: #1, #2)
-  - [ ] 2.1 Add state in `SessionReviewScreen`: `@State private var isCreatingTag: Bool = false` and `@State private var newTagAnchorTime: TimeInterval = 0`
-  - [ ] 2.2 Wire `onRequestNewTag` from `SessionWaveformTimeline` to set `newTagAnchorTime` and `isCreatingTag = true`
-  - [ ] 2.3 Present a `.sheet` or `.popover` containing `NewTagForm` (new private struct in same file or new file `NewTagForm.swift`)
-  - [ ] 2.4 On form submit: create Tag, insert into modelContext, append to `session.tags`, auto-select (`selectedTag = newTag`), dismiss form
-  - [ ] 2.5 On form cancel: dismiss, no changes
+- [x] Task 2: Add tag creation state and popover in SessionReviewScreen (AC: #1, #2)
+  - [x] 2.1 Add state in `SessionReviewScreen`: `@State private var isCreatingTag: Bool = false` and `@State private var newTagAnchorTime: TimeInterval = 0`
+  - [x] 2.2 Wire `onRequestNewTag` from `SessionWaveformTimeline` to set `newTagAnchorTime` and `isCreatingTag = true`
+  - [x] 2.3 Present a `.sheet` or `.popover` containing `NewTagForm` (new private struct in same file or new file `NewTagForm.swift`)
+  - [x] 2.4 On form submit: create Tag, insert into modelContext, append to `session.tags`, auto-select (`selectedTag = newTag`), dismiss form
+  - [x] 2.5 On form cancel: dismiss, no changes
 
-- [ ] Task 3: Create NewTagForm view (AC: #1, #2)
-  - [ ] 3.1 Create `DictlyMac/Review/NewTagForm.swift` — a compact form with:
+- [x] Task 3: Create NewTagForm view (AC: #1, #2)
+  - [x] 3.1 Create `DictlyMac/Review/NewTagForm.swift` — a compact form with:
     - `TextField("Tag label", text: $label)` — auto-focused, styled with `DictlyTypography.body`
     - Category picker grid/list using `@Query(sort: \TagCategory.sortOrder) private var categories: [TagCategory]` with colored dots and names (reuse `categoryColor(for:)` from `CategoryColorHelper`)
     - Timestamp display (read-only, formatted from `anchorTime`)
     - "Create" button (primary, disabled if label is empty) and "Cancel" button
-  - [ ] 3.2 Default label: "New Tag" (user is expected to type a meaningful label)
-  - [ ] 3.3 Default category: first category by sortOrder (typically "Story")
-  - [ ] 3.4 On Create: call the `onCreate` callback with `(label, categoryName)` — parent handles SwiftData insertion
-  - [ ] 3.5 On Enter key in TextField: submit form (same as Create button)
-  - [ ] 3.6 On Escape key: cancel form
-  - [ ] 3.7 Style: compact popover (280pt width), consistent with `CategoryPickerPopover` patterns from story 4-5
-  - [ ] 3.8 Accessibility: form elements labeled, category list navigable via keyboard, VoiceOver announces "Create tag at [timestamp]"
+  - [x] 3.2 Default label: "New Tag" (user is expected to type a meaningful label)
+  - [x] 3.3 Default category: first category by sortOrder (typically "Story")
+  - [x] 3.4 On Create: call the `onCreate` callback with `(label, categoryName)` — parent handles SwiftData insertion
+  - [x] 3.5 On Enter key in TextField: submit form (same as Create button)
+  - [x] 3.6 On Escape key: cancel form
+  - [x] 3.7 Style: compact popover (280pt width), consistent with `CategoryPickerPopover` patterns from story 4-5
+  - [x] 3.8 Accessibility: form elements labeled, category list navigable via keyboard, VoiceOver announces "Create tag at [timestamp]"
 
-- [ ] Task 4: Wire tag creation into SwiftData (AC: #2, #3)
-  - [ ] 4.1 In the `onRequestNewTag` handler in `SessionReviewScreen`, create the tag:
+- [x] Task 4: Wire tag creation into SwiftData (AC: #2, #3)
+  - [x] 4.1 In the `onRequestNewTag` handler in `SessionReviewScreen`, create the tag:
     ```swift
     let tag = Tag(
         label: label,
@@ -59,36 +59,36 @@ so that I can tag things I missed during the live session.
     modelContext.insert(tag)
     session.tags.append(tag)
     ```
-  - [ ] 4.2 After creation, set `selectedTag = tag` to auto-select and show in detail panel
-  - [ ] 4.3 SwiftData auto-persistence handles saving — no explicit `context.save()` needed (consistent with story 4-5 pattern)
-  - [ ] 4.4 Waveform markers auto-update via SwiftData observation (`session.tags` is observed by `SessionWaveformTimeline`)
-  - [ ] 4.5 Sidebar list auto-updates via SwiftData observation (`TagSidebar.filteredTags` recomputes from `session.tags`)
-  - [ ] 4.6 Log creation: `Logger.tagging.info("Retroactive tag created: \(tag.label, privacy: .public) at \(tag.anchorTime, privacy: .public)")`
+  - [x] 4.2 After creation, set `selectedTag = tag` to auto-select and show in detail panel
+  - [x] 4.3 SwiftData auto-persistence handles saving — no explicit `context.save()` needed (consistent with story 4-5 pattern)
+  - [x] 4.4 Waveform markers auto-update via SwiftData observation (`session.tags` is observed by `SessionWaveformTimeline`)
+  - [x] 4.5 Sidebar list auto-updates via SwiftData observation (`TagSidebar.filteredTags` recomputes from `session.tags`)
+  - [x] 4.6 Log creation: `Logger.tagging.info("Retroactive tag created: \(tag.label, privacy: .public) at \(tag.anchorTime, privacy: .public)")`
 
-- [ ] Task 5: Add keyboard shortcut for tag creation (AC: #1)
-  - [ ] 5.1 Add `.keyboardShortcut("t", modifiers: .command)` to a toolbar button or menu item labeled "Add Tag at Playhead"
-  - [ ] 5.2 This uses `audioPlayer.currentTime` as the `anchorTime` (current playhead position)
-  - [ ] 5.3 Opens the same `NewTagForm` — consistent creation flow regardless of trigger method
-  - [ ] 5.4 If no audio is loaded or duration is 0, disable the shortcut/button
+- [x] Task 5: Add keyboard shortcut for tag creation (AC: #1)
+  - [x] 5.1 Add `.keyboardShortcut("t", modifiers: .command)` to a toolbar button or menu item labeled "Add Tag at Playhead"
+  - [x] 5.2 This uses `audioPlayer.currentTime` as the `anchorTime` (current playhead position)
+  - [x] 5.3 Opens the same `NewTagForm` — consistent creation flow regardless of trigger method
+  - [x] 5.4 If no audio is loaded or duration is 0, disable the shortcut/button
 
-- [ ] Task 6: Accessibility pass (AC: #1, #2, #3)
-  - [ ] 6.1 Right-click context menu item: `.accessibilityLabel("Add tag at this position")`
-  - [ ] 6.2 NewTagForm: VoiceOver announces "Create new tag at [formatted timestamp]" when form opens
-  - [ ] 6.3 Label field: `.accessibilityLabel("Tag label")`, `.accessibilityHint("Enter a name for this tag")`
-  - [ ] 6.4 Category selection: each row reads "[Category name]. Double-tap to select."
-  - [ ] 6.5 After creation: post `AccessibilityNotification.Announcement("Tag created: [label]")`
-  - [ ] 6.6 Keyboard shortcut toolbar item: `.accessibilityLabel("Add tag at current playhead position")`
+- [x] Task 6: Accessibility pass (AC: #1, #2, #3)
+  - [x] 6.1 Right-click context menu item: `.accessibilityLabel("Add tag at this position")`
+  - [x] 6.2 NewTagForm: VoiceOver announces "Create new tag at [formatted timestamp]" when form opens
+  - [x] 6.3 Label field: `.accessibilityLabel("Tag label")`, `.accessibilityHint("Enter a name for this tag")`
+  - [x] 6.4 Category selection: each row reads "[Category name]. Double-tap to select."
+  - [x] 6.5 After creation: post `AccessibilityNotification.Announcement("Tag created: [label]")`
+  - [x] 6.6 Keyboard shortcut toolbar item: `.accessibilityLabel("Add tag at current playhead position")`
 
-- [ ] Task 7: Unit tests (AC: #1, #2, #3)
-  - [ ] 7.1 Create `RetroactiveTagTests.swift` in `DictlyMacTests/ReviewTests/`
-  - [ ] 7.2 Test: creating a tag with valid label and category adds it to `session.tags`
-  - [ ] 7.3 Test: created tag has correct `anchorTime` matching the specified position
-  - [ ] 7.4 Test: created tag has `rewindDuration == 0`
-  - [ ] 7.5 Test: created tag persists in SwiftData context (verify via `context.fetch`)
-  - [ ] 7.6 Test: created tag has `.createdAt` set to approximately current date
-  - [ ] 7.7 Test: tag with empty label is rejected (Create button disabled — test the validation logic)
-  - [ ] 7.8 Test: anchorTime is clamped to `0...session.duration` range
-  - [ ] 7.9 Use `@MainActor`, in-memory `ModelContainer` with `ModelConfiguration(isStoredInMemoryOnly: true)`, `DictlySchema.all` (project convention from story 4-5)
+- [x] Task 7: Unit tests (AC: #1, #2, #3)
+  - [x] 7.1 Create `RetroactiveTagTests.swift` in `DictlyMacTests/ReviewTests/`
+  - [x] 7.2 Test: creating a tag with valid label and category adds it to `session.tags`
+  - [x] 7.3 Test: created tag has correct `anchorTime` matching the specified position
+  - [x] 7.4 Test: created tag has `rewindDuration == 0`
+  - [x] 7.5 Test: created tag persists in SwiftData context (verify via `context.fetch`)
+  - [x] 7.6 Test: created tag has `.createdAt` set to approximately current date
+  - [x] 7.7 Test: tag with empty label is rejected (Create button disabled — test the validation logic)
+  - [x] 7.8 Test: anchorTime is clamped to `0...session.duration` range
+  - [x] 7.9 Use `@MainActor`, in-memory `ModelContainer` with `ModelConfiguration(isStoredInMemoryOnly: true)`, `DictlySchema.all` (project convention from story 4-5)
 
 ## Dev Notes
 
@@ -246,10 +246,32 @@ Recent commits follow `feat(review):` / `fix(review):` conventional commit forma
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+claude-sonnet-4-6
 
 ### Debug Log References
 
+- Build with `CODE_SIGN_IDENTITY=""` required (pre-existing iCloud entitlement constraint from story 3.3)
+- `SpatialTapGesture` with `.secondary` modifier is not a public SwiftUI API on macOS; implemented Option B (NSViewRepresentable) instead
+- `** TEST BUILD SUCCEEDED **` confirmed after xcodegen regeneration
+
 ### Completion Notes List
 
+- **Task 1**: Added `RightClickOverlay` (NSViewRepresentable) + `RightClickView` (NSView subclass) to `SessionWaveformTimeline.swift`. Right-click captures AppKit `rightMouseDown` coordinate, converts via `(x / viewWidth) * duration`, clamps, and calls `onRequestNewTag?`. Left-click forwarded via `nextResponder` so SwiftUI DragGesture (scrubbing) is unaffected.
+- **Task 2**: Added `@State private var isCreatingTag` and `newTagAnchorTime` to `SessionReviewScreen`. Wired `onRequestNewTag` closure in `SessionWaveformTimeline(...)` init. Presented `NewTagForm` via `.sheet(isPresented: $isCreatingTag)`.
+- **Task 3**: Created `DictlyMac/Review/NewTagForm.swift` — 280pt compact form with auto-focused TextField, `@Query`-driven category picker (colored dots + checkmark), read-only timestamp display, Create (`.borderedProminent`, disabled on empty label) and Cancel buttons. Escape key cancels via `.keyboardShortcut(.cancelAction)`. Enter submits via `.onSubmit`.
+- **Task 4**: `createTag(label:categoryName:)` in `SessionReviewScreen` inserts Tag with `rewindDuration: 0`, appends to `session.tags`, auto-selects via `selectedTag = tag`, dismisses sheet, logs via `taggingLogger`, and posts VoiceOver announcement.
+- **Task 5**: "Add Tag" toolbar button with `.keyboardShortcut("t", modifiers: .command)` added to `sessionToolbar`. Uses `audioPlayer.currentTime` as anchor. Disabled when audio not loaded or duration is 0.
+- **Task 6**: Accessibility labels/hints on all form elements; `accessibilityLabel` on right-click overlay; VoiceOver announcement posted after creation via `AccessibilityNotification.Announcement`.
+- **Task 7**: `RetroactiveTagTests.swift` with 16 tests covering all 7.x subtasks using in-memory `ModelContainer` and `@MainActor` per project convention.
+
 ### File List
+
+- `DictlyMac/Review/NewTagForm.swift` — NEW: compact tag creation form
+- `DictlyMac/Review/SessionWaveformTimeline.swift` — MODIFIED: added `onRequestNewTag` callback, `RightClickOverlay`, `RightClickView`
+- `DictlyMac/Review/SessionReviewScreen.swift` — MODIFIED: tag creation state, `createTag()`, sheet, Cmd+T button, `@Environment(\.modelContext)`
+- `DictlyMacTests/ReviewTests/RetroactiveTagTests.swift` — NEW: 16 unit tests for retroactive tag creation
+- `DictlyMac/DictlyMac.xcodeproj` — REGENERATED: xcodegen run to include new source files
+
+## Change Log
+
+- 2026-04-02: Implemented retroactive tag placement (story 4-6). Added right-click waveform handler via NSViewRepresentable overlay, NewTagForm sheet for label + category input, SwiftData tag insertion with rewindDuration=0, Cmd+T keyboard shortcut, full accessibility pass, and 16 unit tests. All ACs satisfied: right-click opens form at timestamp (AC1), tag appears in sidebar and waveform (AC2), tag behaves identically to live tags — editable, deletable, searchable (AC3).
