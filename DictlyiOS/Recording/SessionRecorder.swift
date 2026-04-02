@@ -30,8 +30,13 @@ final class SessionRecorder {
     private var activeSession: Session?
     private var activeContext: ModelContext?
     private var recordingStartDate: Date?
-    private nonisolated(unsafe) var isStopping = false
-    private var consecutiveWriteFailures = 0
+    /// Shared mutable state accessed from the realtime audio tap callback.
+    /// Using a plain class (not actor-isolated) avoids MainActor executor checks on the audio thread.
+    private final class TapState: @unchecked Sendable {
+        var isStopping = false
+        var consecutiveWriteFailures = 0
+    }
+    private let tapState = TapState()
 
     // Pause tracking
     private var totalPauseDuration: TimeInterval = 0
@@ -111,8 +116,8 @@ final class SessionRecorder {
         // Buffer size ~4096 frames ≈ 0.093s at 44100 Hz — flushes to disk every tap
         let bufferSize: AVAudioFrameCount = 4096
 
-        isStopping = false
-        consecutiveWriteFailures = 0
+        tapState.isStopping = false
+        tapState.consecutiveWriteFailures = 0
         totalPauseDuration = 0
         pauseStartDate = nil
         pauseIntervalStart = 0
@@ -249,7 +254,7 @@ final class SessionRecorder {
             return
         }
 
-        consecutiveWriteFailures = 0
+        tapState.consecutiveWriteFailures = 0
         isPaused = false
         pauseStartDate = nil
         wasInterruptedBySystem = false
@@ -296,7 +301,7 @@ final class SessionRecorder {
             configChangeObserver = nil
         }
 
-        isStopping = true
+        tapState.isStopping = true
         timerTask?.cancel()
         timerTask = nil
 
@@ -395,7 +400,7 @@ final class SessionRecorder {
 
     // MARK: - Audio Level Metering
 
-    private static func calculateRMS(buffer: AVAudioPCMBuffer) -> Float {
+    private nonisolated static func calculateRMS(buffer: AVAudioPCMBuffer) -> Float {
         guard let channelData = buffer.floatChannelData?[0] else { return 0 }
         let frameLength = Int(buffer.frameLength)
         guard frameLength > 0 else { return 0 }
@@ -451,31 +456,49 @@ final class SessionRecorder {
     /// Installs the audio input tap on `inputNode`, writing captured buffers to `file`.
     /// Shared by `startRecording()`, `resumeRecording()`, and `handleConfigChange()`.
     private func installInputTap(on inputNode: AVAudioInputNode, bufferSize: AVAudioFrameCount, file: AVAudioFile) {
+        // Build @Sendable callbacks on MainActor, then delegate to a nonisolated static
+        // so the closure passed to installTap does NOT inherit @MainActor isolation.
+        let onLevel: @Sendable (Float) -> Void = { [weak self] level in
+            Task { @MainActor in self?.currentAudioLevel = level }
+        }
+        let onFatalFailure: @Sendable () -> Void = { [weak self] in
+            Task { @MainActor in self?.stopRecording() }
+        }
+        Self._installTap(on: inputNode, bufferSize: bufferSize, file: file, tapState: tapState,
+                         onLevel: onLevel, onFatalFailure: onFatalFailure)
+    }
+
+    /// Nonisolated static that installs the tap — the closure it passes to `installTap` has no
+    /// actor isolation, so the runtime will not assert when AVFAudio calls it on the audio thread.
+    private nonisolated static func _installTap(
+        on inputNode: AVAudioInputNode,
+        bufferSize: AVAudioFrameCount,
+        file: AVAudioFile,
+        tapState: TapState,
+        onLevel: @Sendable @escaping (Float) -> Void,
+        onFatalFailure: @Sendable @escaping () -> Void
+    ) {
         let inputFormat = inputNode.outputFormat(forBus: 0)
-        inputNode.installTap(onBus: 0, bufferSize: bufferSize, format: inputFormat) { [weak self] buffer, _ in
-            guard let self, !self.isStopping else { return }
+        inputNode.installTap(onBus: 0, bufferSize: bufferSize, format: inputFormat) { buffer, _ in
+            guard !tapState.isStopping else { return }
 
             // Write PCM buffer to file (AVAudioFile encodes to AAC on write)
             do {
                 try file.write(from: buffer)
-                self.consecutiveWriteFailures = 0
+                tapState.consecutiveWriteFailures = 0
             } catch {
                 logger.error("Failed to write audio buffer: \(error, privacy: .public)")
-                self.consecutiveWriteFailures += 1
-                if self.consecutiveWriteFailures >= 10 {
+                tapState.consecutiveWriteFailures += 1
+                if tapState.consecutiveWriteFailures >= 10 {
                     logger.error("Too many consecutive write failures — stopping recording (possible disk full)")
-                    Task { @MainActor [weak self] in
-                        self?.stopRecording()
-                    }
+                    onFatalFailure()
                     return
                 }
             }
 
             // Calculate RMS audio level for LiveWaveform (Story 2.3)
-            let level = Self.calculateRMS(buffer: buffer)
-            Task { @MainActor [weak self] in
-                self?.currentAudioLevel = level
-            }
+            let level = SessionRecorder.calculateRMS(buffer: buffer)
+            onLevel(level)
         }
     }
 
