@@ -18,12 +18,18 @@ struct DictlyMacApp: App {
 
     @State private var syncService = CategorySyncService()
     @State private var networkReceiver = LocalNetworkReceiver()
+    @State private var importService = ImportService()
+
+    /// Tracks whether the current import originated from the network receiver,
+    /// so we can call `networkReceiver.reset()` after the import settles.
+    @State private var pendingNetworkImport = false
 
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .environment(syncService)
                 .environment(networkReceiver)
+                .environment(importService)
                 .task {
                     do {
                         try DefaultTagSeeder.seedIfNeeded(context: container.mainContext)
@@ -32,6 +38,31 @@ struct DictlyMacApp: App {
                     }
                     syncService.startObserving(context: container.mainContext)
                     networkReceiver.startListening()
+                }
+                // AirDrop / Finder file open
+                .onOpenURL { url in
+                    importService.importBundle(from: url, context: container.mainContext)
+                }
+                // Local network receive (story 3.3 integration)
+                .onChange(of: networkReceiver.receivedBundleURL) { _, newURL in
+                    guard let bundleURL = newURL else { return }
+                    pendingNetworkImport = true
+                    importService.importBundle(from: bundleURL, context: container.mainContext)
+                }
+                // Reset receiver after network import reaches a terminal state
+                .onChange(of: importService.importState) { _, state in
+                    guard pendingNetworkImport else { return }
+                    switch state {
+                    case .completed, .failed:
+                        networkReceiver.reset()
+                        pendingNetworkImport = false
+                    case .idle:
+                        // Triggered after skipDuplicate() or banner dismiss
+                        networkReceiver.reset()
+                        pendingNetworkImport = false
+                    default:
+                        break
+                    }
                 }
         }
         .modelContainer(container)

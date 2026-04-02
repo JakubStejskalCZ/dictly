@@ -10,6 +10,9 @@
 		483EBF5CB15388A4061C741A /* DictlyKit in Frameworks */ = {isa = PBXBuildFile; productRef = C7A8F80EBE71320BD7E63E9E /* DictlyKit */; };
 		5AEEF9E41E6F97CB8725E8FE /* LocalNetworkReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = B98B53E1C627818A5B42932D /* LocalNetworkReceiver.swift */; };
 		6E52A9688ABD53A2D5CCCB88 /* LocalNetworkReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 630711832B38B9EA2231CB37 /* LocalNetworkReceiverTests.swift */; };
+		11AA22BB33CC44DD55EE66FF /* ImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF66 /* ImportService.swift */; };
+		22BB33CC44DD55EE66FF11AA /* ImportProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB22CC33DD44EE55FF66AA11 /* ImportProgressView.swift */; };
+		33CC44DD55EE66FF11AA22BB /* ImportServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC33DD44EE55FF66AA11BB22 /* ImportServiceTests.swift */; };
 		8026E48D8E51F41B6ACCC2BB /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D79153280CF49C24B46C221 /* ContentView.swift */; };
 		C219054539490DBD3F6F4340 /* PreferencesWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B010B705AA06A5BD1749B44 /* PreferencesWindow.swift */; };
 		C5E3B5BCF8DFDEECC5C4BC6F /* DictlyMacApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95E649BA6DF1539916AFC171 /* DictlyMacApp.swift */; };
@@ -36,6 +39,9 @@
 		A8885E926145C865765F63DE /* .gitkeep */ = {isa = PBXFileReference; path = .gitkeep; sourceTree = "<group>"; };
 		B629B3ADAFBE8F7A1A8C0040 /* DictlyMacTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DictlyMacTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B98B53E1C627818A5B42932D /* LocalNetworkReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalNetworkReceiver.swift; sourceTree = "<group>"; };
+		AA11BB22CC33DD44EE55FF66 /* ImportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportService.swift; sourceTree = "<group>"; };
+		BB22CC33DD44EE55FF66AA11 /* ImportProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportProgressView.swift; sourceTree = "<group>"; };
+		CC33DD44EE55FF66AA11BB22 /* ImportServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportServiceTests.swift; sourceTree = "<group>"; };
 		BC6F035F6865123E34DDB2E6 /* DictlyKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = DictlyKit; path = ../DictlyKit; sourceTree = SOURCE_ROOT; };
 		E39A02E06E7DC2F7802567A6 /* .gitkeep */ = {isa = PBXFileReference; path = .gitkeep; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -95,6 +101,8 @@
 			children = (
 				E39A02E06E7DC2F7802567A6 /* .gitkeep */,
 				B98B53E1C627818A5B42932D /* LocalNetworkReceiver.swift */,
+				AA11BB22CC33DD44EE55FF66 /* ImportService.swift */,
+				BB22CC33DD44EE55FF66AA11 /* ImportProgressView.swift */,
 			);
 			path = Import;
 			sourceTree = "<group>";
@@ -120,6 +128,7 @@
 			isa = PBXGroup;
 			children = (
 				630711832B38B9EA2231CB37 /* LocalNetworkReceiverTests.swift */,
+				CC33DD44EE55FF66AA11BB22 /* ImportServiceTests.swift */,
 			);
 			path = ImportTests;
 			sourceTree = "<group>";
@@ -232,6 +241,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				6E52A9688ABD53A2D5CCCB88 /* LocalNetworkReceiverTests.swift in Sources */,
+				33CC44DD55EE66FF11AA22BB /* ImportServiceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -243,6 +253,8 @@
 				C5E3B5BCF8DFDEECC5C4BC6F /* DictlyMacApp.swift in Sources */,
 				5AEEF9E41E6F97CB8725E8FE /* LocalNetworkReceiver.swift in Sources */,
 				C219054539490DBD3F6F4340 /* PreferencesWindow.swift in Sources */,
+				11AA22BB33CC44DD55EE66FF /* ImportService.swift in Sources */,
+				22BB33CC44DD55EE66FF11AA /* ImportProgressView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
