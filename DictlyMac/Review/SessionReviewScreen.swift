@@ -50,7 +50,7 @@ struct SessionReviewScreen: View {
                 .background(DictlyColors.surface)
                 .overlay(alignment: .bottom) { Divider() }
 
-            waveformPlaceholder
+            SessionWaveformTimeline(session: session, selectedTag: $selectedTag)
                 .padding(DictlySpacing.md)
 
             Divider()
@@ -111,23 +111,6 @@ struct SessionReviewScreen: View {
         }
     }
 
-    // MARK: - Waveform Placeholder (Task 3)
-
-    private var waveformPlaceholder: some View {
-        RoundedRectangle(cornerRadius: 8)
-            .fill(DictlyColors.surface)
-            .frame(maxWidth: .infinity)
-            .frame(minHeight: 120)
-            .overlay(
-                Text("Waveform Timeline")
-                    .font(DictlyTypography.body)
-                    .foregroundStyle(DictlyColors.textSecondary)
-            )
-            .accessibilityElement(children: .ignore)
-            .accessibilityLabel(
-                "Waveform timeline placeholder. Available after waveform rendering is implemented."
-            )
-    }
 
 }
 

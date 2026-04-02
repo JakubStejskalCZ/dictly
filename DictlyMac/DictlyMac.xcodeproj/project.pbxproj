@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		40816E881BE86220CA30874C /* SessionWaveformTimeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A673C944E5921822E34E28D /* SessionWaveformTimeline.swift */; };
 		4129E7F111CE793CD064507F /* TagSidebarRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF8CFA5751B76EDD4C38AC42 /* TagSidebarRow.swift */; };
 		483EBF5CB15388A4061C741A /* DictlyKit in Frameworks */ = {isa = PBXBuildFile; productRef = C7A8F80EBE71320BD7E63E9E /* DictlyKit */; };
 		49A335A68D56F9B968ED3F3E /* TagDetailPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F99799ADDC35F183C7A44D98 /* TagDetailPanel.swift */; };
@@ -17,9 +18,12 @@
 		8026E48D8E51F41B6ACCC2BB /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D79153280CF49C24B46C221 /* ContentView.swift */; };
 		80EA11780778E4779BFD34F8 /* TagSidebar.swift in Sources */ = {isa = PBXBuildFile; fileRef = C99BEC7DCA95A5E95CB29E76 /* TagSidebar.swift */; };
 		97C056EF81487795B68803AF /* SessionReviewScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB85059BE85A27C7184F5C28 /* SessionReviewScreen.swift */; };
+		97DB1175FB96FD8E6F73ED1F /* TagMarkerShape.swift in Sources */ = {isa = PBXBuildFile; fileRef = C04427E954A5A6EAFB76D739 /* TagMarkerShape.swift */; };
+		B663EA01126D66D07F343D26 /* WaveformDataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E0598116A25B1CDE9AD437 /* WaveformDataProvider.swift */; };
 		BCAED8D36C822AA36C27F4DF /* ImportProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC2E9ED61A8775A41989834D /* ImportProgressView.swift */; };
 		C219054539490DBD3F6F4340 /* PreferencesWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B010B705AA06A5BD1749B44 /* PreferencesWindow.swift */; };
 		C5E3B5BCF8DFDEECC5C4BC6F /* DictlyMacApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95E649BA6DF1539916AFC171 /* DictlyMacApp.swift */; };
+		C971785B7E3B412A0CD33E79 /* WaveformTimelineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C11C91837FD6C6CD89BFBD8 /* WaveformTimelineTests.swift */; };
 		E86F70A8B0CC20F126937255 /* CategoryColorHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AF6212CC3464C0246405B2D /* CategoryColorHelper.swift */; };
 		E89B3FAB32A9A61B34328160 /* DictlyKit in Frameworks */ = {isa = PBXBuildFile; productRef = 6D779627DD09B4C0A1B8FA61 /* DictlyKit */; };
 		F4F3492A52C73AD6E109335E /* ImportServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BD4B11F67071DA75BD374EC /* ImportServiceTests.swift */; };
@@ -37,10 +41,13 @@
 
 /* Begin PBXFileReference section */
 		2BD4B11F67071DA75BD374EC /* ImportServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportServiceTests.swift; sourceTree = "<group>"; };
+		37E0598116A25B1CDE9AD437 /* WaveformDataProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveformDataProvider.swift; sourceTree = "<group>"; };
 		3B010B705AA06A5BD1749B44 /* PreferencesWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesWindow.swift; sourceTree = "<group>"; };
 		451A0E0AFA5C65057119CDBD /* DictlyMac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DictlyMac.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5AF6212CC3464C0246405B2D /* CategoryColorHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryColorHelper.swift; sourceTree = "<group>"; };
+		5C11C91837FD6C6CD89BFBD8 /* WaveformTimelineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveformTimelineTests.swift; sourceTree = "<group>"; };
 		630711832B38B9EA2231CB37 /* LocalNetworkReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalNetworkReceiverTests.swift; sourceTree = "<group>"; };
+		8A673C944E5921822E34E28D /* SessionWaveformTimeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionWaveformTimeline.swift; sourceTree = "<group>"; };
 		8D79153280CF49C24B46C221 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		95E649BA6DF1539916AFC171 /* DictlyMacApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictlyMacApp.swift; sourceTree = "<group>"; };
 		9EB04EFF1D057998274F3D54 /* .gitkeep */ = {isa = PBXFileReference; path = .gitkeep; sourceTree = "<group>"; };
@@ -51,6 +58,7 @@
 		B98B53E1C627818A5B42932D /* LocalNetworkReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalNetworkReceiver.swift; sourceTree = "<group>"; };
 		BC6F035F6865123E34DDB2E6 /* DictlyKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = DictlyKit; path = ../DictlyKit; sourceTree = SOURCE_ROOT; };
 		BF8CFA5751B76EDD4C38AC42 /* TagSidebarRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagSidebarRow.swift; sourceTree = "<group>"; };
+		C04427E954A5A6EAFB76D739 /* TagMarkerShape.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagMarkerShape.swift; sourceTree = "<group>"; };
 		C99BEC7DCA95A5E95CB29E76 /* TagSidebar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagSidebar.swift; sourceTree = "<group>"; };
 		DB85059BE85A27C7184F5C28 /* SessionReviewScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionReviewScreen.swift; sourceTree = "<group>"; };
 		E093A48C431BE0333F497950 /* .gitkeep */ = {isa = PBXFileReference; path = .gitkeep; sourceTree = "<group>"; };
@@ -136,9 +144,12 @@
 				E093A48C431BE0333F497950 /* .gitkeep */,
 				5AF6212CC3464C0246405B2D /* CategoryColorHelper.swift */,
 				DB85059BE85A27C7184F5C28 /* SessionReviewScreen.swift */,
+				8A673C944E5921822E34E28D /* SessionWaveformTimeline.swift */,
 				F99799ADDC35F183C7A44D98 /* TagDetailPanel.swift */,
+				C04427E954A5A6EAFB76D739 /* TagMarkerShape.swift */,
 				C99BEC7DCA95A5E95CB29E76 /* TagSidebar.swift */,
 				BF8CFA5751B76EDD4C38AC42 /* TagSidebarRow.swift */,
+				37E0598116A25B1CDE9AD437 /* WaveformDataProvider.swift */,
 			);
 			path = Review;
 			sourceTree = "<group>";
@@ -164,6 +175,7 @@
 			isa = PBXGroup;
 			children = (
 				E8E83175BC0B860D8AFE2B7A /* SessionReviewScreenTests.swift */,
+				5C11C91837FD6C6CD89BFBD8 /* WaveformTimelineTests.swift */,
 			);
 			path = ReviewTests;
 			sourceTree = "<group>";
@@ -279,6 +291,7 @@
 				F4F3492A52C73AD6E109335E /* ImportServiceTests.swift in Sources */,
 				6E52A9688ABD53A2D5CCCB88 /* LocalNetworkReceiverTests.swift in Sources */,
 				575E88988088C8DF2DAA57E5 /* SessionReviewScreenTests.swift in Sources */,
+				C971785B7E3B412A0CD33E79 /* WaveformTimelineTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -294,9 +307,12 @@
 				5AEEF9E41E6F97CB8725E8FE /* LocalNetworkReceiver.swift in Sources */,
 				C219054539490DBD3F6F4340 /* PreferencesWindow.swift in Sources */,
 				97C056EF81487795B68803AF /* SessionReviewScreen.swift in Sources */,
+				40816E881BE86220CA30874C /* SessionWaveformTimeline.swift in Sources */,
 				49A335A68D56F9B968ED3F3E /* TagDetailPanel.swift in Sources */,
+				97DB1175FB96FD8E6F73ED1F /* TagMarkerShape.swift in Sources */,
 				80EA11780778E4779BFD34F8 /* TagSidebar.swift in Sources */,
 				4129E7F111CE793CD064507F /* TagSidebarRow.swift in Sources */,
+				B663EA01126D66D07F343D26 /* WaveformDataProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
