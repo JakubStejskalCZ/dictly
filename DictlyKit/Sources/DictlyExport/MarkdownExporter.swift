@@ -3,6 +3,21 @@ import DictlyModels
 
 public struct MarkdownExporter {
 
+    // MARK: - Static Formatters
+
+    private static let metadataDateFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateStyle = .medium
+        f.timeStyle = .none
+        return f
+    }()
+
+    private static let campaignDateFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "MMM d, yyyy"
+        return f
+    }()
+
     // MARK: - Session Export
 
     public static func exportSession(_ session: Session) -> String {
@@ -18,7 +33,7 @@ public struct MarkdownExporter {
 
         // Summary note blockquote
         if let summary = session.summaryNote, !summary.isEmpty {
-            lines.append("> \(summary)")
+            appendBlockquote(summary, prefix: nil, into: &lines)
             lines.append("")
         }
 
@@ -43,21 +58,22 @@ public struct MarkdownExporter {
             lines.append("")
         }
 
-        let sortedSessions = campaign.sessions.sorted { $0.date < $1.date }
+        let sortedSessions = campaign.sessions.sorted {
+            if $0.date != $1.date { return $0.date < $1.date }
+            return $0.sessionNumber < $1.sessionNumber
+        }
 
         if sortedSessions.isEmpty {
             lines.append("No sessions in this campaign.")
         } else {
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "MMM d, yyyy"
             for session in sortedSessions {
-                let dateStr = dateFormatter.string(from: session.date)
+                let dateStr = campaignDateFormatter.string(from: session.date)
                 lines.append("## Session \(session.sessionNumber) — \(session.title) (\(dateStr))")
                 lines.append("")
                 lines.append(metadataLine(for: session))
                 lines.append("")
                 if let summary = session.summaryNote, !summary.isEmpty {
-                    lines.append("> \(summary)")
+                    appendBlockquote(summary, prefix: nil, into: &lines)
                     lines.append("")
                 }
                 appendTagSections(for: session.tags, headingLevel: 3, into: &lines)
@@ -82,10 +98,7 @@ public struct MarkdownExporter {
     // MARK: - Private Helpers
 
     private static func metadataLine(for session: Session) -> String {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateStyle = .medium
-        dateFormatter.timeStyle = .none
-        let dateStr = dateFormatter.string(from: session.date)
+        let dateStr = metadataDateFormatter.string(from: session.date)
         let durationStr = formatTimestamp(session.duration)
         let tagCount = session.tags.count
         var parts = [
@@ -97,6 +110,21 @@ public struct MarkdownExporter {
             parts.append("**Location:** \(location)")
         }
         return parts.joined(separator: " | ")
+    }
+
+    /// Appends a multi-line blockquote, ensuring every continuation line starts with `> `.
+    /// - Parameters:
+    ///   - text: The content to blockquote (may contain newlines).
+    ///   - prefix: Optional prefix for the first line only (e.g. `"Note: "`). Subsequent lines use `> `.
+    private static func appendBlockquote(_ text: String, prefix: String?, into lines: inout [String]) {
+        let textLines = text.components(separatedBy: "\n")
+        for (i, line) in textLines.enumerated() {
+            if i == 0 {
+                lines.append("> \(prefix ?? "")\(line)")
+            } else {
+                lines.append("> \(line)")
+            }
+        }
     }
 
     private static func appendTagSections(
@@ -120,7 +148,7 @@ public struct MarkdownExporter {
 
         let sortedCategories = grouped.keys.sorted()
         for category in sortedCategories {
-            let categoryTags = (grouped[category] ?? []).sorted { $0.anchorTime < $1.anchorTime }
+            let categoryTags = grouped[category]!.sorted { $0.anchorTime < $1.anchorTime }
             lines.append("\(heading) \(category)")
             lines.append("")
             for tag in categoryTags {
@@ -132,7 +160,7 @@ public struct MarkdownExporter {
                     lines.append("(no transcription)")
                 }
                 if let note = tag.notes, !note.isEmpty {
-                    lines.append("> Note: \(note)")
+                    appendBlockquote(note, prefix: "Note: ", into: &lines)
                 }
                 lines.append("")
             }
@@ -140,7 +168,7 @@ public struct MarkdownExporter {
     }
 
     private static func formatTimestamp(_ seconds: TimeInterval) -> String {
-        let total = Int(seconds)
+        let total = Int(max(0, seconds))
         let h = total / 3600
         let m = (total % 3600) / 60
         let s = total % 60
@@ -148,7 +176,10 @@ public struct MarkdownExporter {
     }
 
     private static func sanitizeFilename(_ name: String) -> String {
-        name.replacingOccurrences(of: "[/:\\\\]", with: "-", options: .regularExpression)
+        let sanitized = name
+            .replacingOccurrences(of: "[/:\\\\?*\"<>|]", with: "-", options: .regularExpression)
+            .replacingOccurrences(of: "\0", with: "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
+        return sanitized.isEmpty ? "Untitled" : sanitized
     }
 }

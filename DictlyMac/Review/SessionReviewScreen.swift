@@ -116,6 +116,10 @@ struct SessionReviewScreen: View {
         .sheet(isPresented: $isShowingSessionNotes) {
             SessionNotesView(session: session)
         }
+        // Story 6.4: Markdown export sheet
+        .sheet(isPresented: $isShowingExportSheet) {
+            ExportSheet(session: session, isPresented: $isShowingExportSheet)
+        }
     }
 
     // MARK: - Retroactive Tag Creation (Story 4.6)
@@ -229,9 +233,6 @@ struct SessionReviewScreen: View {
                 }
                 .accessibilityLabel("Export as Markdown")
                 .help("Export session or campaign as Markdown")
-                .sheet(isPresented: $isShowingExportSheet) {
-                    ExportSheet(session: session, isPresented: $isShowingExportSheet)
-                }
 
                 Button("Session Notes") {
                     isShowingSessionNotes = true

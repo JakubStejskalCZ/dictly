@@ -298,4 +298,51 @@ final class MarkdownExporterTests: XCTestCase {
         let filename = MarkdownExporter.suggestedFilename(for: campaign)
         XCTAssertFalse(filename.contains("\\"), "Filename must not contain backslashes")
     }
+
+    func testSuggestedFilename_stripsQuestionMark() {
+        let session = Session(title: "What happened?", sessionNumber: 3)
+        context.insert(session)
+        let filename = MarkdownExporter.suggestedFilename(for: session)
+        XCTAssertFalse(filename.contains("?"), "Filename must not contain question marks")
+    }
+
+    func testSuggestedFilename_stripsAngleBrackets() {
+        let campaign = Campaign(name: "Part <1>")
+        context.insert(campaign)
+        let filename = MarkdownExporter.suggestedFilename(for: campaign)
+        XCTAssertFalse(filename.contains("<"), "Filename must not contain <")
+        XCTAssertFalse(filename.contains(">"), "Filename must not contain >")
+    }
+
+    func testSuggestedFilename_emptyTitleFallsBackToUntitled() {
+        let session = Session(title: "   ", sessionNumber: 1)
+        context.insert(session)
+        let filename = MarkdownExporter.suggestedFilename(for: session)
+        XCTAssertTrue(filename.contains("Untitled"), "Whitespace-only title should fall back to 'Untitled'")
+    }
+
+    // MARK: - Multi-line blockquote correctness
+
+    func testExportSession_multiLineSummaryNote_allLinesHaveBlockquotePrefix() {
+        let session = makeSession(summary: "Line one\nLine two\nLine three", tags: [])
+        let output = MarkdownExporter.exportSession(session)
+        let lines = output.components(separatedBy: "\n")
+        let summaryLines = lines.filter { $0.hasPrefix("> ") && !$0.contains("Note:") }
+        XCTAssertEqual(summaryLines.count, 3, "All three summary lines should have '> ' prefix")
+        XCTAssertTrue(summaryLines[0].contains("Line one"))
+        XCTAssertTrue(summaryLines[1].contains("Line two"))
+        XCTAssertTrue(summaryLines[2].contains("Line three"))
+    }
+
+    func testExportSession_multiLineTagNote_allLinesHaveBlockquotePrefix() {
+        let tag = makeTag(label: "Event", category: "Story", anchorTime: 100, notes: "First note line\nSecond note line")
+        let session = makeSession(summary: nil, tags: [tag])
+        let output = MarkdownExporter.exportSession(session)
+        let lines = output.components(separatedBy: "\n")
+        let noteLines = lines.filter { $0.hasPrefix("> ") }
+        XCTAssertEqual(noteLines.count, 2, "Both note lines should have '> ' prefix")
+        XCTAssertTrue(noteLines[0].contains("Note: First note line"))
+        XCTAssertTrue(noteLines[1].contains("Second note line"))
+        XCTAssertFalse(noteLines[1].contains("Note:"), "Continuation lines should not repeat the 'Note:' prefix")
+    }
 }

@@ -14,6 +14,7 @@ struct ExportSheet: View {
     @Binding var isPresented: Bool
 
     @State private var exportError: String? = nil
+    @State private var isExporting: Bool = false
 
     private var campaign: Campaign? { session.campaign }
 
@@ -49,6 +50,7 @@ struct ExportSheet: View {
                     .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.bordered)
+                .disabled(isExporting)
                 .accessibilityLabel("Export session as Markdown")
 
                 if let campaign {
@@ -70,6 +72,7 @@ struct ExportSheet: View {
                         .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.bordered)
+                    .disabled(isExporting)
                     .accessibilityLabel("Export campaign \(campaign.name) as Markdown")
                 }
             }
@@ -89,6 +92,7 @@ struct ExportSheet: View {
                     isPresented = false
                 }
                 .keyboardShortcut(.escape, modifiers: [])
+                .disabled(isExporting)
                 .accessibilityLabel("Cancel export")
             }
         }
@@ -118,9 +122,18 @@ struct ExportSheet: View {
     // MARK: - Save Panel + Post-Export
 
     private func saveMarkdown(_ markdown: String, suggestedFilename: String) {
+        guard !isExporting else { return }
+        isExporting = true
+        exportError = nil
+
         Task { @MainActor in
+            defer { isExporting = false }
+
             let panel = NSSavePanel()
-            panel.allowedContentTypes = [.plainText]
+            // Use a UTType built from the .md extension so macOS enforces the correct extension
+            // without appending .txt on top of the user-specified filename.
+            let markdownType = UTType(filenameExtension: "md") ?? .plainText
+            panel.allowedContentTypes = [markdownType]
             panel.nameFieldStringValue = suggestedFilename
             panel.allowsOtherFileTypes = false
 
@@ -155,9 +168,10 @@ struct ExportSheet: View {
         NSWorkspace.shared.activateFileViewerSelecting([url])
 
         // Local notification (supplementary feedback)
+        // requestAuthorization is a no-op (returns true/false) when status is already determined,
+        // so this only prompts the user on first export.
         Task {
             let center = UNUserNotificationCenter.current()
-            // Request authorization; if already granted, this is a no-op returning (true, nil)
             guard (try? await center.requestAuthorization(options: [.alert, .sound])) == true else {
                 return
             }

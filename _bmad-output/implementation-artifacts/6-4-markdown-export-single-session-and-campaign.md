@@ -1,6 +1,6 @@
 # Story 6.4: Markdown Export — Single Session & Campaign
 
-Status: ready-for-dev
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -22,57 +22,57 @@ so that Dictly integrates into my existing prep workflow.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Implement `MarkdownExporter` in DictlyKit (AC: #1, #2, #3)
-  - [ ] 1.1 Update `DictlyKit/Package.swift` — add `DictlyModels` as a dependency of the `DictlyExport` target so `MarkdownExporter` can reference `Session`, `Tag`, and `Campaign` model types
-  - [ ] 1.2 Add a `DictlyExportTests` test target to `Package.swift` with dependency on `DictlyExport` and `DictlyModels`
-  - [ ] 1.3 Replace the placeholder `DictlyExport.swift` enum with `MarkdownExporter.swift` in `DictlyKit/Sources/DictlyExport/`
-  - [ ] 1.4 Implement `public struct MarkdownExporter` with a `static func exportSession(_ session: Session) -> String` method that produces CommonMark output:
+- [x] Task 1: Implement `MarkdownExporter` in DictlyKit (AC: #1, #2, #3)
+  - [x] 1.1 Update `DictlyKit/Package.swift` — add `DictlyModels` as a dependency of the `DictlyExport` target so `MarkdownExporter` can reference `Session`, `Tag`, and `Campaign` model types
+  - [x] 1.2 Add a `DictlyExportTests` test target to `Package.swift` with dependency on `DictlyExport` and `DictlyModels`
+  - [x] 1.3 Replace the placeholder `DictlyExport.swift` enum with `MarkdownExporter.swift` in `DictlyKit/Sources/DictlyExport/`
+  - [x] 1.4 Implement `public struct MarkdownExporter` with a `static func exportSession(_ session: Session) -> String` method that produces CommonMark output:
     - H1: session title
     - Metadata line: date (abbreviated), duration (h:mm:ss), tag count, location (if present)
     - Session summary note (if present) as a blockquote
     - Tags grouped by category under H2 headings, sorted by `anchorTime` within each group
     - Each tag: `**[HH:MM:SS] Label**` followed by transcription text (if present) and notes (if present, prefixed with `> Note:`)
     - Categories sorted alphabetically
-  - [ ] 1.5 Implement `static func exportCampaign(_ campaign: Campaign) -> String` that produces CommonMark output:
+  - [x] 1.5 Implement `static func exportCampaign(_ campaign: Campaign) -> String` that produces CommonMark output:
     - H1: campaign name
     - Campaign description (if non-empty)
     - Each session as an H2 section (sorted chronologically by `date`), using the same per-session structure as `exportSession` but with H2/H3/H4 heading levels shifted down one level
-  - [ ] 1.6 Implement `static func suggestedFilename(for session: Session) -> String` — returns `"Session N - Title.md"` (sanitized for filesystem)
-  - [ ] 1.7 Implement `static func suggestedFilename(for campaign: Campaign) -> String` — returns `"Campaign - Name.md"` (sanitized for filesystem)
-  - [ ] 1.8 Use a private helper `formatTimestamp(_ seconds: TimeInterval) -> String` for `HH:MM:SS` formatting (do NOT import from DictlyMac — DictlyKit must remain platform-independent)
+  - [x] 1.6 Implement `static func suggestedFilename(for session: Session) -> String` — returns `"Session N - Title.md"` (sanitized for filesystem)
+  - [x] 1.7 Implement `static func suggestedFilename(for campaign: Campaign) -> String` — returns `"Campaign - Name.md"` (sanitized for filesystem)
+  - [x] 1.8 Use a private helper `formatTimestamp(_ seconds: TimeInterval) -> String` for `HH:MM:SS` formatting (do NOT import from DictlyMac — DictlyKit must remain platform-independent)
 
-- [ ] Task 2: Create `ExportSheet.swift` in DictlyMac/Export/ (AC: #1, #2)
-  - [ ] 2.1 Create `DictlyMac/Export/ExportSheet.swift` — a SwiftUI `.sheet` view presenting export options
-  - [ ] 2.2 Accept bindings: `session: Session`, `isPresented: Binding<Bool>`; derive `campaign` from `session.campaign`
-  - [ ] 2.3 Show two options: "Export Session" (default, always enabled) and "Export Campaign" (enabled only when `session.campaign != nil`)
-  - [ ] 2.4 On selection, generate the markdown string via `MarkdownExporter.exportSession` or `MarkdownExporter.exportCampaign`
-  - [ ] 2.5 Present `NSSavePanel` to let the DM choose the save location; pre-fill with `MarkdownExporter.suggestedFilename`; set allowed content type to `.plainText` with `.md` extension
-  - [ ] 2.6 Write the markdown string to the chosen URL using `String.write(to:atomically:encoding:)` with `.utf8`
-  - [ ] 2.7 On success, dismiss the sheet and trigger notification + Finder reveal (Task 3)
-  - [ ] 2.8 On error, show an inline error message in the sheet (do NOT use a modal alert)
-  - [ ] 2.9 Register the new file in `project.pbxproj`
+- [x] Task 2: Create `ExportSheet.swift` in DictlyMac/Export/ (AC: #1, #2)
+  - [x] 2.1 Create `DictlyMac/Export/ExportSheet.swift` — a SwiftUI `.sheet` view presenting export options
+  - [x] 2.2 Accept bindings: `session: Session`, `isPresented: Binding<Bool>`; derive `campaign` from `session.campaign`
+  - [x] 2.3 Show two options: "Export Session" (default, always enabled) and "Export Campaign" (enabled only when `session.campaign != nil`)
+  - [x] 2.4 On selection, generate the markdown string via `MarkdownExporter.exportSession` or `MarkdownExporter.exportCampaign`
+  - [x] 2.5 Present `NSSavePanel` to let the DM choose the save location; pre-fill with `MarkdownExporter.suggestedFilename`; set allowed content type to `.plainText` with `.md` extension
+  - [x] 2.6 Write the markdown string to the chosen URL using `String.write(to:atomically:encoding:)` with `.utf8`
+  - [x] 2.7 On success, dismiss the sheet and trigger notification + Finder reveal (Task 3)
+  - [x] 2.8 On error, show an inline error message in the sheet (do NOT use a modal alert)
+  - [x] 2.9 Register the new file in `project.pbxproj`
 
-- [ ] Task 3: Implement post-export notification and Finder reveal (AC: #4)
-  - [ ] 3.1 After successful file write, post a `UNUserNotificationContent` local notification with title "Export Complete" and body containing the filename
-  - [ ] 3.2 Reveal the saved file in Finder using `NSWorkspace.shared.activateFileViewerSelecting([url])`
-  - [ ] 3.3 Encapsulate notification + reveal in a helper method on `ExportSheet` or as a standalone function in `DictlyMac/Export/`
+- [x] Task 3: Implement post-export notification and Finder reveal (AC: #4)
+  - [x] 3.1 After successful file write, post a `UNUserNotificationContent` local notification with title "Export Complete" and body containing the filename
+  - [x] 3.2 Reveal the saved file in Finder using `NSWorkspace.shared.activateFileViewerSelecting([url])`
+  - [x] 3.3 Encapsulate notification + reveal in a helper method on `ExportSheet` or as a standalone function in `DictlyMac/Export/`
 
-- [ ] Task 4: Wire "Export MD" button in SessionReviewScreen (AC: #1)
-  - [ ] 4.1 In `SessionReviewScreen.swift` line ~224, replace the disabled `Button("Export MD") { }.disabled(true)` with a button that sets `@State private var isShowingExportSheet = false` to true
-  - [ ] 4.2 Add `.sheet(isPresented: $isShowingExportSheet) { ExportSheet(session: session, isPresented: $isShowingExportSheet) }` to the view
-  - [ ] 4.3 Remove the `.disabled(true)` and update the `.help` text to "Export session or campaign as Markdown"
-  - [ ] 4.4 Keep the `.accessibilityLabel("Export as Markdown")`
+- [x] Task 4: Wire "Export MD" button in SessionReviewScreen (AC: #1)
+  - [x] 4.1 In `SessionReviewScreen.swift` line ~224, replace the disabled `Button("Export MD") { }.disabled(true)` with a button that sets `@State private var isShowingExportSheet = false` to true
+  - [x] 4.2 Add `.sheet(isPresented: $isShowingExportSheet) { ExportSheet(session: session, isPresented: $isShowingExportSheet) }` to the view
+  - [x] 4.3 Remove the `.disabled(true)` and update the `.help` text to "Export session or campaign as Markdown"
+  - [x] 4.4 Keep the `.accessibilityLabel("Export as Markdown")`
 
-- [ ] Task 5: Write tests (AC: #1, #2, #3, #4)
-  - [ ] 5.1 Create `DictlyKit/Tests/DictlyExportTests/MarkdownExporterTests.swift`
-  - [ ] 5.2 Test `exportSession` output structure: H1 title, metadata line, tags grouped by category, timestamps formatted correctly, transcription and notes included when present
-  - [ ] 5.3 Test `exportSession` with a session that has no tags — should produce header + metadata + "No tags recorded" note
-  - [ ] 5.4 Test `exportSession` with missing optional fields (no transcription, no notes, no location, no summary note) — should gracefully omit those sections
-  - [ ] 5.5 Test `exportCampaign` output structure: H1 campaign name, sessions as H2 sorted by date, tags within each session
-  - [ ] 5.6 Test `exportCampaign` with empty campaign (no sessions) — should produce header + "No sessions in this campaign" note
-  - [ ] 5.7 Test CommonMark compliance: output should not contain HTML, should use standard headings (`#`), bold (`**`), blockquotes (`>`)
-  - [ ] 5.8 Test `suggestedFilename` sanitization: strip characters invalid for filenames (`/`, `:`, `\`)
-  - [ ] 5.9 Create `DictlyMacTests/ExportTests/ExportSheetTests.swift` — test that `ExportSheet` initializes correctly and that `MarkdownExporter` is invoked with the correct session/campaign
+- [x] Task 5: Write tests (AC: #1, #2, #3, #4)
+  - [x] 5.1 Create `DictlyKit/Tests/DictlyExportTests/MarkdownExporterTests.swift`
+  - [x] 5.2 Test `exportSession` output structure: H1 title, metadata line, tags grouped by category, timestamps formatted correctly, transcription and notes included when present
+  - [x] 5.3 Test `exportSession` with a session that has no tags — should produce header + metadata + "No tags recorded" note
+  - [x] 5.4 Test `exportSession` with missing optional fields (no transcription, no notes, no location, no summary note) — should gracefully omit those sections
+  - [x] 5.5 Test `exportCampaign` output structure: H1 campaign name, sessions as H2 sorted by date, tags within each session
+  - [x] 5.6 Test `exportCampaign` with empty campaign (no sessions) — should produce header + "No sessions in this campaign" note
+  - [x] 5.7 Test CommonMark compliance: output should not contain HTML, should use standard headings (`#`), bold (`**`), blockquotes (`>`)
+  - [x] 5.8 Test `suggestedFilename` sanitization: strip characters invalid for filenames (`/`, `:`, `\`)
+  - [x] 5.9 Create `DictlyMacTests/ExportTests/ExportSheetTests.swift` — test that `ExportSheet` initializes correctly and that `MarkdownExporter` is invoked with the correct session/campaign
 
 ## Dev Notes
 
@@ -295,10 +295,52 @@ project.pbxproj                           # MODIFY — register ExportSheet.swif
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+claude-sonnet-4-6
 
 ### Debug Log References
 
+- Fixed unused `subheading` variable warning in `MarkdownExporter.appendTagSections` (was causing emit-module failure under strict Swift 6 settings)
+- Fixed `Testing.Tag` vs `DictlyModels.Tag` ambiguity in tests by switching from Swift Testing to XCTestCase (matching project convention) with `typealias DictlyTag = DictlyModels.Tag`
+- Fixed `Tag` init argument order (`notes` before `transcription`) in test helpers
+- Fixed Swift 6 strict concurrency: `UNNotificationSettings` is not `Sendable` — replaced double-status-check with single `requestAuthorization` call returning `Bool`
+
 ### Completion Notes List
 
+- Implemented `MarkdownExporter` in `DictlyKit/Sources/DictlyExport/` (platform-independent, no AppKit/UIKit). Produces CommonMark-compliant output for single session and full campaign. Tags grouped alphabetically by category, sorted by anchorTime within groups.
+- Created `ExportSheet.swift` in `DictlyMac/Export/` with NSSavePanel, inline error display, local notification + Finder reveal on success. Campaign option auto-appears when session belongs to a campaign.
+- Wired "Export MD" toolbar button in `SessionReviewScreen` — removed `.disabled(true)`, added `@State isShowingExportSheet`, attached `.sheet` modifier.
+- 23 unit tests in `DictlyKit/Tests/DictlyExportTests/MarkdownExporterTests.swift` — all pass (XCTest + in-memory SwiftData container).
+- 7 integration tests in `DictlyMacTests/ExportTests/ExportSheetTests.swift` — all pass.
+- Total: 279 DictlyKit tests pass (0 failures). DictlyMac tests: 2 pre-existing failures (RetroactiveTagTests, TagEditingTests) unchanged from before this story.
+- `project.pbxproj` updated: Export group + ExportTests group added, both files registered in Sources build phases.
+
 ### File List
+
+- `DictlyKit/Package.swift` — modified: added DictlyModels dependency to DictlyExport target; added DictlyExportTests test target
+- `DictlyKit/Sources/DictlyExport/DictlyExport.swift` — deleted: placeholder replaced by MarkdownExporter.swift
+- `DictlyKit/Sources/DictlyExport/MarkdownExporter.swift` — new: public struct with exportSession, exportCampaign, suggestedFilename overloads, private formatTimestamp + sanitizeFilename helpers
+- `DictlyKit/Tests/DictlyExportTests/MarkdownExporterTests.swift` — new: 23 unit tests covering all AC requirements
+- `DictlyMac/Export/ExportSheet.swift` — new: SwiftUI sheet with NSSavePanel, notification, Finder reveal, inline error
+- `DictlyMac/Review/SessionReviewScreen.swift` — modified: added isShowingExportSheet state, wired Export MD button and .sheet modifier
+- `DictlyMac/DictlyMac.xcodeproj/project.pbxproj` — modified: registered ExportSheet.swift and ExportSheetTests.swift with Export/ExportTests groups
+- `DictlyMacTests/ExportTests/ExportSheetTests.swift` — new: 7 integration tests for ExportSheet + MarkdownExporter
+
+## Review Findings
+
+- [x] [Review][Patch] Multi-line summaryNote/notes breaks blockquote — newlines in blockquote content require `> ` prefix on every line [MarkdownExporter.swift:21,135]
+- [x] [Review][Patch] `sanitizeFilename` incomplete — `?`, `*`, `"`, `<`, `>`, `|` not stripped; empty/whitespace-only name produces degenerate filename [MarkdownExporter.swift:151]
+- [x] [Review][Patch] `.plainText` + `allowsOtherFileTypes=false` → risk of `.txt.md` double extension on systems where `.md` is not registered as `public.plain-text` [ExportSheet.swift:124-125]
+- [x] [Review][Patch] Double-tap race — no in-flight guard; tapping Export Session then Export Campaign spawns two concurrent NSSavePanel tasks [ExportSheet.swift:34-56]
+- [x] [Review][Patch] `formatTimestamp` silently produces wrong output for negative anchorTime/duration values [MarkdownExporter.swift:142]
+- [x] [Review][Patch] `DateFormatter` recreated on every `metadataLine` call — should be a `static let` [MarkdownExporter.swift:85]
+- [x] [Review][Patch] `grouped[category] ?? []` is dead code — key is always present after `default:` grouping [MarkdownExporter.swift:123]
+- [x] [Review][Patch] Notification auth: reverted to `requestAuthorization`-only approach (Swift 6 safe, handles all auth states) [ExportSheet.swift:161]
+- [x] [Review][Patch] `campaign.sessions` sort unstable for equal dates — `sessionNumber` should be tiebreaker [MarkdownExporter.swift:46]
+- [x] [Review][Patch] `.sheet` attached to `Button` — should be on the view body like other sheets in `SessionReviewScreen` [SessionReviewScreen.swift:232]
+- [x] [Review][Defer] `appendTagSections` heading level unconstrained — internal API, only called with 2 and 3 [MarkdownExporter.swift:102] — deferred, internal API with only two known call sites
+- [x] [Review][Defer] `MarkdownExporter` lacks `@MainActor` annotation — DictlyKit platform-independence constraint prevents enforcing actor isolation [MarkdownExporter.swift:4] — deferred, DictlyKit cannot import SwiftUI/@MainActor; callers must ensure main-thread access
+
+## Change Log
+
+- 2026-04-03: Implemented story 6-4 — markdown export for single session and campaign. Added MarkdownExporter to DictlyKit, ExportSheet to DictlyMac, wired toolbar button, added 30 tests (23 unit + 7 integration).
+- 2026-04-03: Code review (claude-sonnet-4-6) — 10 patches applied, 2 deferred, 8 dismissed.
