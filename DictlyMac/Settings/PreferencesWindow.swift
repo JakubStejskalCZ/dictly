@@ -122,7 +122,7 @@ private struct StoragePreferencesTab: View {
                 .foregroundStyle(DictlyColors.destructive)
                 .accessibilityLabel("Delete recording for \(session.title)")
             }
-            .width(DictlySpacing.minTapTarget)
+            .width(60)
         }
     }
 

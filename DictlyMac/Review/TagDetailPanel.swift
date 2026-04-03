@@ -29,6 +29,8 @@ struct TagDetailPanel: View {
     @State private var showDeleteConfirmation: Bool = false
     @State private var tagToDeleteFromPanel: Tag?
 
+    @Query(sort: \TagCategory.sortOrder) private var allCategories: [TagCategory]
+
     private let logger = Logger(subsystem: "com.dictly.mac", category: "tagging")
 
     var body: some View {
@@ -425,14 +427,27 @@ struct TagDetailPanel: View {
     // MARK: - Category Badge
 
     private func categoryBadge(for categoryName: String) -> some View {
-        let color = categoryColor(for: categoryName)
-        return Text(categoryName.isEmpty ? "Uncategorized" : categoryName)
+        let isEmpty = categoryName.isEmpty
+        let badgeColor = isEmpty ? DictlyColors.surface : resolvedCategoryColor(for: categoryName)
+        let textColor = isEmpty ? DictlyColors.textPrimary : Color.white
+        return Text(isEmpty ? "Uncategorized" : categoryName)
             .font(DictlyTypography.caption)
-            .foregroundStyle(Color.white)
+            .foregroundStyle(textColor)
             .padding(.horizontal, DictlySpacing.sm)
             .padding(.vertical, DictlySpacing.xs)
-            .background(color)
+            .background(badgeColor)
             .clipShape(Capsule())
+            .overlay(
+                Capsule()
+                    .strokeBorder(isEmpty ? DictlyColors.border : Color.clear, lineWidth: 1)
+            )
+    }
+
+    private func resolvedCategoryColor(for categoryName: String) -> Color {
+        if let category = allCategories.first(where: { $0.name.lowercased() == categoryName.lowercased() }) {
+            return Color(hexString: category.colorHex)
+        }
+        return categoryColor(for: categoryName)
     }
 
     // MARK: - Actions

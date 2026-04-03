@@ -1,5 +1,10 @@
 # Deferred Work
 
+## Deferred from: code review of 7-3-design-system-compliance (2026-04-03)
+
+- Malformed `**...**` pattern in snippet parser causes silent text truncation: if `remaining` starts with `**` but has no closing `**`, the while loop exits without appending the rest of the text (`SearchResultRow.swift:54-72`).
+- Double-delete race between campaign-delete and session-delete confirmation dialogs — both `isShowing*` flags can be true simultaneously, leading to `modelContext.delete` on an already-cascade-deleted session object (`CampaignDetailScreen.swift:71-102`).
+
 ## Deferred from: code review of 7-2-mac-review-ui-fidelity (2026-04-03)
 
 - Two sources of truth (`highlightedTagID` + `selectedTag`) in `TagSidebar.swift` — intentional design per story 7.2 task 2; `onChange(of: selectedTag)` keeps them in sync; revisit if state divergence bugs emerge.

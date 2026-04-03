@@ -1,6 +1,6 @@
 # Story 7.3: Design System Compliance — Fix Hardcoded Colours & Theme Bypasses
 
-Status: review
+Status: done
 
 ## Story
 
@@ -96,6 +96,13 @@ All 6 tasks complete. Every hardcoded system colour and font bypass identified i
 - DictlyMac/Review/TagDetailPanel.swift
 - DictlyMac/Export/ExportSheet.swift
 - DictlyMac/Search/SearchResultRow.swift
+
+### Review Findings
+
+- [x] [Review][Patch] `categoryBadge` hardcodes `Color.white` on `textSecondary` fallback bg (contrast ~2.8:1, fails WCAG AA); `categoryColor()` helper ignores user-defined `colorHex` from SwiftData so AC #4 not fully satisfied [TagDetailPanel.swift:427] — **Fixed**: added `@Query` for `allCategories`, `resolvedCategoryColor(for:)` helper that looks up `colorHex` from SwiftData, restored "Uncategorized" null treatment (surface bg + textPrimary + border)
+- [x] [Review][Patch] `TableColumn` delete button width set to `DictlySpacing.minTapTarget` (48pt) clips "Delete" text label; per task 1.6 layout-structural widths with no clean token mapping should remain as-is [PreferencesWindow.swift:125] — **Fixed**: reverted to `.width(60)`
+- [x] [Review][Defer] Malformed `**...**` pattern in snippet parser causes silent text truncation [SearchResultRow.swift:54-72] — deferred, pre-existing
+- [x] [Review][Defer] Double-delete race between campaign-delete and session-delete confirmation dialogs — both `isShowing*` flags can be true simultaneously [CampaignDetailScreen.swift:71-102] — deferred, pre-existing
 
 ## Change Log
 - 2026-04-03: Migrated `ModelManagementView` and `StoragePreferencesTab` to DictlyTheme tokens (typography, colours, spacing)
