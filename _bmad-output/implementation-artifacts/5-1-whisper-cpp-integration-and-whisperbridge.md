@@ -1,6 +1,6 @@
 # Story 5.1: whisper.cpp Integration & WhisperBridge
 
-Status: review
+Status: done
 
 ## Story
 
@@ -279,6 +279,14 @@ claude-sonnet-4-6
 - `.gitignore` — modified (added whisper model file patterns)
 - `DictlyMacTests/TranscriptionTests/WhisperBridgeTests.swift` — new
 
+### Review Findings
+
+- [x] [Review][Patch] Dangling `params.language` C string pointer [WhisperBridge.swift:84] — `"en".withCString { params.language = lang }` stored a pointer freed after the closure; removed block, default params already set `language = "en"`. **Fixed.**
+- [x] [Review][Patch] Data race: concurrent `transcribe` calls shared `context`/`loadedModelURL` without synchronization [WhisperBridge.swift:28] — added `NSLock` + private `loadContext(for:)` helper that serializes model loading under the lock. **Fixed.**
+- [x] [Review][Patch] `whisper_full` called with zero-length samples / nil `baseAddress` for empty audio [WhisperBridge.swift:97] — added `guard !samples.isEmpty` before `whisper_full` call; returns empty string for silent/empty audio. **Fixed.**
+- [x] [Review][Defer] `AVAudioFrameCount` (UInt32) overflow for audio files >73 hours [WhisperBridge.swift:148] — deferred, unrealistic for session-notes use case
+
 ## Change Log
 
 - 2026-04-03: Story 5.1 implemented — whisper.cpp v1.8.4 integration, WhisperBridge @Observable class, PCM audio conversion, DictlyError extension, unit tests, Metal shader build pipeline, model download documentation
+- 2026-04-03: Code review patches applied — fixed dangling params.language pointer, added NSLock for concurrent model loading, guarded empty samples before whisper_full

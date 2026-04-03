@@ -11,6 +11,7 @@ final class WhisperBridge {
 
     private var context: OpaquePointer?
     private var loadedModelURL: URL?
+    private let modelLock = NSLock()
 
     init() {
         logger.debug("WhisperBridge initialized")
@@ -26,39 +27,7 @@ final class WhisperBridge {
     // MARK: - Model Loading
 
     func loadModel(at modelURL: URL) throws {
-        guard FileManager.default.fileExists(atPath: modelURL.path) else {
-            logger.error("WhisperBridge: model not found at \(modelURL.path)")
-            throw DictlyError.transcription(.modelNotFound)
-        }
-
-        // Free existing context if model URL changed
-        if let existing = context, loadedModelURL != modelURL {
-            whisper_free(existing)
-            context = nil
-            loadedModelURL = nil
-        }
-
-        // Already loaded
-        if context != nil && loadedModelURL == modelURL {
-            return
-        }
-
-        logger.info("WhisperBridge: loading model from \(modelURL.lastPathComponent)")
-
-        var cparams = whisper_context_default_params()
-        cparams.use_gpu = true
-
-        guard let ctx = modelURL.withUnsafeFileSystemRepresentation({ path -> OpaquePointer? in
-            guard let path else { return nil }
-            return whisper_init_from_file_with_params(path, cparams)
-        }) else {
-            logger.error("WhisperBridge: model loaded but whisper_init returned nil — file may be corrupted")
-            throw DictlyError.transcription(.modelCorrupted)
-        }
-
-        context = ctx
-        loadedModelURL = modelURL
-        logger.info("WhisperBridge: model loaded successfully")
+        _ = try loadContext(for: modelURL)
     }
 
     // MARK: - Transcription
@@ -68,22 +37,22 @@ final class WhisperBridge {
 
         logger.info("WhisperBridge: starting transcription of \(audioURL.lastPathComponent)")
 
-        // Load model if needed
-        try loadModel(at: modelURL)
-
-        guard let ctx = context else {
-            throw DictlyError.transcription(.modelCorrupted)
-        }
+        // Load model if needed, returns the context pointer under lock
+        let ctx = try loadContext(for: modelURL)
 
         // Convert audio to 16kHz mono PCM Float32
         let samples = try convertToPCM(audioURL: audioURL)
         logger.debug("WhisperBridge: converted audio — \(samples.count) samples at 16kHz")
 
-        // Configure transcription params
-        var params = whisper_full_default_params(WHISPER_SAMPLING_GREEDY)
-        "en".withCString { lang in
-            params.language = lang
+        // Guard against empty audio (e.g. zero-length file)
+        guard !samples.isEmpty else {
+            logger.info("WhisperBridge: audio produced no samples — returning empty transcription")
+            return ""
         }
+
+        // Configure transcription params
+        // Note: whisper_full_default_params already sets language = "en"; no withCString needed.
+        var params = whisper_full_default_params(WHISPER_SAMPLING_GREEDY)
         params.n_threads = Int32(min(ProcessInfo.processInfo.activeProcessorCount, 8))
         params.translate = false
         params.print_timestamps = false
@@ -114,6 +83,49 @@ final class WhisperBridge {
 
         logger.info("WhisperBridge: transcription complete — \(transcription.count) characters, \(segmentCount) segments")
         return transcription.trimmingCharacters(in: .whitespaces)
+    }
+
+    // MARK: - Private: Locked Model Access
+
+    /// Loads (or returns already-loaded) whisper context under `modelLock`.
+    /// Serializes concurrent calls so only one context is initialized at a time.
+    private func loadContext(for modelURL: URL) throws -> OpaquePointer {
+        try modelLock.withLock {
+            guard FileManager.default.fileExists(atPath: modelURL.path) else {
+                logger.error("WhisperBridge: model not found at \(modelURL.path)")
+                throw DictlyError.transcription(.modelNotFound)
+            }
+
+            // Free existing context if model URL changed
+            if let existing = context, loadedModelURL != modelURL {
+                whisper_free(existing)
+                context = nil
+                loadedModelURL = nil
+            }
+
+            // Already loaded with the correct model
+            if let ctx = context, loadedModelURL == modelURL {
+                return ctx
+            }
+
+            logger.info("WhisperBridge: loading model from \(modelURL.lastPathComponent)")
+
+            var cparams = whisper_context_default_params()
+            cparams.use_gpu = true
+
+            guard let ctx = modelURL.withUnsafeFileSystemRepresentation({ path -> OpaquePointer? in
+                guard let path else { return nil }
+                return whisper_init_from_file_with_params(path, cparams)
+            }) else {
+                logger.error("WhisperBridge: model loaded but whisper_init returned nil — file may be corrupted")
+                throw DictlyError.transcription(.modelCorrupted)
+            }
+
+            context = ctx
+            loadedModelURL = modelURL
+            logger.info("WhisperBridge: model loaded successfully")
+            return ctx
+        }
     }
 
     // MARK: - Audio Conversion

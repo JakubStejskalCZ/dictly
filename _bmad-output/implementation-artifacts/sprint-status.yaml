@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-04-01
-last_updated: 2026-04-03 # story 5.1 review
+last_updated: 2026-04-03 03:01 # story 5.1 done
 project: Dictly
 project_key: NOKEY
 tracking_system: file-system
@@ -80,7 +80,7 @@ development_status:
   epic-4-retrospective: optional
   # Epic 5: Local Transcription
   epic-5: in-progress
-  5-1-whisper-cpp-integration-and-whisperbridge: review
+  5-1-whisper-cpp-integration-and-whisperbridge: done
   5-2-whisper-model-management: backlog
   5-3-per-tag-and-batch-transcription: backlog
   5-4-view-and-edit-transcription-text: backlog

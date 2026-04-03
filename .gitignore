@@ -33,3 +33,8 @@ Icon
 
 # CocoaPods (not used, but just in case)
 Pods/
+
+# whisper.cpp model files (large binaries — download separately, never commit)
+**/ggml-*.bin
+**/ggml-*.gguf
+Models/

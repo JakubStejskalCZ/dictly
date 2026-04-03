@@ -129,6 +129,10 @@
 - `viewWidth` state may be stale during simultaneous window-resize + drag — gesture uses stored `@State viewWidth` rather than live geometry. Edge case; only affects window-resize-while-dragging scenario.
 - `isPlaying=true` set before `playerNode.play()` potential failure — if the engine stops unexpectedly (route change, resource exhaustion), the timer detects `playerNode.isPlaying=false` and self-corrects via `handlePlaybackFinished`. Pre-existing pattern; acceptable with the route-change deferred above.
 
+## Deferred from: code review of story 5-1-whisper-cpp-integration-and-whisperbridge (2026-04-03)
+
+- `AVAudioFrameCount` (UInt32) overflow in `convertToPCM` for audio files longer than ~73 hours — `Double(inputFrameCount) * targetFormat.sampleRate / inputSampleRate` silently wraps to a much smaller `UInt32`, allocating an undersized output buffer. Unrealistic for session-notes use case; address if very long recordings become supported.
+
 ## Deferred from: code review of story 4-4 (2026-04-02)
 
 - `AccessibilityNotification.LayoutChanged` posted on every keystroke in search field — consider debounce to avoid interrupting VoiceOver on every character typed. `TagSidebar.swift`.
