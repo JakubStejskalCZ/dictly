@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-04-01
-last_updated: 2026-04-03 # story 6.3 done
+last_updated: 2026-04-03 # story 6.4 ready-for-dev
 project: Dictly
 project_key: NOKEY
 tracking_system: file-system
@@ -90,5 +90,5 @@ development_status:
   6-1-core-spotlight-indexing: done
   6-2-full-text-search-across-sessions: done
   6-3-cross-session-tag-browsing-and-related-tags: done
-  6-4-markdown-export-single-session-and-campaign: backlog
+  6-4-markdown-export-single-session-and-campaign: ready-for-dev
   epic-6-retrospective: optional
