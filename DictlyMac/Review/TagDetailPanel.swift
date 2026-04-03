@@ -279,6 +279,7 @@ struct TagDetailPanel: View {
 
             } else if hasError {
                 // State: transcription failed — show error badge with Retry
+                let isBusy = transcriptionEngine.isTranscribing || transcriptionEngine.isBatchTranscribing
                 HStack(spacing: DictlySpacing.sm) {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .foregroundStyle(.orange)
@@ -293,7 +294,9 @@ struct TagDetailPanel: View {
                     }
                     .buttonStyle(.bordered)
                     .controlSize(.small)
+                    .disabled(isBusy)
                     .accessibilityLabel("Retry transcription for this tag")
+                    .help(isBusy ? "Transcription already in progress" : "Retry transcription for this tag")
                 }
                 .padding(DictlySpacing.sm)
                 .background(DictlyColors.surface)
@@ -320,6 +323,7 @@ struct TagDetailPanel: View {
 
     private func transcriptionError(for tag: Tag) -> Error? {
         transcriptionEngine.batchErrors.first { $0.tag.uuid == tag.uuid }?.error
+            ?? transcriptionEngine.tagErrors[tag.uuid]
     }
 
     // MARK: - Right Column

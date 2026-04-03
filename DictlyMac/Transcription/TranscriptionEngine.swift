@@ -38,6 +38,12 @@ final class TranscriptionEngine {
     private(set) var batchCompleted: Int = 0
     private(set) var batchErrors: [(tag: Tag, error: Error)] = []
 
+    // MARK: - Per-tag error state (single-tag transcription failures)
+
+    /// Stores errors from standalone (non-batch) transcription calls so the UI can show
+    /// the error badge and Retry button for single-tag transcription failures.
+    private(set) var tagErrors: [UUID: Error] = [:]
+
     // MARK: - Private
 
     private var batchTask: Task<Void, Never>?
@@ -67,6 +73,7 @@ final class TranscriptionEngine {
     /// On failure, propagates the error (caller is responsible for error display/retry).
     func transcribeTag(_ tag: Tag, session: Session) async throws {
         logger.info("TranscriptionEngine: transcribing tag '\(tag.label)' (\(tag.uuid))")
+        tagErrors.removeValue(forKey: tag.uuid)
         isTranscribing = true
         currentTagId = tag.uuid
 
@@ -75,9 +82,14 @@ final class TranscriptionEngine {
             currentTagId = nil
         }
 
-        let text = try await runTranscription(tag: tag, session: session)
-        tag.transcription = text
-        logger.info("TranscriptionEngine: done '\(tag.label)' — \(text.count) chars")
+        do {
+            let text = try await runTranscription(tag: tag, session: session)
+            tag.transcription = text
+            logger.info("TranscriptionEngine: done '\(tag.label)' — \(text.count) chars")
+        } catch {
+            tagErrors[tag.uuid] = error
+            throw error
+        }
     }
 
     // MARK: - Batch Transcription (AC: #2, #3)
@@ -86,8 +98,8 @@ final class TranscriptionEngine {
     /// No-op if a batch is already running.
     /// Call `cancelBatch()` to stop early.
     func startBatchTranscription(session: Session) {
-        guard !isBatchTranscribing else {
-            logger.info("TranscriptionEngine: batch already running — ignoring start request")
+        guard !isBatchTranscribing, !isTranscribing else {
+            logger.info("TranscriptionEngine: transcription already in progress — ignoring batch start request")
             return
         }
         logger.info("TranscriptionEngine: starting batch for session '\(session.title)'")
@@ -116,6 +128,7 @@ final class TranscriptionEngine {
 
         defer {
             isBatchTranscribing = false
+            batchTask = nil
             logger.info("TranscriptionEngine: batch done — \(self.batchCompleted)/\(self.batchTotal), \(self.batchErrors.count) errors")
         }
 
@@ -143,9 +156,10 @@ final class TranscriptionEngine {
 
     // MARK: - Retry (AC: #4)
 
-    /// Clears any previously recorded batch error for `tag` and re-attempts transcription.
+    /// Clears any previously recorded errors for `tag` and re-attempts transcription.
     func retryTag(_ tag: Tag, session: Session) async throws {
         batchErrors.removeAll { $0.tag.uuid == tag.uuid }
+        // tagErrors is cleared automatically at the start of transcribeTag
         try await transcribeTag(tag, session: session)
     }
 
@@ -242,8 +256,8 @@ final class TranscriptionEngine {
         let frameCount = AVAudioFrameCount(clampedDuration * sampleRate)
 
         guard frameCount > 0 else {
-            logger.error("TranscriptionEngine: zero frames after clamping (start=\(clampedStart), end=\(clampedEnd))")
-            throw DictlyError.transcription(.audioFileNotFound)
+            logger.error("TranscriptionEngine: zero frames after clamping — segment window is outside file bounds (start=\(clampedStart), end=\(clampedEnd))")
+            throw DictlyError.transcription(.audioConversionFailed)
         }
 
         audioFile.framePosition = startFrame

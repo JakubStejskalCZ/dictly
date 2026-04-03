@@ -1,5 +1,11 @@
 # Deferred Work
 
+## Deferred from: code review of 5-3-per-tag-and-batch-transcription (2026-04-03)
+
+- Cancellation not forwarded into `bridge.transcribe` (`WhisperBridge.swift`) — Swift cooperative cancellation cannot be injected into the whisper.cpp FFI layer; batch cancellation is best-effort (between tags). Address when/if WhisperBridge adds cancellation support.
+- `isBatchTranscribing` stays `true` while the current tag finishes after `cancelBatch()` — by-design: the defer block in `transcribeAllTags` resets it after the current tag completes. No action needed unless UX decides immediate UI reset is required.
+- Temp CAF segment files accumulate on hard crash — `extractAudioSegment` uses `defer` for cleanup on normal exits, but crash leaves orphaned `.caf` files in `temporaryDirectory`. OS clears tmp on reboot; acceptable until a periodic cleanup pass is added.
+
 ## Deferred from: code review of 4-6-retroactive-tag-placement (2026-04-02)
 
 - F13: `RightClickView.rightMouseDown` uses `convert(event.locationInWindow, from: nil)` which produces incorrect coordinates when the view is in a secondary/non-key window. Only affects multi-window scenarios not in scope for this story.

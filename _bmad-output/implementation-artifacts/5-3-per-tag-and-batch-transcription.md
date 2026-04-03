@@ -1,6 +1,6 @@
 # Story 5.3: Per-Tag & Batch Transcription
 
-Status: review
+Status: done
 
 ## Story
 
@@ -277,6 +277,18 @@ claude-sonnet-4-6
 - DictlyMacTests/ReviewTests/SessionReviewScreenTests.swift (modified — TagDetailPanel session param fix)
 - DictlyMacTests/ReviewTests/Epic4E2ETests.swift (modified — TagDetailPanel session param fix)
 
+### Review Findings
+
+- [x] [Review][Patch] Single-tag errors silently discarded — no error badge/Retry for inline transcription [TranscriptionEngine.swift, TagDetailPanel.swift] — **FIXED**: Added `tagErrors: [UUID: Error]` to `TranscriptionEngine`; `transcribeTag` now stores errors there; `transcriptionError(for:)` checks both `batchErrors` and `tagErrors`
+- [x] [Review][Patch] Retry button not disabled when transcription already in flight [TagDetailPanel.swift:289] — **FIXED**: Added `.disabled(isBusy)` + `.help()` to Retry button in error state
+- [x] [Review][Patch] `startBatchTranscription` ignores `isTranscribing`, allows concurrent single+batch [TranscriptionEngine.swift:89] — **FIXED**: Guard updated to `guard !isBatchTranscribing, !isTranscribing`
+- [x] [Review][Patch] `extractAudioSegment` zero-frames guard throws `.audioFileNotFound` (wrong error type) [TranscriptionEngine.swift:244] — **FIXED**: Changed to `.audioConversionFailed` with updated log message
+- [x] [Review][Patch] `batchTask` not nil'd after normal batch completion [TranscriptionEngine.swift:117] — **FIXED**: Added `batchTask = nil` to `transcribeAllTags` defer block
+- [x] [Review][Defer] Cancellation not forwarded into `bridge.transcribe` [WhisperBridge.swift] — deferred, pre-existing WhisperBridge limitation; cancellation check between tags is best effort
+- [x] [Review][Defer] `isBatchTranscribing` stays true while current tag finishes after `cancelBatch()` — deferred, by-design behaviour (defer block resets it after current tag completes)
+- [x] [Review][Defer] Temp CAF segment files accumulate on crash without cleanup — deferred, OS clears tmp dir on reboot; acceptable for now
+
 ### Change Log
 
 - 2026-04-03: Implemented Story 5.3 Per-Tag & Batch Transcription. Created TranscriptionEngine orchestration service, audio segment extraction, TagDetailPanel transcription UI, Transcribe All toolbar button with batch progress, app environment wiring. Added 12 unit tests.
+- 2026-04-03: Code review patches applied — 5 issues fixed: single-tag error state surfaced in UI, Retry button disabled guard, batch guard against single-tag in flight, wrong error type in extractAudioSegment, batchTask leak after normal completion.
