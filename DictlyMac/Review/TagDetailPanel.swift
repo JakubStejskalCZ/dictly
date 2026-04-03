@@ -19,6 +19,8 @@ struct TagDetailPanel: View {
     @FocusState private var isEditingLabel: Bool
     @State private var editingNotes: String = ""
     @FocusState private var isEditingNotes: Bool
+    @State private var editingTranscription: String = ""
+    @FocusState private var isTranscriptionFocused: Bool
     @State private var showCategoryPicker: Bool = false
     @State private var showDeleteConfirmation: Bool = false
     @State private var tagToDeleteFromPanel: Tag?
@@ -43,6 +45,7 @@ struct TagDetailPanel: View {
             if let tag = selectedTag {
                 editingLabel = tag.label
                 editingNotes = tag.notes ?? ""
+                editingTranscription = tag.transcription ?? ""
             }
         }
         .onChange(of: selectedTag?.uuid) { oldUUID, _ in
@@ -59,15 +62,27 @@ struct TagDetailPanel: View {
                     }
                 }
             }
+            // Commit in-progress transcription edit to old tag before switching.
+            if isTranscriptionFocused, let oldUUID = oldUUID {
+                let descriptor = FetchDescriptor<Tag>(predicate: #Predicate { $0.uuid == oldUUID })
+                if let oldTag = try? modelContext.fetch(descriptor).first {
+                    if editingTranscription != (oldTag.transcription ?? "") {
+                        oldTag.transcription = editingTranscription
+                    }
+                }
+            }
             isEditingLabel = false
             isEditingNotes = false
+            isTranscriptionFocused = false
             showCategoryPicker = false
             if let tag = selectedTag {
                 editingLabel = tag.label
                 editingNotes = tag.notes ?? ""
+                editingTranscription = tag.transcription ?? ""
             } else {
                 editingLabel = ""
                 editingNotes = ""
+                editingTranscription = ""
             }
         }
         .alert("Delete Tag?", isPresented: $showDeleteConfirmation) {
@@ -265,17 +280,30 @@ struct TagDetailPanel: View {
                 .clipShape(RoundedRectangle(cornerRadius: 6))
                 .accessibilityLabel("Transcription in progress")
 
-            } else if let text = tag.transcription {
-                // State: transcription complete — display read-only text (editing is Story 5.4)
-                Text(text)
+            } else if tag.transcription != nil {
+                // State: transcription complete — editable inline (Story 5.4)
+                TextEditor(text: $editingTranscription)
                     .font(DictlyTypography.body)
-                    .foregroundStyle(DictlyColors.textPrimary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(DictlySpacing.sm)
+                    .scrollContentBackground(.hidden)
                     .background(DictlyColors.surface)
+                    .frame(minHeight: 60, maxHeight: 200)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 6)
+                            .strokeBorder(isTranscriptionFocused ? DictlyColors.border : Color.clear, lineWidth: 1)
+                    )
                     .clipShape(RoundedRectangle(cornerRadius: 6))
-                    .textSelection(.enabled)
-                    .accessibilityLabel("Transcription: \(text)")
+                    .focused($isTranscriptionFocused)
+                    .onChange(of: isTranscriptionFocused) { _, focused in
+                        if focused {
+                            AccessibilityNotification.Announcement("Editing transcription").post()
+                        } else {
+                            commitTranscription(tag: tag)
+                        }
+                    }
+                    .accessibilityLabel(editingTranscription.isEmpty
+                        ? "Transcription, empty. Click to edit."
+                        : "Transcription: \(String(editingTranscription.prefix(100))). Click to edit.")
+                    .accessibilityHint("Click to edit transcription text")
 
             } else if hasError {
                 // State: transcription failed — show error badge with Retry
@@ -391,6 +419,15 @@ struct TagDetailPanel: View {
         guard newNotes != tag.notes else { return }
         tag.notes = newNotes
         AccessibilityNotification.Announcement("Notes saved").post()
+    }
+
+    private func commitTranscription(tag: Tag) {
+        guard selectedTag?.uuid == tag.uuid else { return }
+        // Empty string is valid — means user cleared the transcription.
+        // nil means never transcribed; do not revert to nil on user clear.
+        guard editingTranscription != (tag.transcription ?? "") else { return }
+        tag.transcription = editingTranscription
+        AccessibilityNotification.Announcement("Transcription saved").post()
     }
 
     private func deleteTag(_ tag: Tag) {

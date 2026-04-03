@@ -24,6 +24,7 @@
 		5912233F295C6C406C521C0C /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 458695DF0DBDB0A4ACDE750E /* Accelerate.framework */; };
 		5AEEF9E41E6F97CB8725E8FE /* LocalNetworkReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = B98B53E1C627818A5B42932D /* LocalNetworkReceiver.swift */; };
 		60C9D5937128DF2334B02897 /* TagNotesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D39556327FEE8030DAD8618 /* TagNotesTests.swift */; };
+		630732A90060283F2ECBC0A1 /* TagDetailPanelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEE608B627F0CCABABD1F365 /* TagDetailPanelTests.swift */; };
 		64A2669EA23F14BB5745BAA3 /* ImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4BEB495884ED9C7CAD7C2F2 /* ImportService.swift */; };
 		68F862B146C911436B19E8EE /* ggml-threading.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B581E8845D2D75E9747FB2F2 /* ggml-threading.cpp */; };
 		693ED22DC6258ED0BC79C31B /* ggml-metal-ops.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2B435948CFAD6264F3E85E84 /* ggml-metal-ops.cpp */; };
@@ -179,6 +180,7 @@
 		F895FADB439548125B64C15C /* CoreML.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = CoreML.framework; sourceTree = "<group>"; };
 		F99799ADDC35F183C7A44D98 /* TagDetailPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagDetailPanel.swift; sourceTree = "<group>"; };
 		FCB4BCE2FFDCDE2484B1D85B /* ggml-backend.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = "ggml-backend.cpp"; sourceTree = "<group>"; };
+		FEE608B627F0CCABABD1F365 /* TagDetailPanelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagDetailPanelTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -412,6 +414,7 @@
 				9AAD34E9934EB9CE2C48094E /* Epic4E2ETests.swift */,
 				943DCAF14A9E49CD2AF0147B /* RetroactiveTagTests.swift */,
 				E8E83175BC0B860D8AFE2B7A /* SessionReviewScreenTests.swift */,
+				FEE608B627F0CCABABD1F365 /* TagDetailPanelTests.swift */,
 				CD0099FBAA80B3E4D00DEE36 /* TagEditingTests.swift */,
 				7D39556327FEE8030DAD8618 /* TagNotesTests.swift */,
 				1F6374291370DD5930374CA1 /* TagSidebarFilterTests.swift */,
@@ -623,6 +626,7 @@
 				B56461F468BB5C2F027BA0E8 /* ModelManagerTests.swift in Sources */,
 				BD4D70193DB25494555DD1AE /* RetroactiveTagTests.swift in Sources */,
 				575E88988088C8DF2DAA57E5 /* SessionReviewScreenTests.swift in Sources */,
+				630732A90060283F2ECBC0A1 /* TagDetailPanelTests.swift in Sources */,
 				17C2BB653660A36BFAC48BF7 /* TagEditingTests.swift in Sources */,
 				60C9D5937128DF2334B02897 /* TagNotesTests.swift in Sources */,
 				F292C87D2E124E72CC56FBF0 /* TagSidebarFilterTests.swift in Sources */,
