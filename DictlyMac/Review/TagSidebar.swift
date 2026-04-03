@@ -8,6 +8,9 @@ import DictlyTheme
 /// When `searchService.isSearchActive` is true, the tag list is replaced with cross-session
 /// `SearchResultsView`. Category filter pills remain visible in both modes.
 ///
+/// When `isCrossSessionMode` is true (and no search is active), all tags across the current
+/// campaign are shown, grouped by session with section headers.
+///
 /// - `searchText`: drives both local session filtering and cross-session Spotlight search.
 /// - `activeCategories`: multi-select set; empty = show all, non-empty = whitelist.
 struct TagSidebar: View {
@@ -23,10 +26,14 @@ struct TagSidebar: View {
     @State private var searchText: String = ""
     @State private var tagToDelete: Tag?
     @State private var showDeleteAlert: Bool = false
+    @State private var isCrossSessionMode: Bool = false
+
+    // True when the session belongs to a campaign (cross-session mode is available)
+    private var hasCampaign: Bool { session.campaign != nil }
 
     var body: some View {
         VStack(spacing: 0) {
-            // Search field (Task 1.1)
+            // Search field
             HStack(spacing: DictlySpacing.sm) {
                 Image(systemName: "magnifyingglass")
                     .foregroundStyle(DictlyColors.textSecondary)
@@ -50,14 +57,29 @@ struct TagSidebar: View {
             .padding(.vertical, DictlySpacing.sm)
             .background(DictlyColors.surface)
 
+            // Cross-session mode toggle — only shown when session is in a campaign
+            if hasCampaign {
+                Divider()
+                Picker("View Mode", selection: $isCrossSessionMode) {
+                    Text("Session").tag(false)
+                    Text("Campaign").tag(true)
+                }
+                .pickerStyle(.segmented)
+                .padding(.horizontal, DictlySpacing.md)
+                .padding(.vertical, DictlySpacing.sm)
+                .accessibilityLabel(isCrossSessionMode
+                    ? "Viewing all tags in campaign. Switch to Session to see current session only."
+                    : "Viewing current session tags. Switch to Campaign to browse all sessions.")
+            }
+
             Divider()
 
-            // Category filter pills (Tasks 1.3–1.9, 6.1–6.3)
+            // Category filter pills
             if !categories.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: DictlySpacing.sm) {
-                        // "All" pill (Task 1.7)
-                        let totalCount = session.tags.count
+                        // "All" pill
+                        let totalCount = isCrossSessionMode ? crossSessionTotalTagCount : session.tags.count
                         CategoryFilterPill(
                             label: "All",
                             color: nil,
@@ -67,9 +89,11 @@ struct TagSidebar: View {
                         .accessibilityLabel("All categories. \(totalCount) tags total.")
                         .accessibilityAddTraits(activeCategories.isEmpty ? .isSelected : [])
 
-                        // Per-category pills (Task 1.4, 2.4)
+                        // Per-category pills
                         ForEach(categories) { category in
-                            let count = session.tags.filter { $0.categoryName == category.name }.count
+                            let count = isCrossSessionMode
+                                ? crossSessionCategoryCount(for: category.name)
+                                : session.tags.filter { $0.categoryName == category.name }.count
                             let isActive = activeCategories.contains(category.name)
                             CategoryFilterPill(
                                 label: category.name,
@@ -92,6 +116,7 @@ struct TagSidebar: View {
 
             // Tag list OR cross-session search results
             if searchService.isSearchActive {
+                // Search takes priority over browsing mode
                 SearchResultsView(
                     searchResults: searchService.searchResults,
                     searchText: searchText,
@@ -100,11 +125,13 @@ struct TagSidebar: View {
                         onResultSelected?(result)
                     }
                 )
+            } else if isCrossSessionMode {
+                crossSessionContent
             } else {
                 let tags = filteredTags
                 let totalCount = session.tags.count
                 if tags.isEmpty {
-                    emptyState(hasFilters: !searchText.trimmingCharacters(in: .whitespaces).isEmpty || !activeCategories.isEmpty, hasTags: totalCount > 0)
+                    emptyState(hasFilters: !searchText.trimmingCharacters(in: .whitespaces).isEmpty || !activeCategories.isEmpty, hasTags: totalCount > 0, isCrossSession: false)
                 } else {
                     tagList(tags: tags, totalCount: totalCount)
                 }
@@ -114,10 +141,15 @@ struct TagSidebar: View {
         // Reset searchText and clear cross-session search on session change
         .onChange(of: sessionID) { _, _ in
             searchText = ""
+            isCrossSessionMode = false
             searchService.clearSearch()
         }
-        // Task 6.5: Notify VoiceOver when filter changes so it re-reads the updated list
+        // Notify VoiceOver when filter changes
         .onChange(of: activeCategories) { _, _ in
+            AccessibilityNotification.LayoutChanged().post()
+        }
+        // Notify VoiceOver when mode changes
+        .onChange(of: isCrossSessionMode) { _, _ in
             AccessibilityNotification.LayoutChanged().post()
         }
         // Sync local searchText to SearchService and schedule debounced search
@@ -144,7 +176,106 @@ struct TagSidebar: View {
         }
     }
 
-    // MARK: - Filter Logic (Tasks 2.1–2.3)
+    // MARK: - Cross-Session Data
+
+    /// All sessions in the campaign, sorted oldest-first, each with their filtered tags.
+    private var crossSessionGroups: [(session: Session, tags: [Tag])] {
+        guard let campaign = session.campaign else { return [] }
+        return campaign.sessions
+            .sorted { $0.date < $1.date }
+            .compactMap { s in
+                var tags = s.tags.sorted { lhs, rhs in
+                    lhs.anchorTime < rhs.anchorTime
+                }
+                if !activeCategories.isEmpty {
+                    tags = tags.filter { activeCategories.contains($0.categoryName) }
+                }
+                guard !tags.isEmpty else { return nil }
+                return (session: s, tags: tags)
+            }
+    }
+
+    private var crossSessionTotalTagCount: Int {
+        session.campaign?.sessions.reduce(0) { $0 + $1.tags.count } ?? session.tags.count
+    }
+
+    private func crossSessionCategoryCount(for name: String) -> Int {
+        session.campaign?.sessions.reduce(0) { $0 + $1.tags.filter { $0.categoryName == name }.count } ?? 0
+    }
+
+    // MARK: - Cross-Session Content
+
+    @ViewBuilder
+    private var crossSessionContent: some View {
+        let groups = crossSessionGroups
+        if groups.isEmpty {
+            emptyState(
+                hasFilters: !activeCategories.isEmpty,
+                hasTags: crossSessionTotalTagCount > 0,
+                isCrossSession: true
+            )
+        } else {
+            List(selection: $selectedTag) {
+                ForEach(groups, id: \.session.uuid) { group in
+                    Section {
+                        ForEach(group.tags, id: \.uuid) { tag in
+                            TagSidebarRow(tag: tag)
+                                .tag(tag)
+                                .contextMenu {
+                                    Button {
+                                        selectedTag = tag
+                                    } label: {
+                                        Label("Edit Label", systemImage: "pencil")
+                                    }
+                                    Button {
+                                        selectedTag = tag
+                                    } label: {
+                                        Label("Change Category", systemImage: "tag")
+                                    }
+                                    Divider()
+                                    Button(role: .destructive) {
+                                        tagToDelete = tag
+                                        showDeleteAlert = true
+                                    } label: {
+                                        Label("Delete Tag", systemImage: "trash")
+                                    }
+                                }
+                        }
+                    } header: {
+                        sessionSectionHeader(group.session, tagCount: group.tags.count)
+                    }
+                }
+            }
+            .listStyle(.sidebar)
+            .accessibilityLabel("Campaign tags grouped by session")
+        }
+    }
+
+    private func sessionSectionHeader(_ s: Session, tagCount: Int) -> some View {
+        VStack(alignment: .leading, spacing: 1) {
+            Text(s.title)
+                .font(DictlyTypography.caption)
+                .fontWeight(.semibold)
+                .foregroundStyle(DictlyColors.textPrimary)
+                .lineLimit(1)
+            HStack(spacing: DictlySpacing.xs) {
+                Text(s.date.formatted(date: .abbreviated, time: .omitted))
+                    .font(DictlyTypography.caption)
+                    .foregroundStyle(DictlyColors.textSecondary)
+                Text("·")
+                    .font(DictlyTypography.caption)
+                    .foregroundStyle(DictlyColors.textSecondary)
+                Text("\(tagCount) tag\(tagCount == 1 ? "" : "s")")
+                    .font(DictlyTypography.caption)
+                    .foregroundStyle(DictlyColors.textSecondary)
+            }
+        }
+        .padding(.vertical, DictlySpacing.xs)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(s.title), \(s.date.formatted(date: .abbreviated, time: .omitted)), \(tagCount) tags")
+    }
+
+    // MARK: - Filter Logic
 
     private var filteredTags: [Tag] {
         var tags = session.tags.sorted { $0.anchorTime < $1.anchorTime }
@@ -158,7 +289,7 @@ struct TagSidebar: View {
         return tags
     }
 
-    // MARK: - Toggle (Task 1.6)
+    // MARK: - Toggle
 
     private func toggleCategory(_ name: String) {
         if activeCategories.contains(name) {
@@ -168,7 +299,7 @@ struct TagSidebar: View {
         }
     }
 
-    // MARK: - Delete (Task 4.5, 4.7)
+    // MARK: - Delete
 
     private func deleteTagFromContextMenu(_ tag: Tag) {
         if selectedTag?.uuid == tag.uuid {
@@ -211,16 +342,20 @@ struct TagSidebar: View {
                 }
         }
         .listStyle(.sidebar)
-        // Task 6.6: Summary for VoiceOver
         .accessibilityLabel("Showing \(tags.count) of \(totalCount) tags")
     }
 
-    private func emptyState(hasFilters: Bool, hasTags: Bool) -> some View {
+    private func emptyState(hasFilters: Bool, hasTags: Bool, isCrossSession: Bool) -> some View {
         VStack(spacing: DictlySpacing.md) {
             Spacer()
-            // Task 2.5: Distinguish filter-empty from session-empty
             if hasFilters && hasTags {
                 Text("No matching tags. Try adjusting your filters.")
+                    .font(DictlyTypography.caption)
+                    .foregroundStyle(DictlyColors.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, DictlySpacing.md)
+            } else if isCrossSession {
+                Text("No tags found in this campaign. Start a session and add tags to build your archive.")
                     .font(DictlyTypography.caption)
                     .foregroundStyle(DictlyColors.textSecondary)
                     .multilineTextAlignment(.center)
@@ -237,7 +372,9 @@ struct TagSidebar: View {
         .accessibilityLabel(
             hasFilters && hasTags
                 ? "No matching tags. Try adjusting your filters."
-                : "No tags in this session. Place retroactive tags by scrubbing the waveform."
+                : isCrossSession
+                    ? "No tags found in this campaign."
+                    : "No tags in this session. Place retroactive tags by scrubbing the waveform."
         )
     }
 }

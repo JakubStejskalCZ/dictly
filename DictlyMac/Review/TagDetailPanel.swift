@@ -13,8 +13,11 @@ import os
 struct TagDetailPanel: View {
     @Binding var selectedTag: Tag?
     let session: Session
+    var onRelatedTagSelected: ((SearchResult) -> Void)? = nil
+
     @Environment(\.modelContext) private var modelContext
     @Environment(TranscriptionEngine.self) private var transcriptionEngine
+    @Environment(SearchService.self) private var searchService
 
     @State private var editingLabel: String = ""
     @FocusState private var isEditingLabel: Bool
@@ -47,6 +50,17 @@ struct TagDetailPanel: View {
                 editingLabel = tag.label
                 editingNotes = tag.notes ?? ""
                 editingTranscription = tag.transcription ?? ""
+            }
+        }
+        .onChange(of: selectedTag) { _, newTag in
+            // Trigger related tag search when a new tag is selected
+            if let tag = newTag {
+                Task {
+                    await searchService.performRelatedSearch(for: tag)
+                }
+            } else {
+                searchService.relatedTags = []
+                searchService.isLoadingRelated = false
             }
         }
         .onChange(of: selectedTag?.uuid) { oldUUID, _ in
@@ -392,24 +406,12 @@ struct TagDetailPanel: View {
     // MARK: - Right Column
 
     private var rightColumn: some View {
-        VStack(alignment: .leading, spacing: DictlySpacing.xs) {
-            Text("Related Tags")
-                .font(DictlyTypography.caption)
-                .foregroundStyle(DictlyColors.textSecondary)
-            Text("Related tags across sessions")
-                .font(DictlyTypography.body)
-                .foregroundStyle(DictlyColors.textSecondary)
-            RoundedRectangle(cornerRadius: 6)
-                .fill(DictlyColors.surface)
-                .frame(height: 120)
-                .overlay(
-                    Text("Related tag filtering available in a future story.")
-                        .font(DictlyTypography.caption)
-                        .foregroundStyle(DictlyColors.textSecondary)
-                        .padding(DictlySpacing.sm),
-                    alignment: .topLeading
-                )
-        }
+        RelatedTagsView(
+            relatedTags: searchService.relatedTags,
+            isLoading: searchService.isLoadingRelated,
+            tagLabel: selectedTag?.label ?? "",
+            onSelected: onRelatedTagSelected
+        )
     }
 
     // MARK: - Category Badge

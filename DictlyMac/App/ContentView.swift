@@ -24,6 +24,9 @@ struct ContentView: View {
                     pendingTagID: $pendingTagID,
                     onResultSelected: { result in
                         handleSearchResultSelected(result)
+                    },
+                    onRelatedTagSelected: { result in
+                        handleSearchResultSelected(result)
                     }
                 )
             } else {
@@ -90,12 +93,27 @@ struct ContentView: View {
                 .font(DictlyTypography.body)
                 .foregroundStyle(DictlyColors.textPrimary)
                 .lineLimit(1)
-            Text(session.date.formatted(date: .abbreviated, time: .omitted))
-                .font(DictlyTypography.caption)
-                .foregroundStyle(DictlyColors.textSecondary)
+            HStack(spacing: DictlySpacing.xs) {
+                Text(session.date.formatted(date: .abbreviated, time: .omitted))
+                    .font(DictlyTypography.caption)
+                    .foregroundStyle(DictlyColors.textSecondary)
+                Text("·")
+                    .font(DictlyTypography.caption)
+                    .foregroundStyle(DictlyColors.textSecondary)
+                Text(formatDuration(session.duration))
+                    .font(DictlyTypography.caption)
+                    .foregroundStyle(DictlyColors.textSecondary)
+                    .monospacedDigit()
+                Text("·")
+                    .font(DictlyTypography.caption)
+                    .foregroundStyle(DictlyColors.textSecondary)
+                Text("\(session.tags.count) tag\(session.tags.count == 1 ? "" : "s")")
+                    .font(DictlyTypography.caption)
+                    .foregroundStyle(DictlyColors.textSecondary)
+            }
         }
         .padding(.vertical, DictlySpacing.xs)
-        .accessibilityLabel("\(session.title), \(session.date.formatted(date: .abbreviated, time: .omitted))")
+        .accessibilityLabel("\(session.title), \(session.date.formatted(date: .abbreviated, time: .omitted)), \(formatDuration(session.duration)), \(session.tags.count) tags")
     }
 }
 

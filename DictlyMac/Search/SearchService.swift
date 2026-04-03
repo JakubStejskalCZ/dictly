@@ -222,6 +222,77 @@ public final class SearchService {
         }
     }
 
+    // MARK: - Related Tags
+
+    var relatedTags: [SearchResult] = []
+    var isLoadingRelated: Bool = false
+
+    /// Finds tags from other sessions that mention similar terms to the given tag's label.
+    /// Uses Core Spotlight text search; filters out the selected tag and its session.
+    /// Stores up to 15 results in `relatedTags`, sorted by relevance.
+    func performRelatedSearch(for tag: Tag) async {
+        guard let context = modelContext else {
+            relatedTags = []
+            return
+        }
+
+        isLoadingRelated = true
+        let tagID = tag.uuid
+        let sessionID = tag.session?.uuid
+        let label = tag.label.trimmingCharacters(in: .whitespaces)
+        guard !label.isEmpty else {
+            relatedTags = []
+            isLoadingRelated = false
+            return
+        }
+
+        logger.info("Performing related search for tag: \(label, privacy: .public)")
+
+        do {
+            var allResults: [SearchResult] = []
+
+            // Search by the full label
+            let fullResults = try await runSpotlightQuery(term: label, context: context)
+            allResults.append(contentsOf: fullResults)
+
+            // Also search by individual significant words (3+ chars, not the same as full label)
+            let words = label.components(separatedBy: .whitespaces)
+                .map { $0.trimmingCharacters(in: .punctuationCharacters) }
+                .filter { $0.count >= 3 && $0.lowercased() != label.lowercased() }
+            for word in words {
+                let wordResults = try await runSpotlightQuery(term: word, context: context)
+                allResults.append(contentsOf: wordResults)
+            }
+
+            guard !Task.isCancelled else {
+                isLoadingRelated = false
+                return
+            }
+
+            // Deduplicate by tagID (preserve first occurrence — full-label match ranks highest)
+            var seen = Set<UUID>()
+            var deduplicated: [SearchResult] = []
+            for result in allResults {
+                if seen.insert(result.tagID).inserted {
+                    deduplicated.append(result)
+                }
+            }
+
+            // Filter: exclude the selected tag itself and tags from the same session
+            let filtered = deduplicated.filter { result in
+                result.tagID != tagID && result.sessionID != sessionID
+            }
+
+            relatedTags = Array(sortResults(filtered, term: label).prefix(15))
+            logger.info("Related search found \(self.relatedTags.count, privacy: .public) result(s) for '\(label, privacy: .public)'")
+        } catch {
+            logger.error("Related search failed: \(error.localizedDescription, privacy: .public)")
+            relatedTags = []
+        }
+
+        isLoadingRelated = false
+    }
+
     // MARK: - Private: Sorting
 
     /// Sorts results: exact label matches first, then by session date (most recent first).

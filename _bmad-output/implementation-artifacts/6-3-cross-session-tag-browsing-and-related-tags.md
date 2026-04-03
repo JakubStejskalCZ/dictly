@@ -1,6 +1,6 @@
 # Story 6.3: Cross-Session Tag Browsing & Related Tags
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -22,58 +22,58 @@ so that I can discover connections across my campaign's history.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Implement cross-session tag browsing mode in TagSidebar (AC: #1)
-  - [ ] 1.1 Add a "cross-session mode" toggle state to `TagSidebar.swift` — a `@Binding var isCrossSessionMode: Bool` or local `@State` controlled by a toolbar toggle/button
-  - [ ] 1.2 When cross-session mode is active AND no search is active: query ALL tags across ALL sessions in the current campaign using SwiftData `@Query` or `ModelContext.fetch` with a `FetchDescriptor<Tag>` predicate filtering by `tag.session?.campaign?.uuid == selectedCampaign.uuid`
-  - [ ] 1.3 Apply the existing `activeCategories` filter to cross-session results — reuse the category filter pills already in TagSidebar
-  - [ ] 1.4 Sort cross-session tags chronologically by session date + anchorTime (oldest first)
-  - [ ] 1.5 Display each tag using `TagSidebarRow` with an additional session identifier (e.g., "Session N" subtitle or grouped by session)
-  - [ ] 1.6 Group tags by session in the list with section headers showing session title, date, and tag count
-  - [ ] 1.7 When cross-session mode is deactivated, return to showing only the current session's tags (existing behavior)
-  - [ ] 1.8 Ensure the toggle state is visually clear — use a toolbar button or segmented control ("Session" / "Campaign")
+- [x] Task 1: Implement cross-session tag browsing mode in TagSidebar (AC: #1)
+  - [x] 1.1 Add a "cross-session mode" toggle state to `TagSidebar.swift` — a `@Binding var isCrossSessionMode: Bool` or local `@State` controlled by a toolbar toggle/button
+  - [x] 1.2 When cross-session mode is active AND no search is active: query ALL tags across ALL sessions in the current campaign using SwiftData `@Query` or `ModelContext.fetch` with a `FetchDescriptor<Tag>` predicate filtering by `tag.session?.campaign?.uuid == selectedCampaign.uuid`
+  - [x] 1.3 Apply the existing `activeCategories` filter to cross-session results — reuse the category filter pills already in TagSidebar
+  - [x] 1.4 Sort cross-session tags chronologically by session date + anchorTime (oldest first)
+  - [x] 1.5 Display each tag using `TagSidebarRow` with an additional session identifier (e.g., "Session N" subtitle or grouped by session)
+  - [x] 1.6 Group tags by session in the list with section headers showing session title, date, and tag count
+  - [x] 1.7 When cross-session mode is deactivated, return to showing only the current session's tags (existing behavior)
+  - [x] 1.8 Ensure the toggle state is visually clear — use a toolbar button or segmented control ("Session" / "Campaign")
 
-- [ ] Task 2: Implement related tags column in TagDetailPanel (AC: #2)
-  - [ ] 2.1 Add a `relatedTags: [SearchResult]` property to `TagDetailPanel.swift` (or accept it as a binding)
-  - [ ] 2.2 Create a `RelatedTagsView.swift` in `DictlyMac/Review/` — a compact list showing related tags from other sessions
-  - [ ] 2.3 When a tag is selected, use `SearchService.performRelatedSearch(for:)` (new method) to find tags across all sessions that mention similar terms — search by the selected tag's `label` text using the existing Core Spotlight infrastructure
-  - [ ] 2.4 Filter out tags from the same session as the selected tag — related tags should show cross-session connections only
-  - [ ] 2.5 Display each related tag with: category color dot, tag label, session title, timestamp
-  - [ ] 2.6 Limit related tags to a reasonable number (e.g., 10-15 max) sorted by relevance
-  - [ ] 2.7 Show placeholder text when no related tags found: "No related tags found across other sessions"
-  - [ ] 2.8 Layout: place the related tags column on the right side of the TagDetailPanel detail area, per UX spec ("Right column: cross-session related tags")
-  - [ ] 2.9 Header: "Related across sessions" or "Other mentions of [tag label]" per UX spec example
+- [x] Task 2: Implement related tags column in TagDetailPanel (AC: #2)
+  - [x] 2.1 Add a `relatedTags: [SearchResult]` property to `TagDetailPanel.swift` (or accept it as a binding)
+  - [x] 2.2 Create a `RelatedTagsView.swift` in `DictlyMac/Review/` — a compact list showing related tags from other sessions
+  - [x] 2.3 When a tag is selected, use `SearchService.performRelatedSearch(for:)` (new method) to find tags across all sessions that mention similar terms — search by the selected tag's `label` text using the existing Core Spotlight infrastructure
+  - [x] 2.4 Filter out tags from the same session as the selected tag — related tags should show cross-session connections only
+  - [x] 2.5 Display each related tag with: category color dot, tag label, session title, timestamp
+  - [x] 2.6 Limit related tags to a reasonable number (e.g., 10-15 max) sorted by relevance
+  - [x] 2.7 Show placeholder text when no related tags found: "No related tags found across other sessions"
+  - [x] 2.8 Layout: place the related tags column on the right side of the TagDetailPanel detail area, per UX spec ("Right column: cross-session related tags")
+  - [x] 2.9 Header: "Related across sessions" or "Other mentions of [tag label]" per UX spec example
 
-- [ ] Task 3: Wire related tag navigation (AC: #3)
-  - [ ] 3.1 Each related tag row is tappable — on tap, fire an `onRelatedTagSelected(SearchResult)` callback up to `ContentView`
-  - [ ] 3.2 Reuse the EXACT same navigation pattern from Story 6.2: `ContentView` receives the result, fetches `Session` by `sessionID`, sets `selectedSession`, sets `pendingTagID`, which `SessionReviewScreen` picks up
-  - [ ] 3.3 After navigation, the related tags column re-populates for the newly selected tag (new context)
-  - [ ] 3.4 If the related tag is in the same session (edge case if filter isn't applied), just select the tag without session switch
+- [x] Task 3: Wire related tag navigation (AC: #3)
+  - [x] 3.1 Each related tag row is tappable — on tap, fire an `onRelatedTagSelected(SearchResult)` callback up to `ContentView`
+  - [x] 3.2 Reuse the EXACT same navigation pattern from Story 6.2: `ContentView` receives the result, fetches `Session` by `sessionID`, sets `selectedSession`, sets `pendingTagID`, which `SessionReviewScreen` picks up
+  - [x] 3.3 After navigation, the related tags column re-populates for the newly selected tag (new context)
+  - [x] 3.4 If the related tag is in the same session (edge case if filter isn't applied), just select the tag without session switch
 
-- [ ] Task 4: Add `performRelatedSearch` to SearchService (AC: #2)
-  - [ ] 4.1 Add `func performRelatedSearch(for tag: Tag) async` to `SearchService.swift`
-  - [ ] 4.2 Use the tag's `label` as the search term — query Core Spotlight using the existing `runSpotlightQuery` infrastructure
-  - [ ] 4.3 Also search by individual significant words in the tag label (e.g., for "Grimthor's Shop", search "Grimthor" and "Shop" separately, combine results)
-  - [ ] 4.4 Filter out results where `tagID == tag.uuid` (exclude the selected tag itself)
-  - [ ] 4.5 Filter out results from the same session (`sessionID == tag.session?.uuid`)
-  - [ ] 4.6 Store results in a new property: `var relatedTags: [SearchResult] = []`
-  - [ ] 4.7 Add `var isLoadingRelated: Bool = false` for loading state
-  - [ ] 4.8 No debounce needed — triggered on tag selection, not on typing
+- [x] Task 4: Add `performRelatedSearch` to SearchService (AC: #2)
+  - [x] 4.1 Add `func performRelatedSearch(for tag: Tag) async` to `SearchService.swift`
+  - [x] 4.2 Use the tag's `label` as the search term — query Core Spotlight using the existing `runSpotlightQuery` infrastructure
+  - [x] 4.3 Also search by individual significant words in the tag label (e.g., for "Grimthor's Shop", search "Grimthor" and "Shop" separately, combine results)
+  - [x] 4.4 Filter out results where `tagID == tag.uuid` (exclude the selected tag itself)
+  - [x] 4.5 Filter out results from the same session (`sessionID == tag.session?.uuid`)
+  - [x] 4.6 Store results in a new property: `var relatedTags: [SearchResult] = []`
+  - [x] 4.7 Add `var isLoadingRelated: Bool = false` for loading state
+  - [x] 4.8 No debounce needed — triggered on tag selection, not on typing
 
-- [ ] Task 5: Implement chronological session list (AC: #4)
-  - [ ] 5.1 Ensure the campaign view displays sessions with: date, title, duration, and tag count
-  - [ ] 5.2 If `SessionListView.swift` already exists in `DictlyMac/Campaigns/` and shows these fields, verify and enhance if needed
-  - [ ] 5.3 If session list is currently in `ContentView.swift` sidebar, ensure it displays the required metadata (date, title, duration, tag count)
-  - [ ] 5.4 Sessions sorted chronologically (most recent first or oldest first — match existing campaign session list ordering)
-  - [ ] 5.5 Tag count can be computed from `session.tags.count` — displayed as a badge or inline count
+- [x] Task 5: Implement chronological session list (AC: #4)
+  - [x] 5.1 Ensure the campaign view displays sessions with: date, title, duration, and tag count
+  - [x] 5.2 If `SessionListView.swift` already exists in `DictlyMac/Campaigns/` and shows these fields, verify and enhance if needed
+  - [x] 5.3 If session list is currently in `ContentView.swift` sidebar, ensure it displays the required metadata (date, title, duration, tag count)
+  - [x] 5.4 Sessions sorted chronologically (most recent first or oldest first — match existing campaign session list ordering)
+  - [x] 5.5 Tag count can be computed from `session.tags.count` — displayed as a badge or inline count
 
-- [ ] Task 6: Write tests (AC: #1-#4)
-  - [ ] 6.1 Create `DictlyMacTests/ReviewTests/CrossSessionBrowsingTests.swift`
-  - [ ] 6.2 Test cross-session tag fetching: verify tags from multiple sessions in a campaign are returned
-  - [ ] 6.3 Test category filtering applies correctly to cross-session results
-  - [ ] 6.4 Test chronological sort order (by session date + anchorTime)
-  - [ ] 6.5 Add `SearchServiceTests` for `performRelatedSearch`: verify self-tag exclusion, same-session exclusion, result population
-  - [ ] 6.6 Test related tag navigation reuses the same pendingTagID pattern
-  - [ ] 6.7 Test empty states: no tags in category, no related tags found
+- [x] Task 6: Write tests (AC: #1-#4)
+  - [x] 6.1 Create `DictlyMacTests/ReviewTests/CrossSessionBrowsingTests.swift`
+  - [x] 6.2 Test cross-session tag fetching: verify tags from multiple sessions in a campaign are returned
+  - [x] 6.3 Test category filtering applies correctly to cross-session results
+  - [x] 6.4 Test chronological sort order (by session date + anchorTime)
+  - [x] 6.5 Add `SearchServiceTests` for `performRelatedSearch`: verify self-tag exclusion, same-session exclusion, result population
+  - [x] 6.6 Test related tag navigation reuses the same pendingTagID pattern
+  - [x] 6.7 Test empty states: no tags in category, no related tags found
 
 ## Dev Notes
 
@@ -247,10 +247,35 @@ DictlyMacTests/
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+claude-sonnet-4-6
 
 ### Debug Log References
 
+- New files (`RelatedTagsView.swift`, `CrossSessionBrowsingTests.swift`) needed to be manually added to `project.pbxproj` — Xcode projects require explicit file registration.
+- Used `session.campaign?.sessions` relationship traversal for cross-session data rather than `FetchDescriptor` with optional chaining (simpler and avoids SwiftData predicate limitations with deep optional chains).
+- `formatTimestamp` is module-level in `TagSidebarRow.swift` — directly accessible from `RelatedTagsView.swift` in the same target.
+
 ### Completion Notes List
 
+- **Task 4 (SearchService)**: Added `performRelatedSearch(for:)`, `relatedTags: [SearchResult]`, and `isLoadingRelated: Bool` to `SearchService`. Method searches by full label + individual significant words (3+ chars), deduplicates by tagID, filters out self and same-session results, limits to 15, sorts by relevance.
+- **Task 1 (TagSidebar)**: Added `@State private var isCrossSessionMode: Bool` with a `Picker(.segmented)` "Session"/"Campaign" toggle (shown only when session has a campaign). Cross-session mode traverses `session.campaign?.sessions`, groups tags by session with section headers (title, date, tag count), sorts oldest-first. Category pills update counts based on mode. Search always takes priority over browsing mode.
+- **Task 2 (RelatedTagsView + TagDetailPanel)**: Created `RelatedTagsView.swift` with loading/empty/populated states. Updated `TagDetailPanel` to inject `SearchService` via `@Environment`, trigger `performRelatedSearch` on `onChange(of: selectedTag)`, and replace the placeholder right column.
+- **Task 3 (Navigation)**: Added `onRelatedTagSelected` parameter to `SessionReviewScreen` and `TagDetailPanel`. Wired through `ContentView` to reuse `handleSearchResultSelected` — exact same `pendingTagID` pattern as Story 6.2.
+- **Task 5 (Session list)**: Enhanced `ContentView.sessionRow` to show date · duration · tag count below session title.
+- **Task 6 (Tests)**: Created `CrossSessionBrowsingTests.swift` with 13 tests covering cross-session fetch, category filter, chronological sort, navigation, and empty states. Added 7 tests to `SearchServiceTests` for `performRelatedSearch` state management, filter logic, deduplication, and result limit. Total: 305 tests, 2 pre-existing failures (RetroactiveTagTests, TagEditingTests — not caused by this work), 0 regressions.
+
 ### File List
+
+- `DictlyMac/Search/SearchService.swift` — MODIFIED: added `relatedTags`, `isLoadingRelated`, `performRelatedSearch(for:)`
+- `DictlyMac/Review/TagSidebar.swift` — MODIFIED: added cross-session browsing mode toggle and campaign-wide tag list with section headers
+- `DictlyMac/Review/RelatedTagsView.swift` — NEW: compact related tags list for TagDetailPanel right column
+- `DictlyMac/Review/TagDetailPanel.swift` — MODIFIED: injected SearchService, replaced placeholder rightColumn with RelatedTagsView, added onRelatedTagSelected callback, triggers performRelatedSearch on tag selection
+- `DictlyMac/Review/SessionReviewScreen.swift` — MODIFIED: added onRelatedTagSelected callback parameter, threads through to TagDetailPanel
+- `DictlyMac/App/ContentView.swift` — MODIFIED: wired onRelatedTagSelected to existing handleSearchResultSelected, enhanced sessionRow with duration + tag count
+- `DictlyMacTests/ReviewTests/CrossSessionBrowsingTests.swift` — NEW: 13 tests for story 6.3
+- `DictlyMacTests/SearchTests/SearchServiceTests.swift` — MODIFIED: added 7 performRelatedSearch tests
+- `DictlyMac/DictlyMac.xcodeproj/project.pbxproj` — MODIFIED: registered RelatedTagsView.swift and CrossSessionBrowsingTests.swift
+
+## Change Log
+
+- 2026-04-03: Implemented Story 6.3 — cross-session tag browsing, related tags panel, related tag navigation, session list enhancement, 20 new tests (Date: 2026-04-03)

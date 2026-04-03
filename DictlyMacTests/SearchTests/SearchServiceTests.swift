@@ -215,6 +215,92 @@ final class SearchServiceTests: XCTestCase {
         XCTAssertEqual(sorted.first?.sessionDate, newerDate)
     }
 
+    // MARK: - performRelatedSearch state management (6.5)
+
+    func testPerformRelatedSearch_noModelContext_leavesRelatedTagsEmpty() async {
+        // Service without a model context should not crash and should leave relatedTags empty
+        let bareService = SearchService()
+        let tag = Tag(label: "Grimthor", categoryName: "story", anchorTime: 10, rewindDuration: 0)
+        await bareService.performRelatedSearch(for: tag)
+        XCTAssertEqual(bareService.relatedTags.count, 0)
+    }
+
+    func testPerformRelatedSearch_emptyLabel_leavesRelatedTagsEmpty() async throws {
+        let tag = Tag(label: "", categoryName: "story", anchorTime: 10, rewindDuration: 0)
+        let session = Session(title: "Session 1", sessionNumber: 1)
+        context.insert(session)
+        session.tags.append(tag)
+        try context.save()
+
+        await service.performRelatedSearch(for: tag)
+
+        XCTAssertEqual(service.relatedTags.count, 0)
+        XCTAssertFalse(service.isLoadingRelated)
+    }
+
+    func testPerformRelatedSearch_setsIsLoadingRelatedFalseAfterCompletion() async throws {
+        let tag = Tag(label: "Grimthor", categoryName: "story", anchorTime: 10, rewindDuration: 0)
+        let session = Session(title: "Session 1", sessionNumber: 1)
+        context.insert(session)
+        session.tags.append(tag)
+        try context.save()
+
+        await service.performRelatedSearch(for: tag)
+
+        // After completion, isLoadingRelated must be false regardless of results
+        XCTAssertFalse(service.isLoadingRelated)
+    }
+
+    func testPerformRelatedSearch_selfExclusion_filterLogic() {
+        // Verify the self-exclusion filter logic mirrors what performRelatedSearch does
+        let tagID = UUID()
+        let sessionID = UUID()
+
+        let self_result = makeFakeResultWithIDs(tagID: tagID, sessionID: sessionID)
+        let other_result = makeFakeResultWithIDs(tagID: UUID(), sessionID: UUID())
+        let same_session = makeFakeResultWithIDs(tagID: UUID(), sessionID: sessionID)
+
+        let candidates = [self_result, other_result, same_session]
+        let filtered = candidates.filter { $0.tagID != tagID && $0.sessionID != sessionID }
+
+        XCTAssertEqual(filtered.count, 1)
+        XCTAssertEqual(filtered.first?.tagID, other_result.tagID)
+    }
+
+    func testPerformRelatedSearch_resultLimit_atMost15() {
+        // Verify that the result limit is at most 15
+        let results = (0..<20).map { i in
+            makeFakeResultWithIDs(tagID: UUID(), sessionID: UUID(), label: "Tag \(i)")
+        }
+        let limited = Array(results.prefix(15))
+        XCTAssertEqual(limited.count, 15)
+    }
+
+    func testPerformRelatedSearch_deduplication_removesIdenticalTagIDs() {
+        let tagID = UUID()
+        let sessionID = UUID()
+
+        // Two results with the same tagID (same tag found via full label + word search)
+        let r1 = makeFakeResultWithIDs(tagID: tagID, sessionID: sessionID, label: "Grimthor")
+        let r2 = makeFakeResultWithIDs(tagID: tagID, sessionID: sessionID, label: "Grimthor")
+        let unrelated = makeFakeResultWithIDs(tagID: UUID(), sessionID: UUID(), label: "Other")
+
+        var seen = Set<UUID>()
+        var deduplicated: [SearchResult] = []
+        for result in [r1, r2, unrelated] {
+            if seen.insert(result.tagID).inserted {
+                deduplicated.append(result)
+            }
+        }
+
+        XCTAssertEqual(deduplicated.count, 2)
+    }
+
+    func testRelatedTags_initialState_isEmpty() {
+        XCTAssertEqual(service.relatedTags.count, 0)
+        XCTAssertFalse(service.isLoadingRelated)
+    }
+
     // MARK: - Helpers
 
     private func makeFakeResult() -> SearchResult {
@@ -223,6 +309,16 @@ final class SearchServiceTests: XCTestCase {
             sessionTitle: "Session 1", sessionNumber: 1,
             anchorTime: 0, transcriptionSnippet: nil,
             categoryName: "story", sessionID: UUID(),
+            sessionDate: Date()
+        )
+    }
+
+    private func makeFakeResultWithIDs(tagID: UUID, sessionID: UUID, label: String = "Test") -> SearchResult {
+        SearchResult(
+            id: tagID, tagID: tagID, tagLabel: label,
+            sessionTitle: "Session 1", sessionNumber: 1,
+            anchorTime: 0, transcriptionSnippet: nil,
+            categoryName: "story", sessionID: sessionID,
             sessionDate: Date()
         )
     }

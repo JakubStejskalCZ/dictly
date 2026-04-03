@@ -14,6 +14,7 @@ struct SessionReviewScreen: View {
     let session: Session
     @Binding var pendingTagID: UUID?
     var onResultSelected: ((SearchResult) -> Void)? = nil
+    var onRelatedTagSelected: ((SearchResult) -> Void)? = nil
 
     @Environment(\.modelContext) private var modelContext
     @Environment(TranscriptionEngine.self) private var transcriptionEngine
@@ -159,7 +160,11 @@ struct SessionReviewScreen: View {
 
             Divider()
 
-            TagDetailPanel(selectedTag: $selectedTag, session: session)
+            TagDetailPanel(
+                selectedTag: $selectedTag,
+                session: session,
+                onRelatedTagSelected: onRelatedTagSelected
+            )
                 .frame(minHeight: 200)
         }
     }
