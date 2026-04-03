@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-04-01
-last_updated: 2026-04-02 15:30 # story 4.7 done
+last_updated: 2026-04-03 # story 5.1 ready-for-dev
 project: Dictly
 project_key: NOKEY
 tracking_system: file-system
@@ -69,7 +69,7 @@ development_status:
   3-4-mac-import-with-deduplication: done
   epic-3-retrospective: optional
   # Epic 4: Session Review & Annotation
-  epic-4: in-progress
+  epic-4: done
   4-1-mac-session-review-layout: done
   4-2-waveform-timeline-rendering-with-tag-markers: done
   4-3-audio-playback-and-waveform-navigation: done
@@ -79,8 +79,8 @@ development_status:
   4-7-tag-notes-and-session-summary-notes: done
   epic-4-retrospective: optional
   # Epic 5: Local Transcription
-  epic-5: backlog
-  5-1-whisper-cpp-integration-and-whisperbridge: backlog
+  epic-5: in-progress
+  5-1-whisper-cpp-integration-and-whisperbridge: ready-for-dev
   5-2-whisper-model-management: backlog
   5-3-per-tag-and-batch-transcription: backlog
   5-4-view-and-edit-transcription-text: backlog
