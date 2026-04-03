@@ -182,7 +182,7 @@ final class TagEditingTests: XCTestCase {
         context.insert(tag)
 
         let newInput = "\t\n  "
-        let trimmed = newInput.trimmingCharacters(in: .whitespaces)
+        let trimmed = newInput.trimmingCharacters(in: .whitespacesAndNewlines)
 
         if !trimmed.isEmpty {
             tag.label = trimmed

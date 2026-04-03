@@ -79,6 +79,7 @@ targets:
     sources:
       - path: App
       - path: Campaigns
+      - path: Export
       - path: Import
       - path: Settings
       - path: Review

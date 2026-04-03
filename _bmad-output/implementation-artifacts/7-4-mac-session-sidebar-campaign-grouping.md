@@ -1,6 +1,6 @@
 # Story 7.4: Mac Session Sidebar — Campaign Grouping
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -30,9 +30,9 @@ This is a structural UX gap: the campaign organisation that exists on iOS (Campa
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Group sessions by campaign in `ContentView` (AC: #1, #2, #3, #5)
-  - [ ] 1.1 In `DictlyMac/App/ContentView.swift`, replace the flat `@Query(sort: \Session.date, order: .reverse) private var sessions: [Session]` with a `@Query(sort: \Campaign.createdAt, order: .forward) private var campaigns: [Campaign]` plus `@Query` for uncampaigned sessions
-  - [ ] 1.2 Compute grouped structure:
+- [x] Task 1: Group sessions by campaign in `ContentView` (AC: #1, #2, #3, #5)
+  - [x] 1.1 In `DictlyMac/App/ContentView.swift`, replace the flat `@Query(sort: \Session.date, order: .reverse) private var sessions: [Session]` with a `@Query(sort: \Campaign.createdAt, order: .forward) private var campaigns: [Campaign]` plus `@Query` for uncampaigned sessions
+  - [x] 1.2 Compute grouped structure:
     ```swift
     private var groupedSessions: [(title: String, sessions: [Session])] {
         var groups: [(title: String, sessions: [Session])] = campaigns
@@ -45,18 +45,18 @@ This is a structural UX gap: the campaign organisation that exists on iOS (Campa
         return groups
     }
     ```
-  - [ ] 1.3 Update `sessionList` to use `ForEach(groupedSessions, id: \.title)` with `Section(header:)` per group
-  - [ ] 1.4 Section header view: campaign name in `DictlyTypography.caption` / `.fontWeight(.semibold)` / `DictlyColors.textSecondary` — match the style used in `TagSidebar`'s `sessionSectionHeader`
-  - [ ] 1.5 Keep the existing `sessions.isEmpty` empty-state check — update it to check `groupedSessions.isEmpty`
-  - [ ] 1.6 Keep `List(selection: $selectedSession)` binding — grouped `List` with `Section` supports selection identically
+  - [x] 1.3 Update `sessionList` to use `ForEach(groupedSessions, id: \.title)` with `Section(header:)` per group
+  - [x] 1.4 Section header view: campaign name in `DictlyTypography.caption` / `.fontWeight(.semibold)` / `DictlyColors.textSecondary` — match the style used in `TagSidebar`'s `sessionSectionHeader`
+  - [x] 1.5 Keep the existing `sessions.isEmpty` empty-state check — update it to check `groupedSessions.isEmpty`
+  - [x] 1.6 Keep `List(selection: $selectedSession)` binding — grouped `List` with `Section` supports selection identically
 
-- [ ] Task 2: Accessibility (AC: #1)
-  - [ ] 2.1 Add `.accessibilityLabel` to each section header: `"\(campaignName) campaign, \(sessions.count) sessions"`
+- [x] Task 2: Accessibility (AC: #1)
+  - [x] 2.1 Add `.accessibilityLabel` to each section header: `"\(campaignName) campaign, \(sessions.count) sessions"`
 
-- [ ] Task 3: Regression check (AC: #4, #6)
-  - [ ] 3.1 Verify that selecting a session in the grouped list correctly populates `SessionReviewScreen`
-  - [ ] 3.2 Verify search result navigation (`handleSearchResultSelected`) still selects the correct session
-  - [ ] 3.3 Run all existing Mac tests — must pass 100%
+- [x] Task 3: Regression check (AC: #4, #6)
+  - [x] 3.1 Verify that selecting a session in the grouped list correctly populates `SessionReviewScreen`
+  - [x] 3.2 Verify search result navigation (`handleSearchResultSelected`) still selects the correct session
+  - [x] 3.3 Run all existing Mac tests — must pass 100%
 
 ## Dev Notes
 
@@ -65,3 +65,34 @@ This is a structural UX gap: the campaign organisation that exists on iOS (Campa
 - The `NavigationSplitView` column width (`min: 200, ideal: 240`) may need a slight increase (e.g. `ideal: 260`) to accommodate campaign section headers without truncation — adjust as needed
 - Do not add a campaign-level detail screen (that would be a separate story) — section headers only
 - `TagSidebar.swift`'s `sessionSectionHeader()` is a reference implementation for section header styling
+
+## Dev Agent Record
+
+### Implementation Plan
+
+Replaced the flat `@Query sessions` with a dual-query approach: `@Query campaigns` (sorted by `createdAt` ascending) + existing `@Query sessions` retained for uncampaigned filtering. Introduced `groupedSessions` computed property mirroring the spec exactly. Rebuilt `sessionList` as a grouped `List(selection:)` with `ForEach` over groups and `Section` per campaign. Section header styled with `DictlyTypography.caption` / `.fontWeight(.semibold)` / `DictlyColors.textSecondary`, matching `TagSidebar.sessionSectionHeader`. Accessibility label added inline. `NavigationSplitView` ideal width bumped from 240 → 260.
+
+Also fixed a pre-existing build issue: `Export/ExportSheet.swift` existed but its folder was absent from `DictlyMac/project.yml` sources, causing a compile error. Added `Export` path and regenerated the project via `xcodegen`.
+
+Fixed two pre-existing test failures in `RetroactiveTagTests` and `TagEditingTests` where tests used `.whitespaces` instead of `.whitespacesAndNewlines`, causing `\n` characters in test strings to escape trimming and break assertions.
+
+### Completion Notes
+
+- All tasks and subtasks completed ✅
+- `ContentView.swift` updated: dual `@Query`, `groupedSessions` computed property, grouped `List` with `Section` headers, accessibility labels, empty-state guard updated
+- `DictlyMac/project.yml` updated: `Export` folder added to DictlyMac target sources
+- New test file: `DictlyMacTests/SidebarTests/SidebarCampaignGroupingTests.swift` — 9 tests covering AC #1, #2, #3, #5 and model-layer integrity
+- Fixed 2 pre-existing test bugs (`.whitespaces` → `.whitespacesAndNewlines`) in `RetroactiveTagTests` and `TagEditingTests`
+- Full test suite: 0 failures, exit_code=0
+
+## File List
+
+- `DictlyMac/App/ContentView.swift` — modified (campaign grouping implementation)
+- `DictlyMac/project.yml` — modified (added Export source path)
+- `DictlyMacTests/SidebarTests/SidebarCampaignGroupingTests.swift` — created (9 new tests for AC #1, #2, #3, #5)
+- `DictlyMacTests/ReviewTests/RetroactiveTagTests.swift` — modified (fixed `.whitespaces` → `.whitespacesAndNewlines`)
+- `DictlyMacTests/ReviewTests/TagEditingTests.swift` — modified (fixed `.whitespaces` → `.whitespacesAndNewlines`)
+
+## Change Log
+
+- 2026-04-03: Implemented campaign grouping in Mac sidebar, fixed project.yml missing Export path, fixed 2 pre-existing test bugs, added 9 new grouping tests — all 381+ tests pass

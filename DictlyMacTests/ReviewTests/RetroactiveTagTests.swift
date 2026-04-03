@@ -156,7 +156,7 @@ final class RetroactiveTagTests: XCTestCase {
 
     func testWhitespaceLabel_isRejectedByValidationLogic() {
         let whitespaceInput = "   \t\n"
-        let trimmed = whitespaceInput.trimmingCharacters(in: .whitespaces)
+        let trimmed = whitespaceInput.trimmingCharacters(in: .whitespacesAndNewlines)
         XCTAssertTrue(trimmed.isEmpty, "Whitespace-only label must be treated as empty")
     }
 

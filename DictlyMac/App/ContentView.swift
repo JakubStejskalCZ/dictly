@@ -5,6 +5,7 @@ import DictlyTheme
 import os
 
 struct ContentView: View {
+    @Query(sort: \Campaign.createdAt, order: .forward) private var campaigns: [Campaign]
     @Query(sort: \Session.date, order: .reverse) private var sessions: [Session]
     @Environment(\.modelContext) private var modelContext
     @State private var selectedSession: Session?
@@ -16,7 +17,7 @@ struct ContentView: View {
         NavigationSplitView {
             sessionList
                 .navigationTitle("Sessions")
-                .navigationSplitViewColumnWidth(min: 200, ideal: 240)
+                .navigationSplitViewColumnWidth(min: 200, ideal: 260)
         } detail: {
             if let session = selectedSession {
                 SessionReviewScreen(
@@ -46,6 +47,19 @@ struct ContentView: View {
         }
     }
 
+    // MARK: - Grouped Sessions
+
+    private var groupedSessions: [(title: String, sessions: [Session])] {
+        var groups: [(title: String, sessions: [Session])] = campaigns
+            .filter { !$0.sessions.isEmpty }
+            .map { ($0.name, $0.sessions.sorted { $0.date > $1.date }) }
+        let uncampaigned = sessions.filter { $0.campaign == nil }
+        if !uncampaigned.isEmpty {
+            groups.append(("Uncampaigned", uncampaigned.sorted { $0.date > $1.date }))
+        }
+        return groups
+    }
+
     // MARK: - Search Navigation
 
     private func handleSearchResultSelected(_ result: SearchResult) {
@@ -70,13 +84,21 @@ struct ContentView: View {
     // MARK: - Session List
 
     private var sessionList: some View {
-        List(sessions, id: \.uuid, selection: $selectedSession) { session in
-            sessionRow(session)
-                .tag(session)
+        List(selection: $selectedSession) {
+            ForEach(groupedSessions, id: \.title) { group in
+                Section {
+                    ForEach(group.sessions, id: \.uuid) { session in
+                        sessionRow(session)
+                            .tag(session)
+                    }
+                } header: {
+                    campaignSectionHeader(group.title, sessionCount: group.sessions.count)
+                }
+            }
         }
         .listStyle(.sidebar)
         .overlay {
-            if sessions.isEmpty {
+            if groupedSessions.isEmpty {
                 Text("No sessions yet.\nImport a session from iOS to get started.")
                     .font(DictlyTypography.caption)
                     .foregroundStyle(DictlyColors.textSecondary)
@@ -84,6 +106,14 @@ struct ContentView: View {
                     .padding(DictlySpacing.md)
             }
         }
+    }
+
+    private func campaignSectionHeader(_ campaignName: String, sessionCount: Int) -> some View {
+        Text(campaignName)
+            .font(DictlyTypography.caption)
+            .fontWeight(.semibold)
+            .foregroundStyle(DictlyColors.textSecondary)
+            .accessibilityLabel("\(campaignName) campaign, \(sessionCount) session\(sessionCount == 1 ? "" : "s")")
     }
 
     @ViewBuilder
