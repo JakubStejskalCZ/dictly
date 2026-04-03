@@ -41,17 +41,17 @@ private struct StoragePreferencesTab: View {
         VStack(alignment: .leading, spacing: 0) {
             // Header: total storage used
             HStack {
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: DictlySpacing.xs) {
                     Text("Audio Recordings")
-                        .font(.headline)
+                        .font(DictlyTypography.h3)
                     Text(AudioFileManager.formattedSize(totalStorageBytes) + " used")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .font(DictlyTypography.body)
+                        .foregroundStyle(DictlyColors.textSecondary)
                 }
                 Spacer()
             }
-            .padding()
-            .background(Color(nsColor: .controlBackgroundColor))
+            .padding(DictlySpacing.md)
+            .background(DictlyColors.surface)
 
             Divider()
 
@@ -80,16 +80,16 @@ private struct StoragePreferencesTab: View {
     // MARK: - Subviews
 
     private var emptyState: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: DictlySpacing.sm) {
             Image(systemName: "waveform.slash")
                 .font(.system(size: 48))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(DictlyColors.textSecondary)
             Text("No recordings are stored")
-                .font(.title3)
+                .font(DictlyTypography.h2)
                 .fontWeight(.semibold)
             Text("Recordings will appear here once you record a session.\nYou can delete old recordings to free up space.")
-                .font(.body)
-                .foregroundStyle(.secondary)
+                .font(DictlyTypography.body)
+                .foregroundStyle(DictlyColors.textSecondary)
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -103,15 +103,15 @@ private struct StoragePreferencesTab: View {
             }
             TableColumn("Campaign") { session in
                 Text(session.campaign?.name ?? "—")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(DictlyColors.textSecondary)
             }
             TableColumn("Date") { session in
                 Text(session.date, style: .date)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(DictlyColors.textSecondary)
             }
             TableColumn("Size") { session in
                 Text(fileSizeText(for: session))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(DictlyColors.textSecondary)
             }
             TableColumn("") { session in
                 Button("Delete") {
@@ -119,10 +119,10 @@ private struct StoragePreferencesTab: View {
                     isShowingDeleteAlert = true
                 }
                 .buttonStyle(.borderless)
-                .foregroundStyle(.red)
+                .foregroundStyle(DictlyColors.destructive)
                 .accessibilityLabel("Delete recording for \(session.title)")
             }
-            .width(60)
+            .width(DictlySpacing.minTapTarget)
         }
     }
 

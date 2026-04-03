@@ -56,7 +56,7 @@ struct SearchResultRow: View {
                 let boldRange = remaining.index(remaining.startIndex, offsetBy: 2)..<closeRange.lowerBound
                 let boldText = String(remaining[boldRange])
                 result = result + Text(boldText)
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(DictlyColors.recordingActive)
                     .fontWeight(.semibold)
                 let afterClose = remaining.index(closeRange.lowerBound, offsetBy: 2)
                 remaining = remaining[afterClose...]

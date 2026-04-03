@@ -1,5 +1,6 @@
 import SwiftUI
 import DictlyStorage
+import DictlyTheme
 
 struct ModelManagementView: View {
     @Environment(ModelManager.self) private var modelManager
@@ -38,17 +39,17 @@ struct ModelManagementView: View {
 
     private var header: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: DictlySpacing.xs) {
                 Text("Transcription Models")
-                    .font(.headline)
+                    .font(DictlyTypography.h3)
                 Text("Select the Whisper model used for transcription. Larger models are more accurate but require more disk space.")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .font(DictlyTypography.body)
+                    .foregroundStyle(DictlyColors.textSecondary)
             }
             Spacer()
         }
-        .padding()
-        .background(Color(nsColor: .controlBackgroundColor))
+        .padding(DictlySpacing.md)
+        .background(DictlyColors.surface)
     }
 
     // MARK: - Model List
@@ -117,13 +118,13 @@ private struct ModelRowView: View {
     let onDelete: () -> Void
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: DictlySpacing.sm) {
             selectionIndicator
             modelInfo
             Spacer()
             actionButton
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, DictlySpacing.xs)
         .contentShape(Rectangle())
         .onTapGesture {
             if (isDownloaded || model.isBundled) && !isDownloading {
@@ -138,59 +139,59 @@ private struct ModelRowView: View {
         Group {
             if isActive {
                 Image(systemName: "checkmark.circle.fill")
-                    .foregroundStyle(Color.accentColor)
-                    .font(.title3)
+                    .foregroundStyle(DictlyColors.recordingActive)
+                    .font(DictlyTypography.h2)
             } else if isDownloaded || model.isBundled {
                 Image(systemName: "circle")
-                    .foregroundStyle(.secondary)
-                    .font(.title3)
+                    .foregroundStyle(DictlyColors.textSecondary)
+                    .font(DictlyTypography.h2)
             } else {
                 Image(systemName: "circle")
                     .foregroundStyle(.quaternary)
-                    .font(.title3)
+                    .font(DictlyTypography.h2)
             }
         }
-        .frame(width: 24)
+        .frame(width: DictlySpacing.lg)
     }
 
     // MARK: - Model Info
 
     private var modelInfo: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            HStack(spacing: 6) {
+        VStack(alignment: .leading, spacing: DictlySpacing.xs) {
+            HStack(spacing: DictlySpacing.xs) {
                 Text(model.name)
                     .fontWeight(.medium)
                 if model.isBundled {
                     Text("Bundled")
-                        .font(.caption)
-                        .padding(.horizontal, 5)
-                        .padding(.vertical, 2)
-                        .background(Color.secondary.opacity(0.15))
+                        .font(DictlyTypography.caption)
+                        .padding(.horizontal, DictlySpacing.xs)
+                        .padding(.vertical, DictlySpacing.xs)
+                        .background(DictlyColors.textSecondary.opacity(0.15))
                         .clipShape(RoundedRectangle(cornerRadius: 4))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(DictlyColors.textSecondary)
                 }
             }
-            HStack(spacing: 8) {
+            HStack(spacing: DictlySpacing.sm) {
                 Text(model.quality)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .font(DictlyTypography.body)
+                    .foregroundStyle(DictlyColors.textSecondary)
                 Text("·")
                     .foregroundStyle(.tertiary)
                 Text(AudioFileManager.formattedSize(model.size))
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .font(DictlyTypography.body)
+                    .foregroundStyle(DictlyColors.textSecondary)
             }
             if isDownloading {
                 if downloadProgress > 0 {
                     ProgressView(value: downloadProgress)
                         .progressViewStyle(.linear)
                         .frame(maxWidth: 200)
-                        .padding(.top, 2)
+                        .padding(.top, DictlySpacing.xs)
                 } else {
                     ProgressView()
                         .progressViewStyle(.linear)
                         .frame(maxWidth: 200)
-                        .padding(.top, 2)
+                        .padding(.top, DictlySpacing.xs)
                 }
             }
         }
@@ -202,8 +203,8 @@ private struct ModelRowView: View {
     private var actionButton: some View {
         if isActive {
             Text("Active")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .font(DictlyTypography.body)
+                .foregroundStyle(DictlyColors.textSecondary)
                 .frame(width: 80, alignment: .trailing)
         } else if isDownloading {
             Button("Cancel", action: onCancel)
@@ -215,10 +216,10 @@ private struct ModelRowView: View {
             Spacer()
                 .frame(width: 80)
         } else if isDownloaded {
-            HStack(spacing: 8) {
+            HStack(spacing: DictlySpacing.sm) {
                 Button(action: onDelete) {
                     Image(systemName: "trash")
-                        .foregroundStyle(.red)
+                        .foregroundStyle(DictlyColors.destructive)
                 }
                 .buttonStyle(.borderless)
                 .accessibilityLabel("Delete \(model.name)")

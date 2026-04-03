@@ -426,19 +426,13 @@ struct TagDetailPanel: View {
 
     private func categoryBadge(for categoryName: String) -> some View {
         let color = categoryColor(for: categoryName)
-        let isKnownCategory = ["story", "combat", "roleplay", "world", "meta"]
-            .contains(categoryName.lowercased())
         return Text(categoryName.isEmpty ? "Uncategorized" : categoryName)
             .font(DictlyTypography.caption)
-            .foregroundStyle(isKnownCategory ? .white : DictlyColors.textPrimary)
+            .foregroundStyle(Color.white)
             .padding(.horizontal, DictlySpacing.sm)
             .padding(.vertical, DictlySpacing.xs)
-            .background(isKnownCategory ? color : DictlyColors.surface)
+            .background(color)
             .clipShape(Capsule())
-            .overlay(
-                Capsule()
-                    .strokeBorder(isKnownCategory ? Color.clear : DictlyColors.border, lineWidth: 1)
-            )
     }
 
     // MARK: - Actions

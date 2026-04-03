@@ -47,7 +47,7 @@ struct TagListScreen: View {
                                 } label: {
                                     Label("Rename", systemImage: "pencil")
                                 }
-                                .tint(.blue)
+                                .tint(DictlyColors.textSecondary)
                             }
                             .contextMenu {
                                 Button("Rename") { tagToEdit = tag }

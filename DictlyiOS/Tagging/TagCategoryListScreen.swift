@@ -37,7 +37,7 @@ struct TagCategoryListScreen: View {
                     } label: {
                         Label("Edit", systemImage: "pencil")
                     }
-                    .tint(.blue)
+                    .tint(DictlyColors.textSecondary)
                 }
                 .contextMenu {
                     Button("Edit") { categoryToEdit = category }

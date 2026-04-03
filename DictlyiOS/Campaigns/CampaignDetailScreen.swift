@@ -147,7 +147,7 @@ struct CampaignDetailScreen: View {
                         } label: {
                             Label("AirDrop", systemImage: "square.and.arrow.up")
                         }
-                        .tint(.indigo)
+                        .tint(DictlyColors.TagCategory.meta)
                     }
                     .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                         Button(role: .destructive) {
@@ -161,7 +161,7 @@ struct CampaignDetailScreen: View {
                         } label: {
                             Label("Rename", systemImage: "pencil")
                         }
-                        .tint(.blue)
+                        .tint(DictlyColors.textSecondary)
                     }
             }
         } header: {

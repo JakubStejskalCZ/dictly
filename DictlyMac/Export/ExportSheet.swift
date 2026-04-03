@@ -81,7 +81,7 @@ struct ExportSheet: View {
             if let exportError {
                 Text(exportError)
                     .font(DictlyTypography.caption)
-                    .foregroundStyle(Color.red)
+                    .foregroundStyle(DictlyColors.destructive)
                     .accessibilityLabel("Export error: \(exportError)")
             }
 
