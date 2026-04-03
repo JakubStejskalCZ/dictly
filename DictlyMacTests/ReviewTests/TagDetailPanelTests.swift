@@ -240,20 +240,53 @@ final class TagDetailPanelTests: XCTestCase {
         XCTAssertNil(tag.transcription, "Newly created tags have nil transcription — shows Transcribe button")
     }
 
+    // MARK: - AC4: "Captures from" timestamp (Story 7.2)
+
+    func testCapturesFrom_tagWithRewindDuration_captureStartIsAnchorMinusRewind() {
+        // Tag placed 10 seconds before the anchor (rewind capture)
+        let tag = makeTag(label: "Ambush", transcription: nil, anchorTime: 83, rewindDuration: 10)
+        // captureStart = anchorTime - rewindDuration = 83 - 10 = 73
+        let captureStart = max(0, tag.anchorTime - tag.rewindDuration)
+        XCTAssertEqual(captureStart, 73, "Capture-start time should be anchorTime - rewindDuration")
+    }
+
+    func testCapturesFrom_retroactiveTag_rewindDurationIsZero() {
+        // Retroactive tags have rewindDuration == 0 — no "captures from" line shown
+        let tag = makeTag(label: "Retroactive", transcription: nil, anchorTime: 120, rewindDuration: 0)
+        XCTAssertEqual(tag.rewindDuration, 0, "Retroactive tags must have rewindDuration == 0")
+        // Verify the condition used in the view: rewindDuration > 0 is false → no second line
+        XCTAssertFalse(tag.rewindDuration > 0, "rewindDuration > 0 must be false for retroactive tags")
+    }
+
+    func testCapturesFrom_showsSecondLine_onlyWhenRewindDurationPositive() {
+        let rewindTag = makeTag(label: "Rewind Tag", transcription: nil, anchorTime: 60, rewindDuration: 15)
+        let retroTag  = makeTag(label: "Retro Tag",  transcription: nil, anchorTime: 60, rewindDuration: 0)
+        XCTAssertTrue(rewindTag.rewindDuration > 0, "Rewind tag should show captures-from line")
+        XCTAssertFalse(retroTag.rewindDuration > 0, "Retroactive tag should not show captures-from line")
+    }
+
+    func testCapturesFrom_captureStartClampedToZero_whenRewindExceedsAnchor() {
+        // Edge case: rewindDuration > anchorTime → clamped to 0
+        let tag = makeTag(label: "Very Early Tag", transcription: nil, anchorTime: 5, rewindDuration: 30)
+        let captureStart = max(0, tag.anchorTime - tag.rewindDuration)
+        XCTAssertEqual(captureStart, 0, "Capture-start time must not go negative")
+    }
+
     // MARK: - Helpers
 
     private func makeTag(
         label: String,
         transcription: String?,
         categoryName: String = "Story",
-        anchorTime: TimeInterval = 0
+        anchorTime: TimeInterval = 0,
+        rewindDuration: TimeInterval = 0
     ) -> Tag {
         let tag = Tag(
             uuid: UUID(),
             label: label,
             categoryName: categoryName,
             anchorTime: anchorTime,
-            rewindDuration: 0
+            rewindDuration: rewindDuration
         )
         tag.transcription = transcription
         return tag

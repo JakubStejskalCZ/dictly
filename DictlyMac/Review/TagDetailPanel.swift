@@ -134,13 +134,15 @@ struct TagDetailPanel: View {
     private var noSelectionPlaceholder: some View {
         VStack {
             Spacer()
-            Text("Select a tag to view details")
+            Text("Click a tag in the sidebar or on the waveform to view details, transcription, and notes.")
                 .font(DictlyTypography.body)
                 .foregroundStyle(DictlyColors.textSecondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, DictlySpacing.md)
             Spacer()
         }
         .frame(maxWidth: .infinity)
-        .accessibilityLabel("No tag selected. Select a tag from the sidebar to view details.")
+        .accessibilityLabel("Click a tag in the sidebar or on the waveform to view details, transcription, and notes.")
     }
 
     // MARK: - Tag Detail Content
@@ -230,7 +232,16 @@ struct TagDetailPanel: View {
                 Text(formatTimestamp(tag.anchorTime))
                     .font(DictlyTypography.monospacedDigits)
                     .foregroundStyle(DictlyColors.textPrimary)
+                if tag.rewindDuration > 0 {
+                    Text("captures from \(formatTimestamp(max(0, tag.anchorTime - tag.rewindDuration)))")
+                        .font(DictlyTypography.caption)
+                        .foregroundStyle(DictlyColors.textSecondary)
+                }
             }
+            .accessibilityLabel(tag.rewindDuration > 0
+                ? "Timestamp: \(formatTimestamp(tag.anchorTime)), captures from \(formatTimestamp(max(0, tag.anchorTime - tag.rewindDuration)))"
+                : "Timestamp: \(formatTimestamp(tag.anchorTime))"
+            )
 
             // Transcription block (Story 5.3)
             transcriptionBlock(tag: tag)

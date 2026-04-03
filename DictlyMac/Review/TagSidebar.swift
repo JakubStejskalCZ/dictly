@@ -24,6 +24,7 @@ struct TagSidebar: View {
     @Environment(SearchService.self) private var searchService
     @Query(sort: \TagCategory.sortOrder) private var categories: [TagCategory]
     @State private var searchText: String = ""
+    @State private var highlightedTagID: UUID?
     @State private var tagToDelete: Tag?
     @State private var showDeleteAlert: Bool = false
     @State private var isCrossSessionMode: Bool = false
@@ -141,8 +142,13 @@ struct TagSidebar: View {
         // Reset searchText and clear cross-session search on session change
         .onChange(of: sessionID) { _, _ in
             searchText = ""
+            highlightedTagID = nil
             isCrossSessionMode = false
             searchService.clearSearch()
+        }
+        // Sync highlightedTagID when selectedTag changes externally (e.g., waveform tap or deletion)
+        .onChange(of: selectedTag) { _, newTag in
+            highlightedTagID = newTag?.uuid
         }
         // Notify VoiceOver when filter changes
         .onChange(of: activeCategories) { _, _ in
@@ -215,19 +221,25 @@ struct TagSidebar: View {
                 isCrossSession: true
             )
         } else {
-            List(selection: $selectedTag) {
+            List {
                 ForEach(groups, id: \.session.uuid) { group in
                     Section {
                         ForEach(group.tags, id: \.uuid) { tag in
-                            TagSidebarRow(tag: tag)
-                                .tag(tag)
+                            TagSidebarRow(tag: tag, isSelected: highlightedTagID == tag.uuid)
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    highlightedTagID = tag.uuid
+                                    selectedTag = tag
+                                }
                                 .contextMenu {
                                     Button {
+                                        highlightedTagID = tag.uuid
                                         selectedTag = tag
                                     } label: {
                                         Label("Edit Label", systemImage: "pencil")
                                     }
                                     Button {
+                                        highlightedTagID = tag.uuid
                                         selectedTag = tag
                                     } label: {
                                         Label("Change Category", systemImage: "tag")
@@ -321,11 +333,16 @@ struct TagSidebar: View {
     // MARK: - Subviews
 
     private func tagList(tags: [Tag], totalCount: Int) -> some View {
-        List(tags, id: \.uuid, selection: $selectedTag) { tag in
-            TagSidebarRow(tag: tag)
-                .tag(tag)
+        List(tags, id: \.uuid) { tag in
+            TagSidebarRow(tag: tag, isSelected: highlightedTagID == tag.uuid)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    highlightedTagID = tag.uuid
+                    selectedTag = tag
+                }
                 .contextMenu {
                     Button {
+                        highlightedTagID = tag.uuid
                         selectedTag = tag
                     } label: {
                         Label("Edit Label", systemImage: "pencil")
@@ -333,6 +350,7 @@ struct TagSidebar: View {
                     .accessibilityHint("Selects tag and opens detail panel for editing")
 
                     Button {
+                        highlightedTagID = tag.uuid
                         selectedTag = tag
                     } label: {
                         Label("Change Category", systemImage: "tag")
@@ -390,8 +408,10 @@ struct TagSidebar: View {
 
 /// A single pill button for category filtering.
 ///
-/// Displays a colored dot (if `color` is non-nil) + category name.
-/// Active pills use `DictlyColors.surface` background; inactive use `Color.clear`.
+/// Category pills (color non-nil) use the category colour as background fill —
+/// 0.7 opacity when inactive, 1.0 when active — with white text.
+/// The "All" pill (color nil) uses DictlyColors.surface background with a border
+/// when active, and clear background when inactive.
 private struct CategoryFilterPill: View {
     let label: String
     let color: Color?
@@ -400,33 +420,28 @@ private struct CategoryFilterPill: View {
 
     var body: some View {
         Button(action: onTap) {
-            HStack(spacing: DictlySpacing.xs) {
-                // Colored dot (Task 1.4)
-                if let color {
-                    Circle()
-                        .fill(color)
-                        .frame(width: 6, height: 6)
-                }
-                Text(label)
-                    .font(DictlyTypography.caption)
-                    .foregroundStyle(
-                        isActive ? DictlyColors.textPrimary : DictlyColors.textSecondary
-                    )
-            }
-            .padding(.horizontal, DictlySpacing.sm)
-            .padding(.vertical, DictlySpacing.xs)
-            .background(
-                isActive ? DictlyColors.surface : Color.clear
-            )
-            .clipShape(Capsule())
-            .overlay(
-                Capsule()
-                    .stroke(
-                        isActive ? DictlyColors.border : Color.clear,
-                        lineWidth: 1
-                    )
-            )
+            Text(label)
+                .font(DictlyTypography.caption)
+                .foregroundStyle(color != nil ? Color.white : DictlyColors.textPrimary)
+                .padding(.horizontal, DictlySpacing.sm)
+                .padding(.vertical, DictlySpacing.xs)
+                .background(pillBackground)
+                .clipShape(Capsule())
+                .overlay(
+                    Capsule()
+                        .stroke(
+                            color == nil && isActive ? DictlyColors.border : Color.clear,
+                            lineWidth: 1
+                        )
+                )
         }
         .buttonStyle(.plain)
+    }
+
+    private var pillBackground: Color {
+        if let color {
+            return color.opacity(isActive ? 1.0 : 0.7)
+        }
+        return isActive ? DictlyColors.surface : Color.clear
     }
 }

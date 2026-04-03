@@ -2,11 +2,15 @@ import SwiftUI
 import DictlyModels
 import DictlyTheme
 
-/// A single row in the tag sidebar showing category color, label, and timestamp.
+/// A single row in the tag sidebar showing category color, label, timestamp, and category name.
+///
+/// When `isSelected` is true, the label renders in the category colour and the row
+/// background is `DictlyColors.surface`; otherwise the row background is clear.
 ///
 /// VoiceOver label: "[Category]: [Label] at [timestamp]"
 struct TagSidebarRow: View {
     let tag: Tag
+    let isSelected: Bool
 
     var body: some View {
         HStack(spacing: DictlySpacing.sm) {
@@ -18,13 +22,21 @@ struct TagSidebarRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(tag.label.isEmpty ? "Untitled Tag" : tag.label)
                     .font(DictlyTypography.tagLabel)
-                    .foregroundStyle(DictlyColors.textPrimary)
+                    .foregroundStyle(isSelected ? categoryColor(for: tag.categoryName) : DictlyColors.textPrimary)
                     .lineLimit(1)
 
-                Text(formatTimestamp(tag.anchorTime))
-                    .font(DictlyTypography.caption)
-                    .foregroundStyle(DictlyColors.textSecondary)
-                    .monospacedDigit()
+                HStack(spacing: DictlySpacing.xs) {
+                    Text(formatTimestamp(tag.anchorTime))
+                        .font(DictlyTypography.caption)
+                        .foregroundStyle(DictlyColors.textSecondary)
+                        .monospacedDigit()
+                    Text("·")
+                        .font(DictlyTypography.caption)
+                        .foregroundStyle(DictlyColors.textSecondary)
+                    Text(tag.categoryName)
+                        .font(DictlyTypography.caption)
+                        .foregroundStyle(DictlyColors.textSecondary)
+                }
             }
 
             Spacer(minLength: 0)
@@ -37,6 +49,7 @@ struct TagSidebarRow: View {
             }
         }
         .padding(.vertical, DictlySpacing.xs)
+        .listRowBackground(isSelected ? DictlyColors.surface : Color.clear)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(tag.categoryName): \(tag.label.isEmpty ? "Untitled Tag" : tag.label) at \(formatTimestamp(tag.anchorTime))\(!(tag.notes ?? "").isEmpty ? ", has notes" : "")")
     }

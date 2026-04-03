@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-04-01
-last_updated: 2026-04-03 # story 7.1 done (code review pass 2 — 4 patches applied)
+last_updated: 2026-04-03 17:05 # story 7.2 implemented, set to review
 project: Dictly
 project_key: NOKEY
 tracking_system: file-system
@@ -95,6 +95,6 @@ development_status:
   # Epic 7: Polish & UI Fidelity (post-QA review, 2026-04-03)
   epic-7: in-progress
   7-1-ios-recording-screen-ui-fidelity: done
-  7-2-mac-review-ui-fidelity: ready-for-dev
+  7-2-mac-review-ui-fidelity: review
   7-3-design-system-compliance: ready-for-dev
   7-4-mac-session-sidebar-campaign-grouping: ready-for-dev
