@@ -1,5 +1,10 @@
 # Deferred Work
 
+## Deferred from: code review of 6-1-core-spotlight-indexing (2026-04-03)
+
+- ImportService comment numbering jumps from step 7 to step 9 (`DictlyMac/Import/ImportService.swift:208`) — cosmetic, pre-existing, no functional impact.
+- Task 5.2 (session deletion removal from Spotlight) is not wired — `removeAllTagsForSession(sessionID:tags:)` is implemented but session deletion UI does not exist yet. Integrate when session deletion UI lands.
+
 ## Deferred from: code review of 5-4-view-and-edit-transcription-text (2026-04-03)
 
 - Delete tag while transcription editor focused may attempt a write to the deleted model object — alert dialog naturally dismisses focus before delete fires, making this a no-op in practice; same pattern as notes commit. Address if delete can be triggered programmatically without focus dismissal.
