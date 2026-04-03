@@ -31,6 +31,9 @@ struct SessionReviewScreen: View {
     // MARK: Session notes state (Story 4.7)
     @State private var isShowingSessionNotes: Bool = false
 
+    // MARK: Export state (Story 6.4)
+    @State private var isShowingExportSheet: Bool = false
+
     private let logger = Logger(subsystem: "com.dictly.mac", category: "playback")
     private let taggingLogger = Logger(subsystem: "com.dictly.mac", category: "tagging")
 
@@ -221,10 +224,14 @@ struct SessionReviewScreen: View {
 
                 transcribeAllControl
 
-                Button("Export MD") { }
-                    .disabled(true)
-                    .accessibilityLabel("Export as Markdown")
-                    .help("Markdown export available after export feature (Epic 6)")
+                Button("Export MD") {
+                    isShowingExportSheet = true
+                }
+                .accessibilityLabel("Export as Markdown")
+                .help("Export session or campaign as Markdown")
+                .sheet(isPresented: $isShowingExportSheet) {
+                    ExportSheet(session: session, isPresented: $isShowingExportSheet)
+                }
 
                 Button("Session Notes") {
                     isShowingSessionNotes = true

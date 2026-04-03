@@ -30,6 +30,8 @@
 		60C9D5937128DF2334B02897 /* TagNotesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D39556327FEE8030DAD8618 /* TagNotesTests.swift */; };
 		630732A90060283F2ECBC0A1 /* TagDetailPanelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEE608B627F0CCABABD1F365 /* TagDetailPanelTests.swift */; };
 		DD44EE55FF667788990011AA /* CrossSessionBrowsingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC33DD44EE55FF6677889900 /* CrossSessionBrowsingTests.swift */; };
+		EE1100224488AA1133557901 /* ExportSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE1100224488AA1133557799 /* ExportSheet.swift */; };
+		EE1100224488AA1133557902 /* ExportSheetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE1100224488AA1133557800 /* ExportSheetTests.swift */; };
 		64A2669EA23F14BB5745BAA3 /* ImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4BEB495884ED9C7CAD7C2F2 /* ImportService.swift */; };
 		68F862B146C911436B19E8EE /* ggml-threading.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B581E8845D2D75E9747FB2F2 /* ggml-threading.cpp */; };
 		693ED22DC6258ED0BC79C31B /* ggml-metal-ops.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2B435948CFAD6264F3E85E84 /* ggml-metal-ops.cpp */; };
@@ -196,6 +198,8 @@
 		FCB4BCE2FFDCDE2484B1D85B /* ggml-backend.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = "ggml-backend.cpp"; sourceTree = "<group>"; };
 		FEE608B627F0CCABABD1F365 /* TagDetailPanelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagDetailPanelTests.swift; sourceTree = "<group>"; };
 		CC33DD44EE55FF6677889900 /* CrossSessionBrowsingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrossSessionBrowsingTests.swift; sourceTree = "<group>"; };
+		EE1100224488AA1133557799 /* ExportSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportSheet.swift; sourceTree = "<group>"; };
+		EE1100224488AA1133557800 /* ExportSheetTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportSheetTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -242,6 +246,7 @@
 				23E53F03A9B6D0166A5C11F4 /* App */,
 				9134B8EAD58AC10C77863678 /* Campaigns */,
 				1B5792082D55330D7949F840 /* Dictly (kopie) */,
+				EE1100224488AA1133557903 /* Export */,
 				6DC0A1320FC0A6B2DAB877F0 /* Import */,
 				9B444FB2F46D61DBB2B657F6 /* Packages */,
 				7778336A3D11F9CBF315B031 /* Review */,
@@ -333,6 +338,22 @@
 				15249DFF7FA6DC6AC273EF46 /* SearchServiceTests.swift */,
 			);
 			path = SearchTests;
+			sourceTree = "<group>";
+		};
+		EE1100224488AA1133557903 /* Export */ = {
+			isa = PBXGroup;
+			children = (
+				EE1100224488AA1133557799 /* ExportSheet.swift */,
+			);
+			path = Export;
+			sourceTree = "<group>";
+		};
+		EE1100224488AA1133557904 /* ExportTests */ = {
+			isa = PBXGroup;
+			children = (
+				EE1100224488AA1133557800 /* ExportSheetTests.swift */,
+			);
+			path = ExportTests;
 			sourceTree = "<group>";
 		};
 		6DC0A1320FC0A6B2DAB877F0 /* Import */ = {
@@ -484,6 +505,7 @@
 			isa = PBXGroup;
 			children = (
 				9EB04EFF1D057998274F3D54 /* .gitkeep */,
+				EE1100224488AA1133557904 /* ExportTests */,
 				B62165400DC9D7EB7994D7CF /* ImportTests */,
 				B7CD48FC44C1F659CA8FB0E4 /* ReviewTests */,
 				5B72800FDBBEB8E862F391E3 /* SearchTests */,
@@ -658,6 +680,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EE1100224488AA1133557902 /* ExportSheetTests.swift in Sources */,
 				F507AFDC15605AECB65C8217 /* AudioPlayerTests.swift in Sources */,
 				815BFEDA3DA7708495726387 /* Epic4E2ETests.swift in Sources */,
 				7E1ADC46A8D6A4CB7A2EA14C /* Epic5E2ETests.swift in Sources */,
@@ -719,6 +742,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EE1100224488AA1133557901 /* ExportSheet.swift in Sources */,
 				1C35AC660D5017BEC6A7FC58 /* AudioPlayer.swift in Sources */,
 				E86F70A8B0CC20F126937255 /* CategoryColorHelper.swift in Sources */,
 				8026E48D8E51F41B6ACCC2BB /* ContentView.swift in Sources */,

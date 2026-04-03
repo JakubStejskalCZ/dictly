@@ -32,6 +32,7 @@ let package = Package(
         ),
         .target(
             name: "DictlyExport",
+            dependencies: ["DictlyModels"],
             path: "Sources/DictlyExport"
         ),
         .testTarget(
@@ -48,6 +49,11 @@ let package = Package(
             name: "DictlyStorageTests",
             dependencies: ["DictlyStorage"],
             path: "Tests/DictlyStorageTests"
+        ),
+        .testTarget(
+            name: "DictlyExportTests",
+            dependencies: ["DictlyExport", "DictlyModels"],
+            path: "Tests/DictlyExportTests"
         )
     ]
 )
