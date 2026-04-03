@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-04-01
-last_updated: 2026-04-03 07:24 # story 6.4 done
+last_updated: 2026-04-03 # story 7.1 review
 project: Dictly
 project_key: NOKEY
 tracking_system: file-system
@@ -86,9 +86,15 @@ development_status:
   5-4-view-and-edit-transcription-text: done
   epic-5-retrospective: optional
   # Epic 6: Search, Archive & Export
-  epic-6: in-progress
+  epic-6: done
   6-1-core-spotlight-indexing: done
   6-2-full-text-search-across-sessions: done
   6-3-cross-session-tag-browsing-and-related-tags: done
   6-4-markdown-export-single-session-and-campaign: done
   epic-6-retrospective: optional
+  # Epic 7: Polish & UI Fidelity (post-QA review, 2026-04-03)
+  epic-7: in-progress
+  7-1-ios-recording-screen-ui-fidelity: review
+  7-2-mac-review-ui-fidelity: ready-for-dev
+  7-3-design-system-compliance: ready-for-dev
+  7-4-mac-session-sidebar-campaign-grouping: ready-for-dev

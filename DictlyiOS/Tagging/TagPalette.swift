@@ -101,8 +101,12 @@ struct TagPalette: View {
                                     style: StrokeStyle(lineWidth: 1.5, dash: [6])
                                 )
                                 .foregroundStyle(DictlyColors.textSecondary)
-                            Image(systemName: "plus")
-                                .foregroundStyle(DictlyColors.textSecondary)
+                            HStack(spacing: DictlySpacing.xs) {
+                                Image(systemName: "plus")
+                                Text("Custom")
+                                    .font(DictlyTypography.caption)
+                            }
+                            .foregroundStyle(DictlyColors.textSecondary)
                         }
                         .frame(minHeight: DictlySpacing.minTapTarget)
                     }

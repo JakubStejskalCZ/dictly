@@ -13,23 +13,23 @@ struct RecordingStatusBar: View {
     @State private var dotPulse = false
 
     var body: some View {
-        HStack(spacing: DictlySpacing.sm) {
-            recordingDot
-                .onAppear { updateDotAnimation(for: recordingState) }
-                .onChange(of: recordingState) { _, newState in
-                    updateDotAnimation(for: newState)
+        HStack(alignment: .top, spacing: DictlySpacing.sm) {
+            VStack(alignment: .leading, spacing: DictlySpacing.xs) {
+                HStack(spacing: DictlySpacing.sm) {
+                    recordingDot
+                        .onAppear { updateDotAnimation(for: recordingState) }
+                        .onChange(of: recordingState) { _, newState in
+                            updateDotAnimation(for: newState)
+                        }
+                    Text(stateLabel)
+                        .font(DictlyTypography.caption)
+                        .foregroundStyle(stateColor)
                 }
-
-            Text(stateLabel)
-                .font(DictlyTypography.caption)
-                .foregroundStyle(stateColor)
-
+                Text(formattedElapsedTime)
+                    .font(DictlyTypography.h1.monospacedDigit())
+                    .foregroundStyle(timerColor)
+            }
             Spacer()
-
-            Text(formattedElapsedTime)
-                .font(DictlyTypography.h1.monospacedDigit())
-                .foregroundStyle(DictlyColors.textPrimary)
-
             tagCountBadge
         }
         .padding(.horizontal, DictlySpacing.md)
@@ -100,6 +100,13 @@ struct RecordingStatusBar: View {
     private var stateColor: Color {
         switch recordingState {
         case .recording: return DictlyColors.recordingActive
+        case .paused, .systemInterrupted: return DictlyColors.warning
+        }
+    }
+
+    private var timerColor: Color {
+        switch recordingState {
+        case .recording: return DictlyColors.textPrimary
         case .paused, .systemInterrupted: return DictlyColors.warning
         }
     }
