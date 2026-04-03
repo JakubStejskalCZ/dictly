@@ -1,5 +1,17 @@
 # Deferred Work
 
+## Deferred from: code review of 7-1-ios-recording-screen-ui-fidelity (2026-04-03)
+
+- `timerColor` switch exhaustiveness for hypothetical future RecordingState cases (`RecordingStatusBar.swift:107`) — same pattern as stateLabel/dotColor/stateColor switches; add `default` if enum becomes open.
+- RTL layout not forced LTR for status bar (`RecordingStatusBar.swift:16`) — pre-existing UI-wide issue; address in a dedicated RTL pass.
+- `.systemInterrupted` accessibilityLabel reads identical to `.paused` (`RecordingStatusBar.swift:114`) — pre-existing; consider "Recording interrupted by system." wording in a future accessibility pass.
+- `reduceMotion` mid-session toggle not re-evaluated without `onChange(of: reduceMotion)` (`RecordingStatusBar.swift:11`) — pre-existing; add `.onChange(of: reduceMotion)` handler when polishing accessibility.
+- `tagCount=0` badge shows "0 tags" with no informational value (`RecordingStatusBar.swift:57`) — pre-existing; conditionally hide badge at zero in a future polish pass.
+- `Text("Custom")` hardcoded string — not localized (`TagPalette.swift:107`) — app-wide pattern; address in a dedicated localization pass.
+- `.sheet` attached to `Button` inside `LazyVGrid` — could be unexpectedly dismissed if grid recycles the cell (`TagPalette.swift:116`) — pre-existing code pattern; move sheet to parent VStack in a future refactor.
+- `Color(hexString:)` no fallback for malformed `colorHex` — silently produces black (`TagPalette.swift:167`) — pre-existing (story 2-4); add validation when color editing is implemented.
+- `CustomTagSheet` auto-saves partial label on swipe-to-dismiss — contradicts standard iOS swipe = cancel idiom — pre-existing; requires product decision on whether auto-save is intentional.
+
 ## Deferred from: code review of 6-1-core-spotlight-indexing (2026-04-03)
 
 - ImportService comment numbering jumps from step 7 to step 9 (`DictlyMac/Import/ImportService.swift:208`) — cosmetic, pre-existing, no functional impact.

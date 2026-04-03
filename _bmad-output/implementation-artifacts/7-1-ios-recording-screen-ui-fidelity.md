@@ -1,6 +1,6 @@
 # Story 7.1: iOS Recording Screen UI Fidelity
 
-Status: review
+Status: done
 
 ## Story
 
@@ -87,3 +87,27 @@ QA review against `ux-design-directions.html` found two visual deviations on the
 - 2026-04-03: Task 1 — Restructured RecordingStatusBar layout: two-row VStack (dot+label / large timer), badge top-right, timerColor amber when paused
 - 2026-04-03: Task 2 — Custom tag card label updated to "＋ Custom" HStack
 - 2026-04-03: Task 3 — Regression verified: RecordingViewModelTests 13/13 pass; TaggingServiceTests pre-existing simulator instability confirmed pre-dates these changes
+- 2026-04-03: Code review (pass 1) — 1 patch applied, 5 deferred (pre-existing), 7 dismissed
+- 2026-04-03: Code review (pass 2) — 4 patches applied, 8 deferred, 4 dismissed
+
+### Review Findings
+
+**Pass 1:**
+
+- [x] [Review][Patch] Timer text missing lineLimit(1) — prevents wrapping on very long elapsed-time strings [RecordingStatusBar.swift:28] — **fixed**
+- [x] [Review][Defer] timerColor switch exhaustiveness for hypothetical future RecordingState cases [RecordingStatusBar.swift:107] — deferred, pre-existing pattern (matches stateLabel/dotColor/stateColor switches)
+- [x] [Review][Defer] RTL layout not forced LTR for status bar [RecordingStatusBar.swift:16] — deferred, pre-existing (UI-wide)
+- [x] [Review][Defer] .systemInterrupted accessibilityLabel reads identical to .paused [RecordingStatusBar.swift:114] — deferred, pre-existing
+- [x] [Review][Defer] reduceMotion mid-session toggle not re-evaluated without onChange(of: reduceMotion) [RecordingStatusBar.swift:11] — deferred, pre-existing
+- [x] [Review][Defer] tagCount=0 badge shows "0 tags" with no informational value [RecordingStatusBar.swift:57] — deferred, pre-existing
+
+**Pass 2 (YOLO mode — 3 layers: Blind Hunter, Edge Case Hunter, Acceptance Auditor):**
+
+- [x] [Review][Patch] lineLimit(1) without minimumScaleFactor clips timer at large Dynamic Type sizes [RecordingStatusBar.swift:32] — **fixed** (added .minimumScaleFactor(0.7))
+- [x] [Review][Patch] dotPulse unconditionally re-set on onAppear — causes doubled repeatForever animation on re-appear [RecordingStatusBar.swift:20] — **fixed** (guard: if !dotPulse)
+- [x] [Review][Patch] tagCountBadge "1 tags" — plural/singular grammar mismatch [RecordingStatusBar.swift:61] — **fixed** (ternary "tag"/"tags")
+- [x] [Review][Patch] withAnimation(recordingBreath(reduceMotion: false)) hardcodes false — ignores live environment value [RecordingStatusBar.swift:78] — **fixed** (pass reduceMotion: reduceMotion)
+- [x] [Review][Defer] Text("Custom") hardcoded — not localized [TagPalette.swift:107] — deferred, app-wide pattern
+- [x] [Review][Defer] .sheet attached to Button inside LazyVGrid — risks unexpected dismissal on recycle [TagPalette.swift:116] — deferred, pre-existing code; story only changed label
+- [x] [Review][Defer] Color(hexString:) no nil-safety for malformed colorHex [TagPalette.swift:167] — deferred, pre-existing (story 2-4 scope)
+- [x] [Review][Defer] CustomTagSheet auto-save on swipe-to-dismiss — partial label silently saved [pre-existing] — deferred, product decision; pre-existing

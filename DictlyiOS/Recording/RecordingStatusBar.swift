@@ -17,7 +17,9 @@ struct RecordingStatusBar: View {
             VStack(alignment: .leading, spacing: DictlySpacing.xs) {
                 HStack(spacing: DictlySpacing.sm) {
                     recordingDot
-                        .onAppear { updateDotAnimation(for: recordingState) }
+                        .onAppear {
+                            if !dotPulse { updateDotAnimation(for: recordingState) }
+                        }
                         .onChange(of: recordingState) { _, newState in
                             updateDotAnimation(for: newState)
                         }
@@ -27,6 +29,8 @@ struct RecordingStatusBar: View {
                 }
                 Text(formattedElapsedTime)
                     .font(DictlyTypography.h1.monospacedDigit())
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
                     .foregroundStyle(timerColor)
             }
             Spacer()
@@ -54,7 +58,7 @@ struct RecordingStatusBar: View {
     }
 
     private var tagCountBadge: some View {
-        Text("\(tagCount) tags")
+        Text("\(tagCount) \(tagCount == 1 ? "tag" : "tags")")
             .font(DictlyTypography.caption)
             .foregroundStyle(DictlyColors.textPrimary)
             .padding(.horizontal, DictlySpacing.sm)
@@ -71,7 +75,7 @@ struct RecordingStatusBar: View {
             return
         }
         if state == .recording {
-            withAnimation(DictlyAnimation.recordingBreath(reduceMotion: false)) {
+            withAnimation(DictlyAnimation.recordingBreath(reduceMotion: reduceMotion)) {
                 dotPulse = true
             }
         } else {
