@@ -7,7 +7,7 @@ import DictlyModels
 private let logger = Logger(subsystem: "com.dictly.mac", category: "transcription")
 
 @Observable
-final class WhisperBridge {
+final class WhisperBridge: @unchecked Sendable {
 
     private var context: OpaquePointer?
     private var loadedModelURL: URL?

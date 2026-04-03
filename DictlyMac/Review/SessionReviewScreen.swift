@@ -14,6 +14,7 @@ struct SessionReviewScreen: View {
     let session: Session
 
     @Environment(\.modelContext) private var modelContext
+    @Environment(TranscriptionEngine.self) private var transcriptionEngine
 
     @State private var selectedTag: Tag?
     @State private var isSidebarVisible: Bool = true
@@ -140,7 +141,7 @@ struct SessionReviewScreen: View {
 
             Divider()
 
-            TagDetailPanel(selectedTag: $selectedTag)
+            TagDetailPanel(selectedTag: $selectedTag, session: session)
                 .frame(minHeight: 200)
         }
     }
@@ -195,10 +196,7 @@ struct SessionReviewScreen: View {
                 .accessibilityLabel("Add tag at current playhead position")
                 .help("Add tag at current playhead position (⌘T)")
 
-                Button("Transcribe All") { }
-                    .disabled(true)
-                    .accessibilityLabel("Transcribe all tags")
-                    .help("Transcription available after Whisper integration (Epic 5)")
+                transcribeAllControl
 
                 Button("Export MD") { }
                     .disabled(true)
@@ -212,6 +210,43 @@ struct SessionReviewScreen: View {
                 .help("Add or edit session summary notes")
             }
             .buttonStyle(.bordered)
+        }
+    }
+
+    // MARK: - Transcribe All Control (Story 5.3 — AC: #2, #3)
+
+    @ViewBuilder
+    private var transcribeAllControl: some View {
+        if transcriptionEngine.isBatchTranscribing {
+            // Batch in progress: show count + cancel button
+            HStack(spacing: DictlySpacing.sm) {
+                ProgressView()
+                    .controlSize(.small)
+                Text("\(transcriptionEngine.batchCompleted)/\(transcriptionEngine.batchTotal) transcribed")
+                    .font(DictlyTypography.caption)
+                    .foregroundStyle(DictlyColors.textSecondary)
+                    .monospacedDigit()
+                Button("Cancel") {
+                    transcriptionEngine.cancelBatch()
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+                .accessibilityLabel("Cancel batch transcription")
+            }
+        } else {
+            // Not running: show Transcribe All button
+            let allTranscribed = session.tags.allSatisfy { $0.transcription != nil }
+            let noTags = session.tags.isEmpty
+            Button("Transcribe All") {
+                transcriptionEngine.startBatchTranscription(session: session)
+            }
+            .disabled(noTags || allTranscribed || transcriptionEngine.isTranscribing)
+            .accessibilityLabel("Transcribe all tags")
+            .help(
+                noTags ? "No tags to transcribe" :
+                allTranscribed ? "All tags already transcribed" :
+                "Transcribe all unprocessed tags in this session"
+            )
         }
     }
 

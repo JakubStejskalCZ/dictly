@@ -79,7 +79,8 @@ final class Epic4E2ETests: XCTestCase {
 
     // AC3: No tag selected shows placeholder
     func testStory4_1_tagDetailPanel_showsPlaceholder_whenNoTagSelected() {
-        let panel = TagDetailPanel(selectedTag: .constant(nil))
+        let session = makeSession(title: "Placeholder Session", duration: 0)
+        let panel = TagDetailPanel(selectedTag: .constant(nil), session: session)
         XCTAssertNotNil(panel, "TagDetailPanel with nil tag should initialize without crashing")
     }
 

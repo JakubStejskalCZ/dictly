@@ -11,7 +11,9 @@ import os
 /// Supports inline label editing, category recategorization via popover, and deletion.
 struct TagDetailPanel: View {
     @Binding var selectedTag: Tag?
+    let session: Session
     @Environment(\.modelContext) private var modelContext
+    @Environment(TranscriptionEngine.self) private var transcriptionEngine
 
     @State private var editingLabel: String = ""
     @FocusState private var isEditingLabel: Bool
@@ -177,22 +179,8 @@ struct TagDetailPanel: View {
                     .foregroundStyle(DictlyColors.textPrimary)
             }
 
-            // Transcription placeholder (story 5.x)
-            VStack(alignment: .leading, spacing: DictlySpacing.xs) {
-                Text("Transcription")
-                    .font(DictlyTypography.caption)
-                    .foregroundStyle(DictlyColors.textSecondary)
-                RoundedRectangle(cornerRadius: 6)
-                    .fill(DictlyColors.surface)
-                    .frame(height: 80)
-                    .overlay(
-                        Text(tag.transcription ?? "Transcription will appear here after processing.")
-                            .font(DictlyTypography.body)
-                            .foregroundStyle(DictlyColors.textSecondary)
-                            .padding(DictlySpacing.sm),
-                        alignment: .topLeading
-                    )
-            }
+            // Transcription block (Story 5.3)
+            transcriptionBlock(tag: tag)
 
             // Notes — editable TextEditor (story 4.7)
             VStack(alignment: .leading, spacing: DictlySpacing.xs) {
@@ -248,6 +236,90 @@ struct TagDetailPanel: View {
             .buttonStyle(.plain)
             .accessibilityLabel("Delete tag")
         }
+    }
+
+    // MARK: - Transcription Block (Story 5.3)
+
+    @ViewBuilder
+    private func transcriptionBlock(tag: Tag) -> some View {
+        VStack(alignment: .leading, spacing: DictlySpacing.xs) {
+            Text("Transcription")
+                .font(DictlyTypography.caption)
+                .foregroundStyle(DictlyColors.textSecondary)
+
+            let isTranscribingThisTag = transcriptionEngine.currentTagId == tag.uuid
+            let hasError = transcriptionError(for: tag) != nil
+
+            if isTranscribingThisTag {
+                // State: transcription in progress for this tag
+                HStack(spacing: DictlySpacing.sm) {
+                    ProgressView()
+                        .controlSize(.small)
+                    Text("Transcribing…")
+                        .font(DictlyTypography.body)
+                        .foregroundStyle(DictlyColors.textSecondary)
+                }
+                .padding(DictlySpacing.sm)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(DictlyColors.surface)
+                .clipShape(RoundedRectangle(cornerRadius: 6))
+                .accessibilityLabel("Transcription in progress")
+
+            } else if let text = tag.transcription {
+                // State: transcription complete — display read-only text (editing is Story 5.4)
+                Text(text)
+                    .font(DictlyTypography.body)
+                    .foregroundStyle(DictlyColors.textPrimary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(DictlySpacing.sm)
+                    .background(DictlyColors.surface)
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                    .textSelection(.enabled)
+                    .accessibilityLabel("Transcription: \(text)")
+
+            } else if hasError {
+                // State: transcription failed — show error badge with Retry
+                HStack(spacing: DictlySpacing.sm) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundStyle(.orange)
+                    Text("Transcription failed")
+                        .font(DictlyTypography.body)
+                        .foregroundStyle(DictlyColors.textSecondary)
+                    Spacer()
+                    Button("Retry") {
+                        Task {
+                            try? await transcriptionEngine.retryTag(tag, session: session)
+                        }
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                    .accessibilityLabel("Retry transcription for this tag")
+                }
+                .padding(DictlySpacing.sm)
+                .background(DictlyColors.surface)
+                .clipShape(RoundedRectangle(cornerRadius: 6))
+
+            } else {
+                // State: no transcription yet — show Transcribe button
+                let isBusy = transcriptionEngine.isTranscribing || transcriptionEngine.isBatchTranscribing
+                Button {
+                    Task {
+                        try? await transcriptionEngine.transcribeTag(tag, session: session)
+                    }
+                } label: {
+                    Label("Transcribe", systemImage: "waveform")
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+                .disabled(isBusy)
+                .accessibilityLabel("Transcribe this tag's audio")
+                .help(isBusy ? "Transcription already in progress" : "Transcribe audio around this tag")
+            }
+        }
+    }
+
+    private func transcriptionError(for tag: Tag) -> Error? {
+        transcriptionEngine.batchErrors.first { $0.tag.uuid == tag.uuid }?.error
     }
 
     // MARK: - Right Column

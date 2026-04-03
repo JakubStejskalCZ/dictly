@@ -10,6 +10,7 @@
 		087F31445E38074968372D1D /* ggml-backend-dl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9A37475669160D9948FE3551 /* ggml-backend-dl.cpp */; };
 		0AB56E2F92177740CDEF8F58 /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 14CB56961D7863988BFF0E6B /* MetalKit.framework */; };
 		17C2BB653660A36BFAC48BF7 /* TagEditingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0099FBAA80B3E4D00DEE36 /* TagEditingTests.swift */; };
+		1A13A14DB5130A27BD6A2611 /* TranscriptionEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADA3415A95AE4DD2103D2358 /* TranscriptionEngine.swift */; };
 		1C35AC660D5017BEC6A7FC58 /* AudioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31EA7A2B90B3B83ED8A5A68C /* AudioPlayer.swift */; };
 		27E9FFE9F799D767829B0FB9 /* cpu-feats.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BC81EDABE661427D198BE7D9 /* cpu-feats.cpp */; };
 		371F9375D13866ABEAE0CF16 /* quants.c in Sources */ = {isa = PBXBuildFile; fileRef = B896A5B0D74237E4940C0E36 /* quants.c */; };
@@ -44,6 +45,7 @@
 		9CC8BC7AD31A4C44807A1929 /* ops.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30F2B13D35BF245D546C21C2 /* ops.cpp */; };
 		9D10F95BF68AE49E91B222C3 /* ggml.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1EBDD4C7947B69F534E65161 /* ggml.cpp */; };
 		AC709183638F0ED7559833E1 /* whisper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E167BF3628F18E7384BEB37E /* whisper.cpp */; };
+		B12F56FAC43C6346A67DD5D6 /* TranscriptionEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CE3FBD4D334B9E4737B2BA8 /* TranscriptionEngineTests.swift */; };
 		B29B86F6F675C74596AA89B1 /* quants.c in Sources */ = {isa = PBXBuildFile; fileRef = 10F2F49E95DC953E802BFEF3 /* quants.c */; };
 		B56461F468BB5C2F027BA0E8 /* ModelManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 096B63A4B3A32B1E5506BB36 /* ModelManagerTests.swift */; };
 		B649E9A6FCA496D770BC8743 /* unary-ops.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 63331FCC95A0FF7036C2DF5A /* unary-ops.cpp */; };
@@ -105,6 +107,7 @@
 		0A775D46B9312570E230085E /* libWhisperLib.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libWhisperLib.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		10F2F49E95DC953E802BFEF3 /* quants.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = quants.c; sourceTree = "<group>"; };
 		14CB56961D7863988BFF0E6B /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = MetalKit.framework; sourceTree = "<group>"; };
+		1CE3FBD4D334B9E4737B2BA8 /* TranscriptionEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionEngineTests.swift; sourceTree = "<group>"; };
 		1EBDD4C7947B69F534E65161 /* ggml.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ggml.cpp; sourceTree = "<group>"; };
 		1F6374291370DD5930374CA1 /* TagSidebarFilterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagSidebarFilterTests.swift; sourceTree = "<group>"; };
 		208F2639D55E84ABF69B3380 /* ModelManagementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelManagementView.swift; sourceTree = "<group>"; };
@@ -145,6 +148,7 @@
 		A68126562CC78E52EF0C9A98 /* ggml-quants.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = "ggml-quants.c"; sourceTree = "<group>"; };
 		A8885E926145C865765F63DE /* .gitkeep */ = {isa = PBXFileReference; path = .gitkeep; sourceTree = "<group>"; };
 		AC2E9ED61A8775A41989834D /* ImportProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportProgressView.swift; sourceTree = "<group>"; };
+		ADA3415A95AE4DD2103D2358 /* TranscriptionEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionEngine.swift; sourceTree = "<group>"; };
 		B4BEB495884ED9C7CAD7C2F2 /* ImportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportService.swift; sourceTree = "<group>"; };
 		B581E8845D2D75E9747FB2F2 /* ggml-threading.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = "ggml-threading.cpp"; sourceTree = "<group>"; };
 		B5D7CB3D25D2B977B7053D80 /* ggml-metal-context.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "ggml-metal-context.m"; sourceTree = "<group>"; };
@@ -237,6 +241,7 @@
 				9454BE7EEE3DB0B18BBEE02A /* .gitkeep */,
 				208F2639D55E84ABF69B3380 /* ModelManagementView.swift */,
 				F62A922B7D7C15A23BE93475 /* ModelManager.swift */,
+				ADA3415A95AE4DD2103D2358 /* TranscriptionEngine.swift */,
 				8FE1A8998D5DF4CE00BA743B /* WhisperBridge-Bridging-Header.h */,
 				7846868E46CDF395D6251590 /* WhisperBridge.swift */,
 			);
@@ -419,6 +424,7 @@
 			isa = PBXGroup;
 			children = (
 				096B63A4B3A32B1E5506BB36 /* ModelManagerTests.swift */,
+				1CE3FBD4D334B9E4737B2BA8 /* TranscriptionEngineTests.swift */,
 				070CD852F413FD4AFC2D0C5F /* WhisperBridgeTests.swift */,
 			);
 			path = TranscriptionTests;
@@ -620,6 +626,7 @@
 				17C2BB653660A36BFAC48BF7 /* TagEditingTests.swift in Sources */,
 				60C9D5937128DF2334B02897 /* TagNotesTests.swift in Sources */,
 				F292C87D2E124E72CC56FBF0 /* TagSidebarFilterTests.swift in Sources */,
+				B12F56FAC43C6346A67DD5D6 /* TranscriptionEngineTests.swift in Sources */,
 				C971785B7E3B412A0CD33E79 /* WaveformTimelineTests.swift in Sources */,
 				EB113796D499E2B4A330D046 /* WhisperBridgeTests.swift in Sources */,
 			);
@@ -684,6 +691,7 @@
 				97DB1175FB96FD8E6F73ED1F /* TagMarkerShape.swift in Sources */,
 				80EA11780778E4779BFD34F8 /* TagSidebar.swift in Sources */,
 				4129E7F111CE793CD064507F /* TagSidebarRow.swift in Sources */,
+				1A13A14DB5130A27BD6A2611 /* TranscriptionEngine.swift in Sources */,
 				B663EA01126D66D07F343D26 /* WaveformDataProvider.swift in Sources */,
 				E4422D33370E60310F7EDFDA /* WhisperBridge.swift in Sources */,
 			);

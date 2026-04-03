@@ -1,6 +1,6 @@
 # Story 5.3: Per-Tag & Batch Transcription
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -32,64 +32,64 @@ So that I can get text versions of my tagged moments efficiently.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create TranscriptionEngine orchestration service (AC: #1, #2, #3)
-  - [ ] 1.1 Create `DictlyMac/Transcription/TranscriptionEngine.swift` as `@Observable` class
-  - [ ] 1.2 Inject `WhisperBridge` and `ModelManager` as dependencies (accept in init or via environment)
-  - [ ] 1.3 Implement `transcribeTag(_ tag: Tag, session: Session) async throws` — extracts ~30s audio segment around `tag.anchorTime` (using `rewindDuration` before anchor, and remaining after to total ~30s), calls `WhisperBridge.transcribe(audioURL:modelURL:)`, saves result to `tag.transcription`
-  - [ ] 1.4 Implement audio segment extraction: use `AVAudioFile` + `AVAudioConverter` to read the session's audio file and write a temporary WAV/CAF file for the tag's time window (`anchorTime - rewindDuration` to `anchorTime + remainingDuration`). Clean up temp file after transcription.
-  - [ ] 1.5 Add published state properties: `isTranscribing: Bool`, `currentTagId: UUID?` for single-tag progress tracking
-  - [ ] 1.6 Implement `transcribeAllTags(in session: Session) async` — filters tags where `transcription == nil`, queues them sequentially, updates progress after each
-  - [ ] 1.7 Add batch progress properties: `isBatchTranscribing: Bool`, `batchTotal: Int`, `batchCompleted: Int`, `batchErrors: [(tag: Tag, error: Error)]`
-  - [ ] 1.8 Implement per-tag error isolation: wrap each tag transcription in do/catch, record failures in `batchErrors`, continue processing remaining tags
-  - [ ] 1.9 Implement `retryTag(_ tag: Tag, session: Session) async throws` — clears error state for tag, re-runs transcription
-  - [ ] 1.10 Implement `cancelBatch()` — sets cancellation flag checked between tag processing, stops after current tag completes
-  - [ ] 1.11 Use `os.Logger` (subsystem `com.dictly.mac`, category `transcription`) for all operations
+- [x] Task 1: Create TranscriptionEngine orchestration service (AC: #1, #2, #3)
+  - [x] 1.1 Create `DictlyMac/Transcription/TranscriptionEngine.swift` as `@Observable` class
+  - [x] 1.2 Inject `WhisperBridge` and `ModelManager` as dependencies (accept in init or via environment)
+  - [x] 1.3 Implement `transcribeTag(_ tag: Tag, session: Session) async throws` — extracts ~30s audio segment around `tag.anchorTime` (using `rewindDuration` before anchor, and remaining after to total ~30s), calls `WhisperBridge.transcribe(audioURL:modelURL:)`, saves result to `tag.transcription`
+  - [x] 1.4 Implement audio segment extraction: use `AVAudioFile` + `AVAudioConverter` to read the session's audio file and write a temporary WAV/CAF file for the tag's time window (`anchorTime - rewindDuration` to `anchorTime + remainingDuration`). Clean up temp file after transcription.
+  - [x] 1.5 Add published state properties: `isTranscribing: Bool`, `currentTagId: UUID?` for single-tag progress tracking
+  - [x] 1.6 Implement `transcribeAllTags(in session: Session) async` — filters tags where `transcription == nil`, queues them sequentially, updates progress after each
+  - [x] 1.7 Add batch progress properties: `isBatchTranscribing: Bool`, `batchTotal: Int`, `batchCompleted: Int`, `batchErrors: [(tag: Tag, error: Error)]`
+  - [x] 1.8 Implement per-tag error isolation: wrap each tag transcription in do/catch, record failures in `batchErrors`, continue processing remaining tags
+  - [x] 1.9 Implement `retryTag(_ tag: Tag, session: Session) async throws` — clears error state for tag, re-runs transcription
+  - [x] 1.10 Implement `cancelBatch()` — sets cancellation flag checked between tag processing, stops after current tag completes
+  - [x] 1.11 Use `os.Logger` (subsystem `com.dictly.mac`, category `transcription`) for all operations
 
-- [ ] Task 2: Implement audio segment extraction utility (AC: #1, #2)
-  - [ ] 2.1 Create a method `extractAudioSegment(from audioURL: URL, start: TimeInterval, duration: TimeInterval) throws -> URL` in TranscriptionEngine
-  - [ ] 2.2 Open session audio file with `AVAudioFile`, seek to start position, read `duration` worth of frames
-  - [ ] 2.3 Write extracted segment to a temporary file in `FileManager.default.temporaryDirectory`
-  - [ ] 2.4 Handle edge cases: start < 0 clamp to 0, end > file duration clamp to file end
-  - [ ] 2.5 Return temp file URL — caller is responsible for cleanup after transcription
+- [x] Task 2: Implement audio segment extraction utility (AC: #1, #2)
+  - [x] 2.1 Create a method `extractAudioSegment(from audioURL: URL, start: TimeInterval, duration: TimeInterval) throws -> URL` in TranscriptionEngine
+  - [x] 2.2 Open session audio file with `AVAudioFile`, seek to start position, read `duration` worth of frames
+  - [x] 2.3 Write extracted segment to a temporary file in `FileManager.default.temporaryDirectory`
+  - [x] 2.4 Handle edge cases: start < 0 clamp to 0, end > file duration clamp to file end
+  - [x] 2.5 Return temp file URL — caller is responsible for cleanup after transcription
 
-- [ ] Task 3: Integrate "Transcribe" button into TagDetailPanel (AC: #1, #4)
-  - [ ] 3.1 In `DictlyMac/SessionReview/TagDetailPanel.swift`, add transcription block below tag header
-  - [ ] 3.2 When `tag.transcription == nil` and not currently transcribing this tag: show "Transcribe" button (inline, secondary style)
-  - [ ] 3.3 When transcription is in progress for this tag (`transcriptionEngine.currentTagId == tag.uuid`): show `ProgressView()` inline spinner with "Transcribing..." label
-  - [ ] 3.4 When `tag.transcription != nil`: display transcription text in the transcription block (read-only for this story — editing is Story 5.4)
-  - [ ] 3.5 When transcription failed for this tag: show error badge with "Retry" button
-  - [ ] 3.6 Access `TranscriptionEngine` via `@Environment(TranscriptionEngine.self)`
+- [x] Task 3: Integrate "Transcribe" button into TagDetailPanel (AC: #1, #4)
+  - [x] 3.1 In `DictlyMac/Review/TagDetailPanel.swift`, add transcription block below tag header
+  - [x] 3.2 When `tag.transcription == nil` and not currently transcribing this tag: show "Transcribe" button (inline, secondary style)
+  - [x] 3.3 When transcription is in progress for this tag (`transcriptionEngine.currentTagId == tag.uuid`): show `ProgressView()` inline spinner with "Transcribing..." label
+  - [x] 3.4 When `tag.transcription != nil`: display transcription text in the transcription block (read-only for this story — editing is Story 5.4)
+  - [x] 3.5 When transcription failed for this tag: show error badge with "Retry" button
+  - [x] 3.6 Access `TranscriptionEngine` via `@Environment(TranscriptionEngine.self)`
 
-- [ ] Task 4: Add "Transcribe All" toolbar button and batch progress (AC: #2, #3)
-  - [ ] 4.1 In `DictlyMac/SessionReview/SessionReviewScreen.swift` (or equivalent toolbar view), add "Transcribe All" button to session toolbar
-  - [ ] 4.2 Button disabled when: no tags in session, all tags already transcribed, or batch transcription already running
-  - [ ] 4.3 When batch is running: replace button with progress indicator showing "3/28 tags transcribed" (using `transcriptionEngine.batchCompleted` / `batchTotal`)
-  - [ ] 4.4 Add cancel button alongside batch progress to allow stopping batch
-  - [ ] 4.5 When batch completes: restore "Transcribe All" button (disabled if all done), show summary if errors occurred
+- [x] Task 4: Add "Transcribe All" toolbar button and batch progress (AC: #2, #3)
+  - [x] 4.1 In `DictlyMac/Review/SessionReviewScreen.swift`, add "Transcribe All" button to session toolbar
+  - [x] 4.2 Button disabled when: no tags in session, all tags already transcribed, or batch transcription already running
+  - [x] 4.3 When batch is running: replace button with progress indicator showing "3/28 tags transcribed" (using `transcriptionEngine.batchCompleted` / `batchTotal`)
+  - [x] 4.4 Add cancel button alongside batch progress to allow stopping batch
+  - [x] 4.5 When batch completes: restore "Transcribe All" button (disabled if all done), show summary if errors occurred
 
-- [ ] Task 5: Inject TranscriptionEngine into app environment (AC: #1, #2, #3)
-  - [ ] 5.1 In `DictlyMac/App/DictlyMacApp.swift`, create `@State private var transcriptionEngine: TranscriptionEngine`
-  - [ ] 5.2 Initialize TranscriptionEngine with WhisperBridge and ModelManager references
-  - [ ] 5.3 Add `.environment(transcriptionEngine)` to both `WindowGroup` and `Settings` scenes
-  - [ ] 5.4 Ensure TranscriptionEngine is available wherever TagDetailPanel and session toolbar are used
+- [x] Task 5: Inject TranscriptionEngine into app environment (AC: #1, #2, #3)
+  - [x] 5.1 In `DictlyMac/App/DictlyMacApp.swift`, create `@State private var transcriptionEngine: TranscriptionEngine`
+  - [x] 5.2 Initialize TranscriptionEngine with WhisperBridge and ModelManager references
+  - [x] 5.3 Add `.environment(transcriptionEngine)` to both `WindowGroup` and `Settings` scenes
+  - [x] 5.4 Ensure TranscriptionEngine is available wherever TagDetailPanel and session toolbar are used
 
-- [ ] Task 6: Handle audio file resolution (AC: #1, #2)
-  - [ ] 6.1 Resolve session audio file URL from `session.audioFilePath` using `AudioFileManager` path conventions
-  - [ ] 6.2 If audio file not found, throw `DictlyError.transcription(.audioFileNotFound)`
-  - [ ] 6.3 Validate audio file is readable before attempting segment extraction
+- [x] Task 6: Handle audio file resolution (AC: #1, #2)
+  - [x] 6.1 Resolve session audio file URL from `session.audioFilePath` using `AudioFileManager` path conventions
+  - [x] 6.2 If audio file not found, throw `DictlyError.transcription(.audioFileNotFound)`
+  - [x] 6.3 Validate audio file is readable before attempting segment extraction
 
-- [ ] Task 7: Write unit tests (AC: #1–#4)
-  - [ ] 7.1 Create `DictlyMacTests/TranscriptionTests/TranscriptionEngineTests.swift`
-  - [ ] 7.2 Test: `transcribeTag` sets `isTranscribing` to true during operation, false after
-  - [ ] 7.3 Test: `transcribeAllTags` filters only tags with nil transcription
-  - [ ] 7.4 Test: `transcribeAllTags` updates `batchCompleted` count after each tag
-  - [ ] 7.5 Test: per-tag error isolation — one failure doesn't stop batch
-  - [ ] 7.6 Test: `cancelBatch` stops processing after current tag
-  - [ ] 7.7 Test: `retryTag` clears error state and re-attempts transcription
-  - [ ] 7.8 Test: audio segment extraction clamps start/end to valid range
-  - [ ] 7.9 Verify all existing DictlyKit tests still pass (245 tests, 0 regressions)
-  - [ ] 7.10 Verify existing WhisperBridge tests still pass (6 tests)
-  - [ ] 7.11 Verify existing ModelManager tests still pass (11 tests)
+- [x] Task 7: Write unit tests (AC: #1–#4)
+  - [x] 7.1 Create `DictlyMacTests/TranscriptionTests/TranscriptionEngineTests.swift`
+  - [x] 7.2 Test: `transcribeTag` sets `isTranscribing` to true during operation, false after
+  - [x] 7.3 Test: `transcribeAllTags` filters only tags with nil transcription
+  - [x] 7.4 Test: `transcribeAllTags` updates `batchCompleted` count after each tag
+  - [x] 7.5 Test: per-tag error isolation — one failure doesn't stop batch
+  - [x] 7.6 Test: `cancelBatch` stops processing after current tag
+  - [x] 7.7 Test: `retryTag` clears error state and re-attempts transcription
+  - [x] 7.8 Test: audio segment extraction clamps start/end to valid range
+  - [x] 7.9 Verify all existing DictlyKit tests still pass (245 tests, 0 regressions)
+  - [x] 7.10 Verify existing WhisperBridge tests still pass (6 tests)
+  - [x] 7.11 Verify existing ModelManager tests still pass (11 tests)
 
 ## Dev Notes
 
@@ -246,10 +246,37 @@ DictlyMac/Transcription/
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+claude-sonnet-4-6
 
 ### Debug Log References
 
+- Fixed Swift 6.0 strict concurrency: added `@unchecked Sendable` to `WhisperBridge` (already NSLock-protected) to allow capture in `Task.detached`
+- Fixed `extractAudioSegment` requiring `nonisolated static` since `TranscriptionEngine` is `@MainActor` and the method is called from `Task.detached`
+- TranscriptionEngine owns `WhisperBridge` and `ModelManager` (not injected separately) so DictlyMacApp simplifies to one `@State` for the whole transcription stack; the sub-components are exposed as `let` properties for environment injection
+- Pre-existing failures in `RetroactiveTagTests` and `TagEditingTests` (whitespace validation) confirmed unrelated and unchanged
+- `SessionReviewScreenTests` and `Epic4E2ETests` updated to pass `session:` parameter added to `TagDetailPanel`
+
 ### Completion Notes List
 
+- Created `TranscriptionEngine.swift`: `@Observable @MainActor final class` with full per-tag + batch transcription. Owns `WhisperBridge` and `ModelManager`. CPU-intensive whisper work dispatched off main via `Task.detached`. Sequential batch processing prevents GPU resource contention. Cancellation uses `Task.isCancelled` checked between tags.
+- Created `extractAudioSegment(from:start:duration:)` as `nonisolated static` — uses `AVAudioFile` PCM read + CAF temp file write. Clamps negative start to 0, clamps end to file duration. Temp file deleted in `defer` by callers.
+- `TagDetailPanel` updated: added `let session: Session` parameter and `@Environment(TranscriptionEngine.self)`. Transcription block has 4 states: Transcribe button, in-progress spinner, read-only text, error+Retry badge.
+- `SessionReviewScreen` updated: `transcribeAllControl` computed property shows Transcribe All button or batch progress (count + cancel) depending on `isBatchTranscribing`.
+- `DictlyMacApp` simplified: removed separate `@State private var whisperBridge` and `@State private var modelManager`; replaced with `@State private var transcriptionEngine = TranscriptionEngine()`. All three (engine, bridge, manager) injected into environment.
+- 12 new unit tests covering all AC paths: state machine, batch filtering/counting, error isolation, cancellation, retry, audio clamping. All pass.
+- WhisperBridge (6), ModelManager (11), and all Epic 4 tests remain green.
+
 ### File List
+
+- DictlyMac/Transcription/TranscriptionEngine.swift (NEW)
+- DictlyMac/Transcription/WhisperBridge.swift (modified — added `@unchecked Sendable`)
+- DictlyMac/Review/TagDetailPanel.swift (modified — transcription block, session param, TranscriptionEngine env)
+- DictlyMac/Review/SessionReviewScreen.swift (modified — Transcribe All button, batch progress, TranscriptionEngine env)
+- DictlyMac/App/DictlyMacApp.swift (modified — TranscriptionEngine owns WhisperBridge+ModelManager)
+- DictlyMacTests/TranscriptionTests/TranscriptionEngineTests.swift (NEW)
+- DictlyMacTests/ReviewTests/SessionReviewScreenTests.swift (modified — TagDetailPanel session param fix)
+- DictlyMacTests/ReviewTests/Epic4E2ETests.swift (modified — TagDetailPanel session param fix)
+
+### Change Log
+
+- 2026-04-03: Implemented Story 5.3 Per-Tag & Batch Transcription. Created TranscriptionEngine orchestration service, audio segment extraction, TagDetailPanel transcription UI, Transcribe All toolbar button with batch progress, app environment wiring. Added 12 unit tests.
