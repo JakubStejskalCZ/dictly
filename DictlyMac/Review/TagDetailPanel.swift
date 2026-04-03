@@ -60,6 +60,14 @@ struct TagDetailPanel: View {
                     let newNotes: String? = trimmed.isEmpty ? nil : editingNotes
                     if newNotes != oldTag.notes {
                         oldTag.notes = newNotes
+                        let tagForIndex = oldTag
+                        Task {
+                            do {
+                                try await SearchIndexer().updateTag(tagForIndex)
+                            } catch {
+                                logger.error("Failed to update Spotlight index after notes save on tag switch: \(error)")
+                            }
+                        }
                     }
                 }
             }
@@ -71,6 +79,14 @@ struct TagDetailPanel: View {
                 if let oldTag = try? modelContext.fetch(descriptor).first {
                     if editingTranscription != (oldTag.transcription ?? "") {
                         oldTag.transcription = editingTranscription
+                        let tagForIndex = oldTag
+                        Task {
+                            do {
+                                try await SearchIndexer().updateTag(tagForIndex)
+                            } catch {
+                                logger.error("Failed to update Spotlight index after transcription save on tag switch: \(error)")
+                            }
+                        }
                     }
                 }
             }
@@ -182,6 +198,14 @@ struct TagDetailPanel: View {
             .popover(isPresented: $showCategoryPicker) {
                 CategoryPickerPopover(currentCategory: tag.categoryName) { newCategory in
                     tag.categoryName = newCategory
+                    let tagForIndex = tag
+                    Task {
+                        do {
+                            try await SearchIndexer().updateTag(tagForIndex)
+                        } catch {
+                            logger.error("Failed to update Spotlight index after category change: \(error)")
+                        }
+                    }
                 }
             }
             .accessibilityLabel("Category: \(tag.categoryName). Click to change.")

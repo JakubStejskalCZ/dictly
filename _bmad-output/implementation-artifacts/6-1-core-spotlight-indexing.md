@@ -1,6 +1,6 @@
 # Story 6.1: Core Spotlight Indexing
 
-Status: review
+Status: done
 
 ## Story
 
@@ -179,6 +179,14 @@ None — implementation proceeded without blockers.
 - `DictlyMac/Review/TagDetailPanel.swift` (modified)
 - `DictlyKit/Tests/DictlyStorageTests/SearchIndexerTests.swift` (new)
 
+### Review Findings
+
+- [x] [Review][Patch] Category change doesn't trigger Spotlight update [DictlyMac/Review/TagDetailPanel.swift:183] — Fixed: added `SearchIndexer().updateTag` call in `CategoryPickerPopover` `onSelect` callback after `tag.categoryName = newCategory`. Category name is part of `keywords` and `contentDescription` fallback; without this, the Spotlight entry is stale after recategorisation.
+- [x] [Review][Patch] Tag-switching inline commit bypasses Spotlight update [DictlyMac/Review/TagDetailPanel.swift:56-75] — Fixed: added fire-and-forget `SearchIndexer().updateTag` in both inline-commit paths inside `onChange(of: selectedTag?.uuid)` (notes and transcription paths). These paths directly write to the model without going through `commitNotes`/`commitTranscription`, so Spotlight was silently skipped on tag switching while editing.
+- [x] [Review][Defer] ImportService comment numbering jumps from 7 to 9 [DictlyMac/Import/ImportService.swift:208] — deferred, pre-existing cosmetic
+- [x] [Review][Defer] Task 5.2 session deletion not wired — deferred, documented known limitation (session deletion UI not yet implemented)
+
 ### Change Log
 
 - 2026-04-03: Implemented Core Spotlight indexing infrastructure (SearchIndexer, DictlyError.search) and integrated into all tag creation, import, transcription, edit, and deletion flows. Added 11 unit tests; 256 total tests pass with 0 regressions.
+- 2026-04-03: Code review — fixed 2 patch findings: (1) category change now triggers Spotlight re-index; (2) tag-switching inline commit paths now fire Spotlight updates.
