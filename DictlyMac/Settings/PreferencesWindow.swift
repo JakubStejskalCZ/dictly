@@ -11,6 +11,10 @@ struct PreferencesWindow: View {
                 .tabItem {
                     Label("Storage", systemImage: "internaldrive")
                 }
+            ModelManagementView()
+                .tabItem {
+                    Label("Transcription", systemImage: "waveform")
+                }
         }
         .frame(minWidth: 520, minHeight: 400)
     }

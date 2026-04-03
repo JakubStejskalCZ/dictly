@@ -19,6 +19,8 @@ struct DictlyMacApp: App {
     @State private var syncService = CategorySyncService()
     @State private var networkReceiver = LocalNetworkReceiver()
     @State private var importService = ImportService()
+    @State private var modelManager = ModelManager()
+    @State private var whisperBridge = WhisperBridge()
 
     /// Tracks whether the current import originated from the network receiver,
     /// so we can call `networkReceiver.reset()` after the import settles.
@@ -30,6 +32,8 @@ struct DictlyMacApp: App {
                 .environment(syncService)
                 .environment(networkReceiver)
                 .environment(importService)
+                .environment(modelManager)
+                .environment(whisperBridge)
                 .frame(minWidth: 900, minHeight: 500)
                 .task {
                     do {
@@ -72,6 +76,8 @@ struct DictlyMacApp: App {
         Settings {
             PreferencesWindow()
                 .modelContainer(container)
+                .environment(modelManager)
+                .environment(whisperBridge)
         }
     }
 }

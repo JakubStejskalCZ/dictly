@@ -30,6 +30,17 @@ final class WhisperBridge {
         _ = try loadContext(for: modelURL)
     }
 
+    func unloadModel() {
+        modelLock.lock()
+        defer { modelLock.unlock() }
+        if let ctx = context {
+            whisper_free(ctx)
+            context = nil
+            loadedModelURL = nil
+            logger.info("WhisperBridge: model unloaded")
+        }
+    }
+
     // MARK: - Transcription
 
     func transcribe(audioURL: URL, modelURL: URL) async throws -> String {

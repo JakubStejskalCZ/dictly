@@ -85,6 +85,7 @@ targets:
       - path: Transcription
     resources:
       - path: Resources
+      - path: Models
     entitlements:
       path: Resources/DictlyMac.entitlements
       properties:

@@ -65,6 +65,7 @@ public enum DictlyError: Error, LocalizedError, Equatable {
         case processingFailed
         case audioConversionFailed
         case audioFileNotFound
+        case downloadFailed
 
         public var errorDescription: String? {
             switch self {
@@ -73,6 +74,7 @@ public enum DictlyError: Error, LocalizedError, Equatable {
             case .processingFailed: return "Transcription processing failed."
             case .audioConversionFailed: return "Failed to convert audio to PCM format for transcription."
             case .audioFileNotFound: return "Audio file not found for transcription."
+            case .downloadFailed: return "Failed to download transcription model."
             }
         }
     }
