@@ -5,7 +5,10 @@ import DictlyTheme
 
 struct ContentView: View {
     @Query(sort: \Session.date, order: .reverse) private var sessions: [Session]
+    @Environment(\.modelContext) private var modelContext
     @State private var selectedSession: Session?
+    @State private var searchService = SearchService()
+    @State private var pendingTagID: UUID?
 
     var body: some View {
         NavigationSplitView {
@@ -14,7 +17,13 @@ struct ContentView: View {
                 .navigationSplitViewColumnWidth(min: 200, ideal: 240)
         } detail: {
             if let session = selectedSession {
-                SessionReviewScreen(session: session)
+                SessionReviewScreen(
+                    session: session,
+                    pendingTagID: $pendingTagID,
+                    onResultSelected: { result in
+                        handleSearchResultSelected(result)
+                    }
+                )
             } else {
                 Text("Select a session to review")
                     .font(DictlyTypography.body)
@@ -26,6 +35,23 @@ struct ContentView: View {
         .overlay(alignment: .top) {
             ImportProgressView()
         }
+        .environment(searchService)
+        .onAppear {
+            searchService.setModelContext(modelContext)
+        }
+    }
+
+    // MARK: - Search Navigation
+
+    private func handleSearchResultSelected(_ result: SearchResult) {
+        // Fetch the session from SwiftData by UUID
+        let sessionID = result.sessionID
+        let descriptor = FetchDescriptor<Session>(predicate: #Predicate { $0.uuid == sessionID })
+        guard let session = try? modelContext.fetch(descriptor).first else { return }
+
+        selectedSession = session
+        pendingTagID = result.tagID
+        searchService.clearSearch()
     }
 
     // MARK: - Session List

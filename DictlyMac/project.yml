@@ -82,6 +82,7 @@ targets:
       - path: Import
       - path: Settings
       - path: Review
+      - path: Search
       - path: Transcription
     resources:
       - path: Resources

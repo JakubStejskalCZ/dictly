@@ -5,16 +5,20 @@ import DictlyTheme
 
 /// Scrollable sidebar listing tags in a session with live search and category filtering.
 ///
-/// - `searchText`: filters tags by label substring (case-insensitive).
+/// When `searchService.isSearchActive` is true, the tag list is replaced with cross-session
+/// `SearchResultsView`. Category filter pills remain visible in both modes.
+///
+/// - `searchText`: drives both local session filtering and cross-session Spotlight search.
 /// - `activeCategories`: multi-select set; empty = show all, non-empty = whitelist.
-/// Both filters compose: a tag must pass both to appear.
 struct TagSidebar: View {
     let session: Session
     let sessionID: UUID
     @Binding var selectedTag: Tag?
     @Binding var activeCategories: Set<String>
+    var onResultSelected: ((SearchResult) -> Void)? = nil
 
     @Environment(\.modelContext) private var modelContext
+    @Environment(SearchService.self) private var searchService
     @Query(sort: \TagCategory.sortOrder) private var categories: [TagCategory]
     @State private var searchText: String = ""
     @State private var tagToDelete: Tag?
@@ -86,26 +90,49 @@ struct TagSidebar: View {
                 Divider()
             }
 
-            // Tag list or empty state
-            let tags = filteredTags
-            let totalCount = session.tags.count
-            if tags.isEmpty {
-                emptyState(hasFilters: !searchText.trimmingCharacters(in: .whitespaces).isEmpty || !activeCategories.isEmpty, hasTags: totalCount > 0)
+            // Tag list OR cross-session search results
+            if searchService.isSearchActive {
+                SearchResultsView(
+                    searchResults: searchService.searchResults,
+                    searchText: searchText,
+                    isSearching: searchService.isSearching,
+                    onResultSelected: { result in
+                        onResultSelected?(result)
+                    }
+                )
             } else {
-                tagList(tags: tags, totalCount: totalCount)
+                let tags = filteredTags
+                let totalCount = session.tags.count
+                if tags.isEmpty {
+                    emptyState(hasFilters: !searchText.trimmingCharacters(in: .whitespaces).isEmpty || !activeCategories.isEmpty, hasTags: totalCount > 0)
+                } else {
+                    tagList(tags: tags, totalCount: totalCount)
+                }
             }
         }
         .background(DictlyColors.background)
-        // Task 4.2: Reset searchText on session change
+        // Reset searchText and clear cross-session search on session change
         .onChange(of: sessionID) { _, _ in
             searchText = ""
+            searchService.clearSearch()
         }
         // Task 6.5: Notify VoiceOver when filter changes so it re-reads the updated list
         .onChange(of: activeCategories) { _, _ in
             AccessibilityNotification.LayoutChanged().post()
         }
-        .onChange(of: searchText) { _, _ in
+        // Sync local searchText to SearchService and schedule debounced search
+        .onChange(of: searchText) { _, newValue in
+            searchService.searchText = newValue
+            if newValue.trimmingCharacters(in: .whitespaces).isEmpty {
+                searchService.clearSearch()
+            } else {
+                searchService.scheduleSearch()
+            }
             AccessibilityNotification.LayoutChanged().post()
+        }
+        // Provide ModelContext to SearchService for tag UUID resolution
+        .onAppear {
+            searchService.setModelContext(modelContext)
         }
         .alert("Delete Tag?", isPresented: $showDeleteAlert) {
             Button("Delete", role: .destructive) {

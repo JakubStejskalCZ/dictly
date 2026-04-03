@@ -12,6 +12,8 @@ import os
 /// Layout: [TagSidebar 260pt] | [Toolbar + WaveformTimeline + TagDetailPanel]
 struct SessionReviewScreen: View {
     let session: Session
+    @Binding var pendingTagID: UUID?
+    var onResultSelected: ((SearchResult) -> Void)? = nil
 
     @Environment(\.modelContext) private var modelContext
     @Environment(TranscriptionEngine.self) private var transcriptionEngine
@@ -34,9 +36,15 @@ struct SessionReviewScreen: View {
     var body: some View {
         HSplitView {
             if isSidebarVisible {
-                TagSidebar(session: session, sessionID: session.uuid, selectedTag: $selectedTag, activeCategories: $activeCategories)
-                    .frame(minWidth: 200, idealWidth: 260, maxWidth: 320)
-                    .accessibilityLabel("Tag sidebar")
+                TagSidebar(
+                    session: session,
+                    sessionID: session.uuid,
+                    selectedTag: $selectedTag,
+                    activeCategories: $activeCategories,
+                    onResultSelected: onResultSelected
+                )
+                .frame(minWidth: 200, idealWidth: 260, maxWidth: 320)
+                .accessibilityLabel("Tag sidebar")
             }
 
             mainContent
@@ -77,6 +85,14 @@ struct SessionReviewScreen: View {
             guard let tag = newTag else { return }
             audioPlayer.seek(to: tag.anchorTime)
             audioPlayer.play()
+        }
+        // Story 6.2: Select pending tag after search result navigation
+        .onChange(of: pendingTagID) { _, tagID in
+            guard let tagID else { return }
+            if let match = session.tags.first(where: { $0.uuid == tagID }) {
+                selectedTag = match
+            }
+            pendingTagID = nil
         }
         // Story 4.6: NewTagForm sheet for retroactive tag creation
         .sheet(isPresented: $isCreatingTag) {
