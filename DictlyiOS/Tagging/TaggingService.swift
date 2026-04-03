@@ -3,6 +3,7 @@ import OSLog
 import Observation
 import SwiftData
 import DictlyModels
+import DictlyStorage
 
 private let logger = Logger(subsystem: "com.dictly.ios", category: "tagging")
 
@@ -54,6 +55,14 @@ final class TaggingService {
         do {
             try context.save()
             logger.info("Tag placed: \(label, privacy: .public) in \(categoryName, privacy: .public) at \(anchorTime, privacy: .public) (rewound \(actualRewind, privacy: .public)s from \(elapsedTime, privacy: .public))")
+            let tagForIndex = newTag
+            Task {
+                do {
+                    try await SearchIndexer().indexTag(tagForIndex)
+                } catch {
+                    logger.error("Failed to index tag in Spotlight: \(error, privacy: .public)")
+                }
+            }
             return true
         } catch {
             logger.error("Failed to place tag: \(error, privacy: .public)")
@@ -106,6 +115,14 @@ final class TaggingService {
             try context.save()
             capturedAnchor = nil
             logger.info("Custom tag placed: \(label, privacy: .public) in \(categoryName, privacy: .public) at \(anchor.anchorTime, privacy: .public) (rewound \(anchor.actualRewind, privacy: .public)s)")
+            let tagForIndex = newTag
+            Task {
+                do {
+                    try await SearchIndexer().indexTag(tagForIndex)
+                } catch {
+                    logger.error("Failed to index custom tag in Spotlight: \(error, privacy: .public)")
+                }
+            }
             return true
         } catch {
             logger.error("Failed to place custom tag: \(error, privacy: .public)")

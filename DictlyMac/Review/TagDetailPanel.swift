@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import DictlyModels
+import DictlyStorage
 import DictlyTheme
 import os
 
@@ -419,6 +420,14 @@ struct TagDetailPanel: View {
         } else {
             tag.label = trimmed
             AccessibilityNotification.Announcement("Tag label saved").post()
+            let tagForIndex = tag
+            Task {
+                do {
+                    try await SearchIndexer().updateTag(tagForIndex)
+                } catch {
+                    logger.error("Failed to update Spotlight index after label rename: \(error)")
+                }
+            }
         }
     }
 
@@ -429,6 +438,14 @@ struct TagDetailPanel: View {
         guard newNotes != tag.notes else { return }
         tag.notes = newNotes
         AccessibilityNotification.Announcement("Notes saved").post()
+        let tagForIndex = tag
+        Task {
+            do {
+                try await SearchIndexer().updateTag(tagForIndex)
+            } catch {
+                logger.error("Failed to update Spotlight index after notes save: \(error)")
+            }
+        }
     }
 
     private func commitTranscription(tag: Tag) {
@@ -438,16 +455,32 @@ struct TagDetailPanel: View {
         guard editingTranscription != (tag.transcription ?? "") else { return }
         tag.transcription = editingTranscription
         AccessibilityNotification.Announcement("Transcription saved").post()
+        let tagForIndex = tag
+        Task {
+            do {
+                try await SearchIndexer().updateTag(tagForIndex)
+            } catch {
+                logger.error("Failed to update Spotlight index after transcription edit: \(error)")
+            }
+        }
     }
 
     private func deleteTag(_ tag: Tag) {
         logger.info("Tag deleted: \(tag.label, privacy: .public) at \(tag.anchorTime, privacy: .public)")
         showCategoryPicker = false
+        let tagID = tag.uuid
         tag.session?.tags.removeAll { $0.uuid == tag.uuid }
         modelContext.delete(tag)
         selectedTag = nil
         tagToDeleteFromPanel = nil
         AccessibilityNotification.Announcement("Tag deleted").post()
+        Task {
+            do {
+                try await SearchIndexer().removeTag(id: tagID)
+            } catch {
+                logger.error("Failed to remove tag from Spotlight index: \(error)")
+            }
+        }
     }
 }
 

@@ -6,6 +6,7 @@ public enum DictlyError: Error, LocalizedError, Equatable {
     case transcription(TranscriptionError)
     case storage(StorageError)
     case `import`(ImportError)
+    case search(SearchError)
 
     public var errorDescription: String? {
         switch self {
@@ -14,6 +15,7 @@ public enum DictlyError: Error, LocalizedError, Equatable {
         case .transcription(let error): return error.errorDescription
         case .storage(let error): return error.errorDescription
         case .import(let error): return error.errorDescription
+        case .search(let error): return error.errorDescription
         }
     }
 
@@ -105,6 +107,18 @@ public enum DictlyError: Error, LocalizedError, Equatable {
             case .invalidFormat: return "Invalid import format."
             case .duplicateDetected: return "Duplicate session detected."
             case .missingData: return "Required data missing from import."
+            }
+        }
+    }
+
+    public enum SearchError: Error, LocalizedError, Equatable {
+        case indexingFailed(String)
+        case deletionFailed(String)
+
+        public var errorDescription: String? {
+            switch self {
+            case .indexingFailed(let detail): return "Spotlight indexing failed: \(detail)"
+            case .deletionFailed(let detail): return "Spotlight deletion failed: \(detail)"
             }
         }
     }

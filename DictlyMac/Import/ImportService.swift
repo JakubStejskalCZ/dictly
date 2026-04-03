@@ -195,7 +195,17 @@ final class ImportService {
             try context.save()
             logger.info("ImportService: session '\(bundle.session.title)' saved to SwiftData")
 
-            // 7. Clean up source bundle if it resides in a temp directory
+            // 7. Batch-index all imported tags in Spotlight (fire-and-forget — import succeeds regardless)
+            let tagsForIndex = tags
+            Task {
+                do {
+                    try await SearchIndexer().indexTags(tagsForIndex)
+                } catch {
+                    logger.error("ImportService: spotlight batch indexing failed — \(error)")
+                }
+            }
+
+            // 9. Clean up source bundle if it resides in a temp directory
             let tempDir = FileManager.default.temporaryDirectory.standardizedFileURL
             if url.standardizedFileURL.path.hasPrefix(tempDir.path) {
                 try? FileManager.default.removeItem(at: url)

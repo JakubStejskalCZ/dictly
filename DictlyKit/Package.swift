@@ -25,7 +25,10 @@ let package = Package(
         .target(
             name: "DictlyStorage",
             dependencies: ["DictlyModels"],
-            path: "Sources/DictlyStorage"
+            path: "Sources/DictlyStorage",
+            linkerSettings: [
+                .linkedFramework("CoreSpotlight")
+            ]
         ),
         .target(
             name: "DictlyExport",

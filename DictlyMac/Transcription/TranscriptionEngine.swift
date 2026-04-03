@@ -3,6 +3,7 @@ import AVFoundation
 import Observation
 import os.log
 import DictlyModels
+import DictlyStorage
 
 private let logger = Logger(subsystem: "com.dictly.mac", category: "transcription")
 
@@ -86,6 +87,14 @@ final class TranscriptionEngine {
             let text = try await runTranscription(tag: tag, session: session)
             tag.transcription = text
             logger.info("TranscriptionEngine: done '\(tag.label)' — \(text.count) chars")
+            let tagForIndex = tag
+            Task {
+                do {
+                    try await SearchIndexer().updateTag(tagForIndex)
+                } catch {
+                    logger.error("TranscriptionEngine: spotlight update failed for '\(tagForIndex.label)' — \(error)")
+                }
+            }
         } catch {
             tagErrors[tag.uuid] = error
             throw error
