@@ -142,7 +142,7 @@ struct TagDetailPanel: View {
             Spacer()
         }
         .frame(maxWidth: .infinity)
-        .accessibilityLabel("Click a tag in the sidebar or on the waveform to view details, transcription, and notes.")
+        .accessibilityLabel("Select a tag in the sidebar or on the waveform to view details, transcription, and notes.")
     }
 
     // MARK: - Tag Detail Content

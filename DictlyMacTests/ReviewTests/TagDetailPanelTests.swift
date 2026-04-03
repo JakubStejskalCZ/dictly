@@ -254,8 +254,6 @@ final class TagDetailPanelTests: XCTestCase {
         // Retroactive tags have rewindDuration == 0 — no "captures from" line shown
         let tag = makeTag(label: "Retroactive", transcription: nil, anchorTime: 120, rewindDuration: 0)
         XCTAssertEqual(tag.rewindDuration, 0, "Retroactive tags must have rewindDuration == 0")
-        // Verify the condition used in the view: rewindDuration > 0 is false → no second line
-        XCTAssertFalse(tag.rewindDuration > 0, "rewindDuration > 0 must be false for retroactive tags")
     }
 
     func testCapturesFrom_showsSecondLine_onlyWhenRewindDurationPositive() {

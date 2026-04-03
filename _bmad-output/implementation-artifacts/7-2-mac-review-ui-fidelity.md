@@ -1,6 +1,6 @@
 # Story 7.2: Mac Review Screen UI Fidelity
 
-Status: review
+Status: done
 
 ## Story
 
@@ -117,3 +117,13 @@ All 5 ACs satisfied:
 ## Change Log
 
 - 2026-04-03: Implemented Story 7.2 — Mac Review Screen UI Fidelity. Five visual deviations corrected: coloured category pills, warm selection highlight, row metadata with category name, "captures from" timestamp in detail panel, updated empty state copy.
+
+### Review Findings
+
+- [x] [Review][Patch] Custom category pills use textSecondary fallback instead of stored colorHex [TagSidebar.swift:101] — fixed: Color(hexString: category.colorHex)
+- [x] [Review][Patch] Keyboard navigation broken — List(selection:) and .tag() removed, arrow keys stop working [TagSidebar.swift:336,224] — fixed: .onKeyPress(↑/↓) + navigateTag helper
+- [x] [Review][Patch] VoiceOver accessibility label uses "Click" (pointer-specific) — should be "Select" [TagDetailPanel.swift:145] — fixed
+- [x] [Review][Patch] "All" pill uses Color.clear when inactive — AC1 requires DictlyColors.surface [TagSidebar.swift:441-445] — fixed: always return DictlyColors.surface
+- [x] [Review][Patch] Redundant XCTAssertFalse after XCTAssertEqual(0) in retroactive tag test [TagDetailPanelTests.swift:258] — fixed: removed
+- [x] [Review][Defer] Two sources of truth (highlightedTagID + selectedTag) — intentional design per story task 2 — deferred, pre-existing
+- [x] [Review][Defer] Unit tests exercise model arithmetic not view rendering — acceptable unit test scope — deferred, pre-existing

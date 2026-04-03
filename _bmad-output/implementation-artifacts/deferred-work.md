@@ -1,5 +1,10 @@
 # Deferred Work
 
+## Deferred from: code review of 7-2-mac-review-ui-fidelity (2026-04-03)
+
+- Two sources of truth (`highlightedTagID` + `selectedTag`) in `TagSidebar.swift` — intentional design per story 7.2 task 2; `onChange(of: selectedTag)` keeps them in sync; revisit if state divergence bugs emerge.
+- Unit tests in `TagDetailPanelTests` exercise model arithmetic, not SwiftUI view rendering — acceptable scope for unit tests targeting model-layer behaviour; consider ViewInspector or UI snapshot tests in a future test quality pass.
+
 ## Deferred from: code review of 7-1-ios-recording-screen-ui-fidelity (2026-04-03)
 
 - `timerColor` switch exhaustiveness for hypothetical future RecordingState cases (`RecordingStatusBar.swift:107`) — same pattern as stateLabel/dotColor/stateColor switches; add `default` if enum becomes open.

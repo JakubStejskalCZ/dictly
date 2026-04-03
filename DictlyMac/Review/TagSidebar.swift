@@ -98,7 +98,7 @@ struct TagSidebar: View {
                             let isActive = activeCategories.contains(category.name)
                             CategoryFilterPill(
                                 label: category.name,
-                                color: categoryColor(for: category.name),
+                                color: Color(hexString: category.colorHex),
                                 isActive: isActive,
                                 onTap: { toggleCategory(category.name) }
                             )
@@ -259,6 +259,14 @@ struct TagSidebar: View {
                 }
             }
             .listStyle(.sidebar)
+            .onKeyPress(phases: .down) { keyPress in
+                let flat = groups.flatMap { $0.tags }
+                switch keyPress.key {
+                case .upArrow:   navigateTag(in: flat, delta: -1); return .handled
+                case .downArrow: navigateTag(in: flat, delta:  1); return .handled
+                default: return .ignored
+                }
+            }
             .accessibilityLabel("Campaign tags grouped by session")
         }
     }
@@ -367,7 +375,27 @@ struct TagSidebar: View {
                 }
         }
         .listStyle(.sidebar)
+        .onKeyPress(phases: .down) { keyPress in
+            switch keyPress.key {
+            case .upArrow:   navigateTag(in: tags, delta: -1); return .handled
+            case .downArrow: navigateTag(in: tags, delta:  1); return .handled
+            default: return .ignored
+            }
+        }
         .accessibilityLabel("Showing \(tags.count) of \(totalCount) tags")
+    }
+
+    private func navigateTag(in tags: [Tag], delta: Int) {
+        guard !tags.isEmpty else { return }
+        if let current = tags.firstIndex(where: { $0.uuid == highlightedTagID }) {
+            let next = max(0, min(tags.count - 1, current + delta))
+            highlightedTagID = tags[next].uuid
+            selectedTag = tags[next]
+        } else {
+            let seed = delta > 0 ? tags.first! : tags.last!
+            highlightedTagID = seed.uuid
+            selectedTag = seed
+        }
     }
 
     private func emptyState(hasFilters: Bool, hasTags: Bool, isCrossSession: Bool) -> some View {
@@ -442,6 +470,7 @@ private struct CategoryFilterPill: View {
         if let color {
             return color.opacity(isActive ? 1.0 : 0.7)
         }
-        return isActive ? DictlyColors.surface : Color.clear
+        // "All" pill always shows a surface background; active state is indicated by the border overlay.
+        return DictlyColors.surface
     }
 }
