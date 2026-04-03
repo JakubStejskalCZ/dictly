@@ -16,7 +16,11 @@ struct WhisperModel: Identifiable, Equatable, Sendable {
     let isBundled: Bool
 
     var downloadURL: URL {
-        URL(string: "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/\(fileName)")!
+        let encoded = fileName.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? fileName
+        guard let url = URL(string: "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/\(encoded)") else {
+            preconditionFailure("ModelManager: invalid download URL for model '\(id)' — fileName: \(fileName)")
+        }
+        return url
     }
 }
 
@@ -25,6 +29,11 @@ struct WhisperModel: Identifiable, Equatable, Sendable {
 @Observable
 @MainActor
 final class ModelManager {
+
+    // MARK: - Constants
+
+    static let defaultModelId = "base.en"
+    private static let userDefaultsKey = "activeWhisperModel"
 
     // MARK: - Model Registry
 
@@ -57,7 +66,7 @@ final class ModelManager {
 
     // MARK: - Observable State
 
-    private(set) var activeModel: String = "base.en"
+    private(set) var activeModel: String = ModelManager.defaultModelId
     var downloadProgress: Double = 0.0
     var isDownloading: Bool = false
     var downloadingModelId: String? = nil
@@ -91,20 +100,20 @@ final class ModelManager {
             }
         }
 
-        let stored = UserDefaults.standard.string(forKey: "activeWhisperModel") ?? "base.en"
+        let stored = UserDefaults.standard.string(forKey: Self.userDefaultsKey) ?? Self.defaultModelId
         if let model = Self.registry.first(where: { $0.id == stored }) {
             let filePath = modelsDirectory.appendingPathComponent(model.fileName).path
             let exists = model.isBundled || FileManager.default.fileExists(atPath: filePath)
             if exists {
                 activeModel = stored
             } else {
-                activeModel = "base.en"
-                UserDefaults.standard.set("base.en", forKey: "activeWhisperModel")
-                logger.info("ModelManager: persisted model '\(stored)' not on disk — fell back to base.en")
+                activeModel = Self.defaultModelId
+                UserDefaults.standard.set(Self.defaultModelId, forKey: Self.userDefaultsKey)
+                logger.info("ModelManager: persisted model '\(stored)' not on disk — fell back to \(Self.defaultModelId)")
             }
         } else {
-            activeModel = "base.en"
-            UserDefaults.standard.set("base.en", forKey: "activeWhisperModel")
+            activeModel = Self.defaultModelId
+            UserDefaults.standard.set(Self.defaultModelId, forKey: Self.userDefaultsKey)
         }
         copyBundledModelIfNeeded()
     }
@@ -138,7 +147,7 @@ final class ModelManager {
             return
         }
         activeModel = model.id
-        UserDefaults.standard.set(model.id, forKey: "activeWhisperModel")
+        UserDefaults.standard.set(model.id, forKey: Self.userDefaultsKey)
         logger.info("ModelManager: selected model '\(model.id)'")
     }
 
@@ -177,12 +186,25 @@ final class ModelManager {
             if let httpResponse = response as? HTTPURLResponse,
                !(200...299).contains(httpResponse.statusCode) {
                 logger.error("ModelManager: download failed — HTTP \(httpResponse.statusCode)")
+                try? FileManager.default.removeItem(at: tempURL)
                 throw DictlyError.transcription(.downloadFailed)
             }
 
             let destination = modelURL(for: model)
-            try? FileManager.default.removeItem(at: destination)
-            try FileManager.default.moveItem(at: tempURL, to: destination)
+            if FileManager.default.fileExists(atPath: destination.path) {
+                do {
+                    try FileManager.default.removeItem(at: destination)
+                } catch {
+                    logger.warning("ModelManager: failed to remove existing model before move — \(error.localizedDescription)")
+                }
+            }
+            do {
+                try FileManager.default.moveItem(at: tempURL, to: destination)
+            } catch {
+                logger.error("ModelManager: failed to move downloaded model to destination — \(error.localizedDescription)")
+                try? FileManager.default.removeItem(at: tempURL)
+                throw DictlyError.transcription(.downloadFailed)
+            }
             logger.info("ModelManager: download complete for '\(model.id)'")
 
         } catch let urlError as NSError where urlError.code == NSURLErrorCancelled {
@@ -214,6 +236,11 @@ final class ModelManager {
             return
         }
 
+        // Cancel any in-progress download for this model before deleting
+        if downloadingModelId == model.id {
+            cancelDownload()
+        }
+
         let url = modelURL(for: model)
         guard FileManager.default.fileExists(atPath: url.path) else { return }
 
@@ -221,9 +248,9 @@ final class ModelManager {
         logger.info("ModelManager: deleted model '\(model.id)'")
 
         if activeModel == model.id {
-            activeModel = "base.en"
-            UserDefaults.standard.set("base.en", forKey: "activeWhisperModel")
-            logger.info("ModelManager: active model deleted — fell back to base.en")
+            activeModel = Self.defaultModelId
+            UserDefaults.standard.set(Self.defaultModelId, forKey: Self.userDefaultsKey)
+            logger.info("ModelManager: active model deleted — fell back to \(Self.defaultModelId)")
         }
     }
 

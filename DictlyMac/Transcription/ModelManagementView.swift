@@ -7,7 +7,8 @@ struct ModelManagementView: View {
 
     @State private var modelToDelete: WhisperModel?
     @State private var isShowingDeleteAlert = false
-    @State private var downloadError: Error?
+    @State private var operationError: Error?
+    @State private var operationErrorTitle: String = "Failed"
     @State private var isShowingErrorAlert = false
 
     var body: some View {
@@ -26,10 +27,10 @@ struct ModelManagementView: View {
         } message: { model in
             Text("The \"\(model.name)\" model will be removed from disk. You can re-download it later.")
         }
-        .alert("Download Failed", isPresented: $isShowingErrorAlert) {
-            Button("OK", role: .cancel) { downloadError = nil }
+        .alert(operationErrorTitle, isPresented: $isShowingErrorAlert) {
+            Button("OK", role: .cancel) { operationError = nil }
         } message: {
-            Text(downloadError?.localizedDescription ?? "An unknown error occurred.")
+            Text(operationError?.localizedDescription ?? "An unknown error occurred.")
         }
     }
 
@@ -80,7 +81,8 @@ struct ModelManagementView: View {
             do {
                 try await modelManager.downloadModel(model)
             } catch {
-                downloadError = error
+                operationErrorTitle = "Download Failed"
+                operationError = error
                 isShowingErrorAlert = true
             }
         }
@@ -93,7 +95,8 @@ struct ModelManagementView: View {
         do {
             try modelManager.deleteModel(model)
         } catch {
-            downloadError = error
+            operationErrorTitle = "Delete Failed"
+            operationError = error
             isShowingErrorAlert = true
         }
         modelToDelete = nil
@@ -178,10 +181,17 @@ private struct ModelRowView: View {
                     .foregroundStyle(.secondary)
             }
             if isDownloading {
-                ProgressView(value: downloadProgress)
-                    .progressViewStyle(.linear)
-                    .frame(maxWidth: 200)
-                    .padding(.top, 2)
+                if downloadProgress > 0 {
+                    ProgressView(value: downloadProgress)
+                        .progressViewStyle(.linear)
+                        .frame(maxWidth: 200)
+                        .padding(.top, 2)
+                } else {
+                    ProgressView()
+                        .progressViewStyle(.linear)
+                        .frame(maxWidth: 200)
+                        .padding(.top, 2)
+                }
             }
         }
     }
@@ -200,6 +210,10 @@ private struct ModelRowView: View {
                 .buttonStyle(.bordered)
                 .controlSize(.small)
                 .frame(width: 80, alignment: .trailing)
+        } else if model.isBundled {
+            // Bundled model (base.en) — always present, never deletable, never downloadable
+            Spacer()
+                .frame(width: 80)
         } else if isDownloaded {
             HStack(spacing: 8) {
                 Button(action: onDelete) {
