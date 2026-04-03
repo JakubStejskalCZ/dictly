@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-04-01
-last_updated: 2026-04-03 04:48 # story 5.4 done
+last_updated: 2026-04-03 # story 6.1 ready-for-dev
 project: Dictly
 project_key: NOKEY
 tracking_system: file-system
@@ -79,15 +79,15 @@ development_status:
   4-7-tag-notes-and-session-summary-notes: done
   epic-4-retrospective: optional
   # Epic 5: Local Transcription
-  epic-5: in-progress
+  epic-5: done
   5-1-whisper-cpp-integration-and-whisperbridge: done
   5-2-whisper-model-management: done
   5-3-per-tag-and-batch-transcription: done
   5-4-view-and-edit-transcription-text: done
   epic-5-retrospective: optional
   # Epic 6: Search, Archive & Export
-  epic-6: backlog
-  6-1-core-spotlight-indexing: backlog
+  epic-6: in-progress
+  6-1-core-spotlight-indexing: ready-for-dev
   6-2-full-text-search-across-sessions: backlog
   6-3-cross-session-tag-browsing-and-related-tags: backlog
   6-4-markdown-export-single-session-and-campaign: backlog
