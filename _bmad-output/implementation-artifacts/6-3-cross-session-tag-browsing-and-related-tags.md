@@ -1,6 +1,6 @@
 # Story 6.3: Cross-Session Tag Browsing & Related Tags
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -275,6 +275,16 @@ claude-sonnet-4-6
 - `DictlyMacTests/ReviewTests/CrossSessionBrowsingTests.swift` — NEW: 13 tests for story 6.3
 - `DictlyMacTests/SearchTests/SearchServiceTests.swift` — MODIFIED: added 7 performRelatedSearch tests
 - `DictlyMac/DictlyMac.xcodeproj/project.pbxproj` — MODIFIED: registered RelatedTagsView.swift and CrossSessionBrowsingTests.swift
+
+### Review Findings
+
+- [x] [Review][Patch] No cancellation handle for in-flight related search — concurrent rapid tag selections create racing tasks that can overwrite `relatedTags` non-deterministically [SearchService.swift:233, TagDetailPanel.swift:57]
+- [x] [Review][Patch] Direct mutation of SearchService state from view — `searchService.relatedTags = []` and `searchService.isLoadingRelated = false` set directly in TagDetailPanel; should use an encapsulated `clearRelatedResults()` method [TagDetailPanel.swift:62]
+- [x] [Review][Patch] `relatedTags` not cleared before new search starts — stale results remain visible momentarily until new results arrive [SearchService.swift:239]
+- [x] [Review][Patch] `sessionID` nil guard missing — if `tag.session` relationship is unfired/nil, `sessionID` is nil and same-session filter silently passes all results [SearchService.swift:241]
+- [x] [Review][Patch] Word token `.whitespaces` not trimmed — non-standard spaces in tag labels produce padded Spotlight query terms that match nothing [SearchService.swift:260]
+- [x] [Review][Patch] Session section headers missing duration — AC4 requires date, title, duration, and tag count; duration absent from cross-session section headers [TagSidebar.swift:261]
+- [x] [Review][Defer] `pendingTagID` never cleared if session tags not yet populated on navigation — pre-existing from Story 6.2, no regression [ContentView.swift:65]
 
 ## Change Log
 

@@ -265,6 +265,13 @@ struct TagSidebar: View {
                 Text("·")
                     .font(DictlyTypography.caption)
                     .foregroundStyle(DictlyColors.textSecondary)
+                Text(formatDuration(s.duration))
+                    .font(DictlyTypography.caption)
+                    .foregroundStyle(DictlyColors.textSecondary)
+                    .monospacedDigit()
+                Text("·")
+                    .font(DictlyTypography.caption)
+                    .foregroundStyle(DictlyColors.textSecondary)
                 Text("\(tagCount) tag\(tagCount == 1 ? "" : "s")")
                     .font(DictlyTypography.caption)
                     .foregroundStyle(DictlyColors.textSecondary)
@@ -272,7 +279,7 @@ struct TagSidebar: View {
         }
         .padding(.vertical, DictlySpacing.xs)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(s.title), \(s.date.formatted(date: .abbreviated, time: .omitted)), \(tagCount) tags")
+        .accessibilityLabel("\(s.title), \(s.date.formatted(date: .abbreviated, time: .omitted)), \(formatDuration(s.duration)), \(tagCount) tags")
     }
 
     // MARK: - Filter Logic

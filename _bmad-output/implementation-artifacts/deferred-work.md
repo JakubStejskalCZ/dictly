@@ -155,3 +155,7 @@
 - O(n) tag count scan per category pill (`session.tags.filter { $0.categoryName == category.name }.count`) runs on every render pass. Optimize with a single grouped dictionary for sessions with many tags. `TagSidebar.swift`.
 - `sessionID: UUID` parameter in `TagSidebar` is always `session.uuid` at call site — redundant; could be derived internally. `TagSidebar.swift` / `SessionReviewScreen.swift`.
 - `TagSidebarFilterTests`: in-memory `ModelContainer` + `ModelContext` created in `setUp` but never used by pure-function tests — dead infrastructure. Remove or convert to integration tests in a future refactor. `TagSidebarFilterTests.swift`.
+
+## Deferred from: code review of 6-3-cross-session-tag-browsing-and-related-tags (2026-04-03)
+
+- `pendingTagID` never cleared if `session.tags` is not yet populated when `onChange(of: pendingTagID)` fires — pre-existing from Story 6.2; `first(where:)` returns nil, leaving a stale `pendingTagID` that can fire on the next tag selection in any session. `ContentView.swift:65`, `SessionReviewScreen.swift`.

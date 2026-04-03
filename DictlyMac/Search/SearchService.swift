@@ -46,6 +46,7 @@ public final class SearchService {
     // MARK: - Private
 
     private var searchTask: Task<Void, Never>?
+    private var relatedSearchTask: Task<Void, Never>?
     private var modelContext: ModelContext?
 
     // MARK: - Init
@@ -227,6 +228,22 @@ public final class SearchService {
     var relatedTags: [SearchResult] = []
     var isLoadingRelated: Bool = false
 
+    /// Cancels any in-flight related search and starts a new one for `tag`.
+    func triggerRelatedSearch(for tag: Tag) {
+        relatedSearchTask?.cancel()
+        relatedSearchTask = Task {
+            await performRelatedSearch(for: tag)
+        }
+    }
+
+    /// Cancels any in-flight related search and clears all related tag state.
+    func clearRelatedResults() {
+        relatedSearchTask?.cancel()
+        relatedSearchTask = nil
+        relatedTags = []
+        isLoadingRelated = false
+    }
+
     /// Finds tags from other sessions that mention similar terms to the given tag's label.
     /// Uses Core Spotlight text search; filters out the selected tag and its session.
     /// Stores up to 15 results in `relatedTags`, sorted by relevance.
@@ -237,11 +254,11 @@ public final class SearchService {
         }
 
         isLoadingRelated = true
+        relatedTags = []
         let tagID = tag.uuid
         let sessionID = tag.session?.uuid
         let label = tag.label.trimmingCharacters(in: .whitespaces)
         guard !label.isEmpty else {
-            relatedTags = []
             isLoadingRelated = false
             return
         }
@@ -257,7 +274,10 @@ public final class SearchService {
 
             // Also search by individual significant words (3+ chars, not the same as full label)
             let words = label.components(separatedBy: .whitespaces)
-                .map { $0.trimmingCharacters(in: .punctuationCharacters) }
+                .map {
+                    $0.trimmingCharacters(in: .punctuationCharacters)
+                      .trimmingCharacters(in: .whitespaces)
+                }
                 .filter { $0.count >= 3 && $0.lowercased() != label.lowercased() }
             for word in words {
                 let wordResults = try await runSpotlightQuery(term: word, context: context)
@@ -265,7 +285,6 @@ public final class SearchService {
             }
 
             guard !Task.isCancelled else {
-                isLoadingRelated = false
                 return
             }
 
@@ -278,13 +297,19 @@ public final class SearchService {
                 }
             }
 
-            // Filter: exclude the selected tag itself and tags from the same session
+            // Filter: exclude the selected tag itself and tags from the same session.
+            // If sessionID is nil (relationship not loaded), skip the session filter.
             let filtered = deduplicated.filter { result in
-                result.tagID != tagID && result.sessionID != sessionID
+                if result.tagID == tagID { return false }
+                if let sid = sessionID, result.sessionID == sid { return false }
+                return true
             }
 
             relatedTags = Array(sortResults(filtered, term: label).prefix(15))
             logger.info("Related search found \(self.relatedTags.count, privacy: .public) result(s) for '\(label, privacy: .public)'")
+        } catch is CancellationError {
+            // Task was cancelled — new search is in progress, don't alter state
+            return
         } catch {
             logger.error("Related search failed: \(error.localizedDescription, privacy: .public)")
             relatedTags = []

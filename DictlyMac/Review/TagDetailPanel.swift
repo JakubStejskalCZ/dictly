@@ -55,12 +55,9 @@ struct TagDetailPanel: View {
         .onChange(of: selectedTag) { _, newTag in
             // Trigger related tag search when a new tag is selected
             if let tag = newTag {
-                Task {
-                    await searchService.performRelatedSearch(for: tag)
-                }
+                searchService.triggerRelatedSearch(for: tag)
             } else {
-                searchService.relatedTags = []
-                searchService.isLoadingRelated = false
+                searchService.clearRelatedResults()
             }
         }
         .onChange(of: selectedTag?.uuid) { oldUUID, _ in
