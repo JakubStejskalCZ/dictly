@@ -1,6 +1,6 @@
 # Story 7.4: Mac Session Sidebar — Campaign Grouping
 
-Status: review
+Status: done
 
 ## Story
 
@@ -93,6 +93,16 @@ Fixed two pre-existing test failures in `RetroactiveTagTests` and `TagEditingTes
 - `DictlyMacTests/ReviewTests/RetroactiveTagTests.swift` — modified (fixed `.whitespaces` → `.whitespacesAndNewlines`)
 - `DictlyMacTests/ReviewTests/TagEditingTests.swift` — modified (fixed `.whitespaces` → `.whitespacesAndNewlines`)
 
+## Review Findings
+
+- [x] [Review][Patch] ForEach id collision — `ForEach(groupedSessions, id: \.title)` uses campaign name as identity; two campaigns with identical names produce duplicate IDs causing undefined SwiftUI rendering. Fixed: `groupedSessions` now returns `(id: UUID, title: String, sessions: [Session])` using `campaign.uuid` as ID and a fixed sentinel UUID for "Uncampaigned"; `ForEach` updated to `id: \.id`. [ContentView.swift:52-61, 88]
+- [x] [Review][Patch] Section header color `textSecondary` → `textPrimary` — Reference implementation `TagSidebar.sessionSectionHeader` uses `DictlyColors.textPrimary` for header title text; spec task bullet contradicts this. Fixed to match reference. [ContentView.swift:115]
+- [x] [Review][Patch] `groupedSessions` computed twice per render — called in both the `ForEach` and the `.overlay` condition. Extracted to `let groups = groupedSessions` in `sessionList`. [ContentView.swift:86-109]
+- [x] [Review][Defer] `selectedSession` not cleared when session disappears — if a campaign is deleted or a selected session is moved, the detail panel stays populated with no sidebar highlight. Pre-existing behavior pattern; out of scope for this story. — deferred, pre-existing
+- [x] [Review][Defer] SwiftData relationship lazy faulting during import — `$0.sessions.sorted` on a campaign relationship could return incomplete results if faulted on a background context during concurrent import. Pre-existing SwiftData architectural constraint. — deferred, pre-existing
+- [x] [Review][Defer] Export path added to `project.yml` — intentional fix for a pre-existing build issue (ExportSheet.swift existed but its folder was missing from sources). Not introduced by this story. — deferred, pre-existing
+
 ## Change Log
 
 - 2026-04-03: Implemented campaign grouping in Mac sidebar, fixed project.yml missing Export path, fixed 2 pre-existing test bugs, added 9 new grouping tests — all 381+ tests pass
+- 2026-04-03: Code review — applied 3 patches: UUID-based ForEach IDs, section header color textPrimary, single groupedSessions computation; 3 items deferred (pre-existing)

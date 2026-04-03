@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-04-01
-last_updated: 2026-04-03 # story 7.4 implementation complete, set to review
+last_updated: 2026-04-03 # story 7.4 code review complete, set to done
 project: Dictly
 project_key: NOKEY
 tracking_system: file-system
@@ -97,4 +97,4 @@ development_status:
   7-1-ios-recording-screen-ui-fidelity: done
   7-2-mac-review-ui-fidelity: done
   7-3-design-system-compliance: done
-  7-4-mac-session-sidebar-campaign-grouping: review
+  7-4-mac-session-sidebar-campaign-grouping: done

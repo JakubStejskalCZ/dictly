@@ -7,6 +7,7 @@ import os
 struct ContentView: View {
     @Query(sort: \Campaign.createdAt, order: .forward) private var campaigns: [Campaign]
     @Query(sort: \Session.date, order: .reverse) private var sessions: [Session]
+    private let uncampaignedGroupID = UUID(uuidString: "00000000-0000-0000-0000-000000000001")!
     @Environment(\.modelContext) private var modelContext
     @State private var selectedSession: Session?
     @State private var searchService = SearchService()
@@ -49,13 +50,13 @@ struct ContentView: View {
 
     // MARK: - Grouped Sessions
 
-    private var groupedSessions: [(title: String, sessions: [Session])] {
-        var groups: [(title: String, sessions: [Session])] = campaigns
+    private var groupedSessions: [(id: UUID, title: String, sessions: [Session])] {
+        var groups: [(id: UUID, title: String, sessions: [Session])] = campaigns
             .filter { !$0.sessions.isEmpty }
-            .map { ($0.name, $0.sessions.sorted { $0.date > $1.date }) }
+            .map { ($0.uuid, $0.name, $0.sessions.sorted { $0.date > $1.date }) }
         let uncampaigned = sessions.filter { $0.campaign == nil }
         if !uncampaigned.isEmpty {
-            groups.append(("Uncampaigned", uncampaigned.sorted { $0.date > $1.date }))
+            groups.append((uncampaignedGroupID, "Uncampaigned", uncampaigned.sorted { $0.date > $1.date }))
         }
         return groups
     }
@@ -84,8 +85,9 @@ struct ContentView: View {
     // MARK: - Session List
 
     private var sessionList: some View {
-        List(selection: $selectedSession) {
-            ForEach(groupedSessions, id: \.title) { group in
+        let groups = groupedSessions
+        return List(selection: $selectedSession) {
+            ForEach(groups, id: \.id) { group in
                 Section {
                     ForEach(group.sessions, id: \.uuid) { session in
                         sessionRow(session)
@@ -98,7 +100,7 @@ struct ContentView: View {
         }
         .listStyle(.sidebar)
         .overlay {
-            if groupedSessions.isEmpty {
+            if groups.isEmpty {
                 Text("No sessions yet.\nImport a session from iOS to get started.")
                     .font(DictlyTypography.caption)
                     .foregroundStyle(DictlyColors.textSecondary)
@@ -112,7 +114,7 @@ struct ContentView: View {
         Text(campaignName)
             .font(DictlyTypography.caption)
             .fontWeight(.semibold)
-            .foregroundStyle(DictlyColors.textSecondary)
+            .foregroundStyle(DictlyColors.textPrimary)
             .accessibilityLabel("\(campaignName) campaign, \(sessionCount) session\(sessionCount == 1 ? "" : "s")")
     }
 
