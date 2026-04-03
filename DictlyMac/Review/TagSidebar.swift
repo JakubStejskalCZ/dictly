@@ -130,10 +130,6 @@ struct TagSidebar: View {
             }
             AccessibilityNotification.LayoutChanged().post()
         }
-        // Provide ModelContext to SearchService for tag UUID resolution
-        .onAppear {
-            searchService.setModelContext(modelContext)
-        }
         .alert("Delete Tag?", isPresented: $showDeleteAlert) {
             Button("Delete", role: .destructive) {
                 if let tag = tagToDelete {

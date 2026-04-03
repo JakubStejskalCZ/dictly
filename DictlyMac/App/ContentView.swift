@@ -2,6 +2,7 @@ import SwiftUI
 import SwiftData
 import DictlyModels
 import DictlyTheme
+import os
 
 struct ContentView: View {
     @Query(sort: \Session.date, order: .reverse) private var sessions: [Session]
@@ -9,6 +10,7 @@ struct ContentView: View {
     @State private var selectedSession: Session?
     @State private var searchService = SearchService()
     @State private var pendingTagID: UUID?
+    private let logger = Logger(subsystem: "com.dictly.mac", category: "search")
 
     var body: some View {
         NavigationSplitView {
@@ -47,11 +49,19 @@ struct ContentView: View {
         // Fetch the session from SwiftData by UUID
         let sessionID = result.sessionID
         let descriptor = FetchDescriptor<Session>(predicate: #Predicate { $0.uuid == sessionID })
-        guard let session = try? modelContext.fetch(descriptor).first else { return }
+        guard let session = try? modelContext.fetch(descriptor).first else {
+            logger.warning("Search nav: session \(sessionID, privacy: .public) not found in store")
+            return
+        }
 
         selectedSession = session
-        pendingTagID = result.tagID
         searchService.clearSearch()
+        // Defer pendingTagID by one run-loop tick so SessionReviewScreen receives
+        // the new session identity before the onChange fires.
+        let tagID = result.tagID
+        Task { @MainActor in
+            pendingTagID = tagID
+        }
     }
 
     // MARK: - Session List

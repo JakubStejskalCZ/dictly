@@ -20,6 +20,7 @@ struct SearchResult: Identifiable {
     let transcriptionSnippet: String?
     let categoryName: String
     let sessionID: UUID
+    let sessionDate: Date
 }
 
 // MARK: - SearchService
@@ -91,6 +92,10 @@ public final class SearchService {
 
         do {
             let results = try await runSpotlightQuery(term: term, context: context)
+            guard !Task.isCancelled else {
+                isSearching = false
+                return
+            }
             searchResults = results
             logger.info("Search returned \(results.count, privacy: .public) result(s) for '\(term, privacy: .public)'")
         } catch {
@@ -114,7 +119,12 @@ public final class SearchService {
     // MARK: - Private: Spotlight Query
 
     private func runSpotlightQuery(term: String, context: ModelContext) async throws -> [SearchResult] {
-        let escapedTerm = term.replacingOccurrences(of: "\"", with: "\\\"")
+        let escapedTerm = term
+            .replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "*",  with: "\\*")
+            .replacingOccurrences(of: "?",  with: "\\?")
+            .replacingOccurrences(of: "'",  with: "\\'")
+            .replacingOccurrences(of: "\"", with: "\\\"")
         let queryString = "textContent == '*\(escapedTerm)*'c || title == '*\(escapedTerm)*'c || keywords == '*\(escapedTerm)*'c"
 
         let queryContext = CSSearchQueryContext()
@@ -169,7 +179,8 @@ public final class SearchService {
             anchorTime: tag.anchorTime,
             transcriptionSnippet: snippet,
             categoryName: tag.categoryName,
-            sessionID: session.uuid
+            sessionID: session.uuid,
+            sessionDate: session.date
         )
     }
 
@@ -185,8 +196,9 @@ public final class SearchService {
 
         if let matchRange = range {
             let matchStart = text.distance(from: text.startIndex, to: matchRange.lowerBound)
+            let matchLength = text.distance(from: matchRange.lowerBound, to: matchRange.upperBound)
             let windowStart = max(0, matchStart - 40)
-            let windowEnd = min(text.count, matchStart + term.count + 40)
+            let windowEnd = min(text.count, matchStart + matchLength + 40)
 
             let startIndex = text.index(text.startIndex, offsetBy: windowStart)
             let endIndex = text.index(text.startIndex, offsetBy: windowEnd)
@@ -219,8 +231,8 @@ public final class SearchService {
             let aExact = a.tagLabel.lowercased() == lower
             let bExact = b.tagLabel.lowercased() == lower
             if aExact != bExact { return aExact }
-            // Fall back to session number descending (most recent first)
-            return a.sessionNumber > b.sessionNumber
+            // Fall back to session date descending (most recent first)
+            return a.sessionDate > b.sessionDate
         }
     }
 }

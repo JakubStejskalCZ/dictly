@@ -91,8 +91,10 @@ struct SessionReviewScreen: View {
             guard let tagID else { return }
             if let match = session.tags.first(where: { $0.uuid == tagID }) {
                 selectedTag = match
+                pendingTagID = nil
             }
-            pendingTagID = nil
+            // If tag not found (session mismatch or not yet loaded), leave pendingTagID
+            // set so it can be retried when session.tags updates.
         }
         // Story 4.6: NewTagForm sheet for retroactive tag creation
         .sheet(isPresented: $isCreatingTag) {

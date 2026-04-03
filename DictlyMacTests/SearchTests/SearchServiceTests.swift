@@ -171,13 +171,15 @@ final class SearchServiceTests: XCTestCase {
             id: UUID(), tagID: UUID(), tagLabel: "Grimthor's Axe",
             sessionTitle: "Session 2", sessionNumber: 2,
             anchorTime: 10, transcriptionSnippet: nil,
-            categoryName: "combat", sessionID: UUID()
+            categoryName: "combat", sessionID: UUID(),
+            sessionDate: Date(timeIntervalSince1970: 2000)
         )
         let exact = SearchResult(
             id: UUID(), tagID: UUID(), tagLabel: "grimthor",
             sessionTitle: "Session 3", sessionNumber: 3,
             anchorTime: 20, transcriptionSnippet: nil,
-            categoryName: "story", sessionID: UUID()
+            categoryName: "story", sessionID: UUID(),
+            sessionDate: Date(timeIntervalSince1970: 3000)
         )
         // Inject results and verify sort via public method
         service.searchResults = [partial, exact]
@@ -192,21 +194,25 @@ final class SearchServiceTests: XCTestCase {
     }
 
     func testSearchResults_sameRelevance_mostRecentSessionFirst() {
+        let olderDate = Date(timeIntervalSince1970: 1000)
+        let newerDate = Date(timeIntervalSince1970: 9000)
         let older = SearchResult(
             id: UUID(), tagID: UUID(), tagLabel: "combat encounter",
             sessionTitle: "Session 1", sessionNumber: 1,
             anchorTime: 0, transcriptionSnippet: nil,
-            categoryName: "combat", sessionID: UUID()
+            categoryName: "combat", sessionID: UUID(),
+            sessionDate: olderDate
         )
         let newer = SearchResult(
             id: UUID(), tagID: UUID(), tagLabel: "combat encounter",
             sessionTitle: "Session 5", sessionNumber: 5,
             anchorTime: 0, transcriptionSnippet: nil,
-            categoryName: "combat", sessionID: UUID()
+            categoryName: "combat", sessionID: UUID(),
+            sessionDate: newerDate
         )
         let sorted = sortResultsForTest([older, newer], term: "combat")
-        // Neither is an exact match — sort by session number descending (most recent first)
-        XCTAssertEqual(sorted.first?.sessionNumber, 5)
+        // Neither is an exact match — sort by session date descending (most recent first)
+        XCTAssertEqual(sorted.first?.sessionDate, newerDate)
     }
 
     // MARK: - Helpers
@@ -216,7 +222,8 @@ final class SearchServiceTests: XCTestCase {
             id: UUID(), tagID: UUID(), tagLabel: "Test",
             sessionTitle: "Session 1", sessionNumber: 1,
             anchorTime: 0, transcriptionSnippet: nil,
-            categoryName: "story", sessionID: UUID()
+            categoryName: "story", sessionID: UUID(),
+            sessionDate: Date()
         )
     }
 
@@ -227,7 +234,7 @@ final class SearchServiceTests: XCTestCase {
             let aExact = a.tagLabel.lowercased() == lower
             let bExact = b.tagLabel.lowercased() == lower
             if aExact != bExact { return aExact }
-            return a.sessionNumber > b.sessionNumber
+            return a.sessionDate > b.sessionDate
         }
     }
 }
