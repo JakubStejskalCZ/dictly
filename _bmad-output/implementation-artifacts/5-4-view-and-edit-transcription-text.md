@@ -1,6 +1,6 @@
 # Story 5.4: View & Edit Transcription Text
 
-Status: review
+Status: done
 
 ## Story
 
@@ -65,6 +65,13 @@ So that my session archive has accurate searchable text.
   - [x] 5.7 All 245 DictlyKit tests pass (0 regressions) — `swift test` in DictlyKit
   - [x] 5.8 Mac test target builds cleanly: `** TEST BUILD SUCCEEDED **`
   - [x] 5.9 DictlyKit tests include TranscriptionEngine model tests — all pass
+
+### Review Findings
+
+- [x] [Review][Patch] Remove `isTranscriptionFocused` guard from `onChange(of: selectedTag?.uuid)` commit block — edit silently dropped if OS clears focus before onChange fires [TagDetailPanel.swift:66]
+- [x] [Review][Patch] Sync `editingTranscription` when `tag.transcription` changes externally — buffer goes stale after re-transcription completes on currently-selected tag [TagDetailPanel.swift:283]
+- [x] [Review][Defer] Delete tag while transcription editor focused may write to deleted model object [TagDetailPanel.swift:433] — deferred, pre-existing pattern matches notes commit; alert dialog naturally dismisses focus before delete fires
+- [x] [Review][Defer] Tests cannot cover private `commitTranscription` guard (selectedTag stale-capture path) — deferred, Swift private method limitation; model-layer tests are correct per project convention
 
 ## Dev Notes
 

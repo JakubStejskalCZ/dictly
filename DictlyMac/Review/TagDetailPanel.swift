@@ -62,8 +62,10 @@ struct TagDetailPanel: View {
                     }
                 }
             }
-            // Commit in-progress transcription edit to old tag before switching.
-            if isTranscriptionFocused, let oldUUID = oldUUID {
+            // Commit any pending transcription edit to old tag before switching.
+            // Guard is intentionally unconditional (no isTranscriptionFocused check) — the OS
+            // may clear focus state before onChange fires, silently dropping the pending edit.
+            if let oldUUID = oldUUID {
                 let descriptor = FetchDescriptor<Tag>(predicate: #Predicate { $0.uuid == oldUUID })
                 if let oldTag = try? modelContext.fetch(descriptor).first {
                     if editingTranscription != (oldTag.transcription ?? "") {
@@ -298,6 +300,14 @@ struct TagDetailPanel: View {
                             AccessibilityNotification.Announcement("Editing transcription").post()
                         } else {
                             commitTranscription(tag: tag)
+                        }
+                    }
+                    .onChange(of: tag.transcription) { _, newValue in
+                        // Keep buffer in sync when TranscriptionEngine updates the model
+                        // externally (e.g., retry completes while this tag is selected).
+                        // Skip sync while the user is actively editing to avoid clobbering input.
+                        if !isTranscriptionFocused {
+                            editingTranscription = newValue ?? ""
                         }
                     }
                     .accessibilityLabel(editingTranscription.isEmpty

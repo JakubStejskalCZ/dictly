@@ -1,5 +1,10 @@
 # Deferred Work
 
+## Deferred from: code review of 5-4-view-and-edit-transcription-text (2026-04-03)
+
+- Delete tag while transcription editor focused may attempt a write to the deleted model object — alert dialog naturally dismisses focus before delete fires, making this a no-op in practice; same pattern as notes commit. Address if delete can be triggered programmatically without focus dismissal.
+- Tests cannot directly cover the `commitTranscription` stale-capture guard path (`selectedTag?.uuid != tag.uuid`) — Swift `private` method limitation; model-layer tests are the correct granularity per project convention.
+
 ## Deferred from: code review of 5-3-per-tag-and-batch-transcription (2026-04-03)
 
 - Cancellation not forwarded into `bridge.transcribe` (`WhisperBridge.swift`) — Swift cooperative cancellation cannot be injected into the whisper.cpp FFI layer; batch cancellation is best-effort (between tags). Address when/if WhisperBridge adds cancellation support.
