@@ -19,6 +19,59 @@ packages:
     path: ../DictlyKit
 
 targets:
+  WhisperLib:
+    type: library.static
+    platform: macOS
+    deploymentTarget: "14.0"
+    sources:
+      # whisper core
+      - path: ../Vendor/whisper.cpp/src/whisper.cpp
+      # ggml base
+      - path: ../Vendor/whisper.cpp/ggml/src/ggml.c
+      - path: ../Vendor/whisper.cpp/ggml/src/ggml.cpp
+      - path: ../Vendor/whisper.cpp/ggml/src/ggml-alloc.c
+      - path: ../Vendor/whisper.cpp/ggml/src/ggml-backend.cpp
+      - path: ../Vendor/whisper.cpp/ggml/src/ggml-backend-reg.cpp
+      - path: ../Vendor/whisper.cpp/ggml/src/ggml-backend-dl.cpp
+      - path: ../Vendor/whisper.cpp/ggml/src/ggml-opt.cpp
+      - path: ../Vendor/whisper.cpp/ggml/src/ggml-threading.cpp
+      - path: ../Vendor/whisper.cpp/ggml/src/ggml-quants.c
+      - path: ../Vendor/whisper.cpp/ggml/src/gguf.cpp
+      # ggml CPU backend
+      - path: ../Vendor/whisper.cpp/ggml/src/ggml-cpu/ggml-cpu.c
+      - path: ../Vendor/whisper.cpp/ggml/src/ggml-cpu/ggml-cpu.cpp
+      - path: ../Vendor/whisper.cpp/ggml/src/ggml-cpu/binary-ops.cpp
+      - path: ../Vendor/whisper.cpp/ggml/src/ggml-cpu/ops.cpp
+      - path: ../Vendor/whisper.cpp/ggml/src/ggml-cpu/quants.c
+      - path: ../Vendor/whisper.cpp/ggml/src/ggml-cpu/repack.cpp
+      - path: ../Vendor/whisper.cpp/ggml/src/ggml-cpu/traits.cpp
+      - path: ../Vendor/whisper.cpp/ggml/src/ggml-cpu/unary-ops.cpp
+      - path: ../Vendor/whisper.cpp/ggml/src/ggml-cpu/vec.cpp
+      - path: ../Vendor/whisper.cpp/ggml/src/ggml-cpu/hbm.cpp
+      # ggml CPU backend — ARM64 (Apple Silicon) arch-specific
+      - path: ../Vendor/whisper.cpp/ggml/src/ggml-cpu/arch/arm/quants.c
+      - path: ../Vendor/whisper.cpp/ggml/src/ggml-cpu/arch/arm/repack.cpp
+      - path: ../Vendor/whisper.cpp/ggml/src/ggml-cpu/arch/arm/cpu-feats.cpp
+      # ggml Metal backend
+      - path: ../Vendor/whisper.cpp/ggml/src/ggml-metal/ggml-metal.cpp
+      - path: ../Vendor/whisper.cpp/ggml/src/ggml-metal/ggml-metal-common.cpp
+      - path: ../Vendor/whisper.cpp/ggml/src/ggml-metal/ggml-metal-context.m
+      - path: ../Vendor/whisper.cpp/ggml/src/ggml-metal/ggml-metal-device.cpp
+      - path: ../Vendor/whisper.cpp/ggml/src/ggml-metal/ggml-metal-device.m
+      - path: ../Vendor/whisper.cpp/ggml/src/ggml-metal/ggml-metal-ops.cpp
+    settings:
+      base:
+        PRODUCT_NAME: WhisperLib
+        SWIFT_VERSION: ""
+        GCC_C_LANGUAGE_STANDARD: c11
+        CLANG_CXX_LANGUAGE_STANDARD: c++17
+        CLANG_ENABLE_OBJC_ARC: NO
+        CLANG_ENABLE_MODULES: YES
+        HEADER_SEARCH_PATHS: "$(SRCROOT)/../Vendor/whisper.cpp/include $(SRCROOT)/../Vendor/whisper.cpp/ggml/include $(SRCROOT)/../Vendor/whisper.cpp/ggml/src $(SRCROOT)/../Vendor/whisper.cpp/ggml/src/ggml-cpu $(SRCROOT)/../Vendor/whisper.cpp/ggml/src/ggml-cpu/arch/arm $(SRCROOT)/../Vendor/whisper.cpp/ggml/src/ggml-metal $(SRCROOT)/../Vendor/whisper.cpp/src"
+        OTHER_CFLAGS: '-O3 -DNDEBUG -DGGML_USE_METAL -DGGML_USE_CPU -DGGML_USE_ACCELERATE -DACCELERATE_NEW_LAPACK -DACCELERATE_LAPACK_ILP64 -DWHISPER_VERSION=\"1.8.4\" -DGGML_VERSION=\"0.9.8\" -DGGML_COMMIT=\"9386f239\"'
+        OTHER_CPLUSPLUSFLAGS: '-O3 -DNDEBUG -DGGML_USE_METAL -DGGML_USE_CPU -DGGML_USE_ACCELERATE -DACCELERATE_NEW_LAPACK -DACCELERATE_LAPACK_ILP64 -DWHISPER_VERSION=\"1.8.4\" -DGGML_VERSION=\"0.9.8\" -DGGML_COMMIT=\"9386f239\"'
+        GCC_WARN_INHIBIT_ALL_WARNINGS: YES
+
   DictlyMac:
     type: application
     platform: macOS
@@ -29,6 +82,7 @@ targets:
       - path: Import
       - path: Settings
       - path: Review
+      - path: Transcription
     resources:
       - path: Resources
     entitlements:
@@ -42,9 +96,51 @@ targets:
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         CODE_SIGN_ENTITLEMENTS: Resources/DictlyMac.entitlements
+        SWIFT_OBJC_BRIDGING_HEADER: "$(SRCROOT)/Transcription/WhisperBridge-Bridging-Header.h"
+        HEADER_SEARCH_PATHS: "$(SRCROOT)/../Vendor/whisper.cpp/include $(SRCROOT)/../Vendor/whisper.cpp/ggml/include"
+        OTHER_LDFLAGS: "-ObjC -lc++"
     dependencies:
       - package: DictlyKit
         product: DictlyKit
+      - target: WhisperLib
+      - framework: Metal.framework
+        embed: false
+      - framework: MetalKit.framework
+        embed: false
+      - framework: MetalPerformanceShaders.framework
+        embed: false
+      - framework: CoreML.framework
+        embed: false
+      - framework: Accelerate.framework
+        embed: false
+    postCompileScripts:
+      - name: "Compile whisper.cpp Metal Shader"
+        script: |
+          #!/bin/bash
+          set -e
+          GGML_SRC="${SRCROOT}/../Vendor/whisper.cpp/ggml/src"
+          METAL_SRC="${GGML_SRC}/ggml-metal/ggml-metal.metal"
+          AIR_OUT="${TEMP_DIR}/ggml-metal.air"
+          RESOURCES_OUT="${BUILT_PRODUCTS_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}"
+
+          mkdir -p "${RESOURCES_OUT}"
+
+          xcrun -sdk macosx metal \
+            -fno-fast-math \
+            -I "${GGML_SRC}" \
+            -I "${GGML_SRC}/ggml-metal" \
+            -c "${METAL_SRC}" \
+            -o "${AIR_OUT}"
+
+          xcrun -sdk macosx metallib \
+            "${AIR_OUT}" \
+            -o "${RESOURCES_OUT}/default.metallib"
+        inputFiles:
+          - $(SRCROOT)/../Vendor/whisper.cpp/ggml/src/ggml-metal/ggml-metal.metal
+          - $(SRCROOT)/../Vendor/whisper.cpp/ggml/src/ggml-common.h
+          - $(SRCROOT)/../Vendor/whisper.cpp/ggml/src/ggml-metal/ggml-metal-impl.h
+        outputFiles:
+          - $(BUILT_PRODUCTS_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/default.metallib
 
   DictlyMacTests:
     type: bundle.unit-test
@@ -57,6 +153,7 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.dictly.mac.tests
         SWIFT_VERSION: "6.0"
         GENERATE_INFOPLIST_FILE: YES
+        HEADER_SEARCH_PATHS: "$(SRCROOT)/../Vendor/whisper.cpp/include $(SRCROOT)/../Vendor/whisper.cpp/ggml/include"
     dependencies:
       - target: DictlyMac
       - package: DictlyKit

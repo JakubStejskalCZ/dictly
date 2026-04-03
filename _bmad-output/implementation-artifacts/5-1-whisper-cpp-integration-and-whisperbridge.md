@@ -1,6 +1,6 @@
 # Story 5.1: whisper.cpp Integration & WhisperBridge
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -29,65 +29,65 @@ So that the Mac app can transcribe audio segments natively without a Python runt
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Add whisper.cpp as git submodule (AC: #1)
-  - [ ] 1.1 Add git submodule at `Vendor/whisper.cpp` pointing to `https://github.com/ggml-org/whisper.cpp`
-  - [ ] 1.2 Pin to latest stable release tag
-  - [ ] 1.3 Verify submodule clones correctly with `git submodule update --init`
+- [x] Task 1: Add whisper.cpp as git submodule (AC: #1)
+  - [x] 1.1 Add git submodule at `Vendor/whisper.cpp` pointing to `https://github.com/ggml-org/whisper.cpp`
+  - [x] 1.2 Pin to latest stable release tag
+  - [x] 1.3 Verify submodule clones correctly with `git submodule update --init`
 
-- [ ] Task 2: Configure Xcode build for whisper.cpp C library (AC: #1)
-  - [ ] 2.1 Create a C library target or bridging approach in the DictlyMac Xcode project that compiles the whisper.cpp source files
-  - [ ] 2.2 Add required whisper.cpp source files: `whisper.cpp`, `ggml*.c/cpp` files from `Vendor/whisper.cpp/src/` and `Vendor/whisper.cpp/ggml/src/`
-  - [ ] 2.3 Set header search paths to include `Vendor/whisper.cpp/include` and `Vendor/whisper.cpp/ggml/include`
-  - [ ] 2.4 Enable Metal acceleration: link `Metal.framework`, `MetalKit.framework`, `MetalPerformanceShaders.framework`; compile `ggml-metal.m` with Metal backend enabled (`GGML_USE_METAL=1`)
-  - [ ] 2.5 Enable Core ML acceleration: link `CoreML.framework`; set `WHISPER_USE_COREML=1` if using Core ML model variant
-  - [ ] 2.6 Add `Accelerate.framework` for BLAS optimizations
-  - [ ] 2.7 Set C/C++ compiler flags: `-O3`, `-DNDEBUG`, `-DGGML_USE_METAL`, `-DGGML_USE_ACCELERATE`
-  - [ ] 2.8 Create bridging header `DictlyMac/Transcription/WhisperBridge-Bridging-Header.h` that imports `whisper.h`
-  - [ ] 2.9 Verify DictlyMac target builds and links cleanly with `CODE_SIGN_IDENTITY=""`
+- [x] Task 2: Configure Xcode build for whisper.cpp C library (AC: #1)
+  - [x] 2.1 Create a C library target or bridging approach in the DictlyMac Xcode project that compiles the whisper.cpp source files
+  - [x] 2.2 Add required whisper.cpp source files: `whisper.cpp`, `ggml*.c/cpp` files from `Vendor/whisper.cpp/src/` and `Vendor/whisper.cpp/ggml/src/`
+  - [x] 2.3 Set header search paths to include `Vendor/whisper.cpp/include` and `Vendor/whisper.cpp/ggml/include`
+  - [x] 2.4 Enable Metal acceleration: link `Metal.framework`, `MetalKit.framework`, `MetalPerformanceShaders.framework`; compile `ggml-metal.m` with Metal backend enabled (`GGML_USE_METAL=1`)
+  - [x] 2.5 Enable Core ML acceleration: link `CoreML.framework`; set `WHISPER_USE_COREML=1` if using Core ML model variant
+  - [x] 2.6 Add `Accelerate.framework` for BLAS optimizations
+  - [x] 2.7 Set C/C++ compiler flags: `-O3`, `-DNDEBUG`, `-DGGML_USE_METAL`, `-DGGML_USE_ACCELERATE`
+  - [x] 2.8 Create bridging header `DictlyMac/Transcription/WhisperBridge-Bridging-Header.h` that imports `whisper.h`
+  - [x] 2.9 Verify DictlyMac target builds and links cleanly with `CODE_SIGN_IDENTITY=""`
 
-- [ ] Task 3: Implement WhisperBridge Swift wrapper (AC: #2, #3, #4)
-  - [ ] 3.1 Create `DictlyMac/Transcription/WhisperBridge.swift` as `@Observable` class
-  - [ ] 3.2 Implement `init()` — no model loaded yet (lazy loading)
-  - [ ] 3.3 Implement `loadModel(at modelURL: URL) throws` — calls `whisper_init_from_file_with_params()` with `use_gpu = true`; stores opaque `OpaquePointer` to `whisper_context`; throws `.transcription(.modelNotFound)` if file missing, `.transcription(.modelCorrupted)` if init returns nil
-  - [ ] 3.4 Implement `transcribe(audioURL: URL, modelURL: URL) async throws -> String`:
+- [x] Task 3: Implement WhisperBridge Swift wrapper (AC: #2, #3, #4)
+  - [x] 3.1 Create `DictlyMac/Transcription/WhisperBridge.swift` as `@Observable` class
+  - [x] 3.2 Implement `init()` — no model loaded yet (lazy loading)
+  - [x] 3.3 Implement `loadModel(at modelURL: URL) throws` — calls `whisper_init_from_file_with_params()` with `use_gpu = true`; stores opaque `OpaquePointer` to `whisper_context`; throws `.transcription(.modelNotFound)` if file missing, `.transcription(.modelCorrupted)` if init returns nil
+  - [x] 3.4 Implement `transcribe(audioURL: URL, modelURL: URL) async throws -> String`:
     - Load model if not already loaded (or if modelURL differs from current)
     - Convert AAC audio to PCM float32 samples at 16kHz mono using AVFoundation (`AVAudioFile` + `AVAudioConverter`)
     - Call `whisper_full()` with greedy sampling params (`WHISPER_SAMPLING_GREEDY`), language `"en"`, threads = `ProcessInfo.processInfo.activeProcessorCount` (capped at 8)
     - Collect segment text via `whisper_full_n_segments()` / `whisper_full_get_segment_text()`
     - Return concatenated transcription string
-  - [ ] 3.5 Implement `deinit` — calls `whisper_free()` on context if loaded
-  - [ ] 3.6 Ensure `transcribe` is dispatched off main thread (the `async` context handles this; verify with `MainActor` assertion in debug)
-  - [ ] 3.7 Log transcription lifecycle events with `os.Logger` (subsystem `com.dictly.mac`, category `transcription`)
+  - [x] 3.5 Implement `deinit` — calls `whisper_free()` on context if loaded
+  - [x] 3.6 Ensure `transcribe` is dispatched off main thread (the `async` context handles this; verify with `MainActor` assertion in debug)
+  - [x] 3.7 Log transcription lifecycle events with `os.Logger` (subsystem `com.dictly.mac`, category `transcription`)
 
-- [ ] Task 4: Implement audio format conversion helper (AC: #2)
-  - [ ] 4.1 Create private method `convertToPCM(audioURL: URL) throws -> [Float]`
-  - [ ] 4.2 Use `AVAudioFile` to read source AAC file
-  - [ ] 4.3 Use `AVAudioConverter` to convert to 16kHz mono `Float32` PCM format (`AVAudioCommonFormat.pcmFormatFloat32`, sampleRate 16000, channels 1)
-  - [ ] 4.4 Return `[Float]` array of samples
-  - [ ] 4.5 Throw `.transcription(.audioConversionFailed)` on conversion error
+- [x] Task 4: Implement audio format conversion helper (AC: #2)
+  - [x] 4.1 Create private method `convertToPCM(audioURL: URL) throws -> [Float]`
+  - [x] 4.2 Use `AVAudioFile` to read source AAC file
+  - [x] 4.3 Use `AVAudioConverter` to convert to 16kHz mono `Float32` PCM format (`AVAudioCommonFormat.pcmFormatFloat32`, sampleRate 16000, channels 1)
+  - [x] 4.4 Return `[Float]` array of samples
+  - [x] 4.5 Throw `.transcription(.audioConversionFailed)` on conversion error
 
-- [ ] Task 5: Extend DictlyError.TranscriptionError (AC: #3)
-  - [ ] 5.1 Add new cases to `TranscriptionError` enum in `DictlyKit/Sources/DictlyModels/DictlyError.swift`:
+- [x] Task 5: Extend DictlyError.TranscriptionError (AC: #3)
+  - [x] 5.1 Add new cases to `TranscriptionError` enum in `DictlyKit/Sources/DictlyModels/DictlyError.swift`:
     - `modelCorrupted` — model file exists but failed to load
     - `audioConversionFailed` — AAC to PCM conversion failed
     - `audioFileNotFound` — source audio file missing
-  - [ ] 5.2 Add `errorDescription` for each new case
-  - [ ] 5.3 Verify existing tests in DictlyKit still pass (245 tests)
+  - [x] 5.2 Add `errorDescription` for each new case
+  - [x] 5.3 Verify existing tests in DictlyKit still pass (245 tests)
 
-- [ ] Task 6: Write unit tests (AC: #1, #2, #3, #4)
-  - [ ] 6.1 Create `DictlyMacTests/TranscriptionTests/WhisperBridgeTests.swift`
-  - [ ] 6.2 Test: model loading throws `.modelNotFound` for nonexistent path
-  - [ ] 6.3 Test: model loading throws `.modelCorrupted` for invalid file (e.g., empty file)
-  - [ ] 6.4 Test: audio conversion produces correct sample rate and channel count
-  - [ ] 6.5 Test: transcribe throws `.audioFileNotFound` for missing audio
-  - [ ] 6.6 Test: transcription runs off main thread (assert `!Thread.isMainThread` inside)
-  - [ ] 6.7 Test: full transcription pipeline with bundled test audio + model (integration test, mark as performance/integration if model files are large)
-  - [ ] 6.8 Verify all DictlyKit tests still pass (no regressions)
+- [x] Task 6: Write unit tests (AC: #1, #2, #3, #4)
+  - [x] 6.1 Create `DictlyMacTests/TranscriptionTests/WhisperBridgeTests.swift`
+  - [x] 6.2 Test: model loading throws `.modelNotFound` for nonexistent path
+  - [x] 6.3 Test: model loading throws `.modelCorrupted` for invalid file (e.g., empty file)
+  - [x] 6.4 Test: audio conversion produces correct sample rate and channel count
+  - [x] 6.5 Test: transcribe throws `.audioFileNotFound` for missing audio
+  - [x] 6.6 Test: transcription runs off main thread (assert `!Thread.isMainThread` inside)
+  - [x] 6.7 Test: full transcription pipeline with bundled test audio + model (integration test, mark as performance/integration if model files are large)
+  - [x] 6.8 Verify all DictlyKit tests still pass (no regressions)
 
-- [ ] Task 7: Download base.en model for development/testing (AC: #2)
-  - [ ] 7.1 Use whisper.cpp's `models/download-ggml-model.sh` script to download `ggml-base.en.bin` (~148 MB)
-  - [ ] 7.2 Place in a known development path (do NOT bundle in git — add to `.gitignore`)
-  - [ ] 7.3 Document model download instructions in story completion notes
+- [x] Task 7: Download base.en model for development/testing (AC: #2)
+  - [x] 7.1 Use whisper.cpp's `models/download-ggml-model.sh` script to download `ggml-base.en.bin` (~148 MB)
+  - [x] 7.2 Place in a known development path (do NOT bundle in git — add to `.gitignore`)
+  - [x] 7.3 Document model download instructions in story completion notes
 
 ## Dev Notes
 
@@ -149,11 +149,15 @@ let converter = AVAudioConverter(from: audioFile.processingFormat, to: targetFor
 ### Build Configuration — Critical Details
 
 - **Xcode project approach** (NOT Swift Package Manager for whisper.cpp): whisper.cpp has complex C/C++/Metal build requirements that don't map well to SPM. Add source files directly to an Xcode target or use a static library target.
-- **Metal shader compilation:** The `ggml-metal.metal` shader file from whisper.cpp must be included in the Mac target's resources (Copy Bundle Resources build phase) so Metal can compile it at runtime.
+- **Metal shader compilation:** The `ggml-metal.metal` shader file from whisper.cpp must be compiled via a post-compile build script using `xcrun metal`/`xcrun metallib` because Xcode's Metal compiler doesn't have the whisper.cpp include paths. The compiled `default.metallib` is placed in the app bundle's resources.
 - **Header search paths:** Must include both `Vendor/whisper.cpp/include` (for `whisper.h`) and `Vendor/whisper.cpp/ggml/include` (for `ggml.h` and related headers).
 - **Compiler flags per file:** C files need `-std=c11`, C++ files need `-std=c++17`. Both need `-O3 -DNDEBUG` for release performance.
 - **Framework linking:** `Metal.framework`, `MetalKit.framework`, `MetalPerformanceShaders.framework`, `CoreML.framework`, `Accelerate.framework`.
 - **Build command:** `CODE_SIGN_IDENTITY=""` for local dev builds (established pattern from previous stories).
+- **ARM64-specific sources:** Must include `ggml-cpu/arch/arm/quants.c`, `ggml-cpu/arch/arm/repack.cpp`, `ggml-cpu/arch/arm/cpu-feats.cpp` for Apple Silicon quantization support.
+- **MRC required:** ggml Metal ObjC files use manual reference counting (`[release]`). Set `CLANG_ENABLE_OBJC_ARC = NO` for the WhisperLib target.
+- **C++ stdlib:** Must link `-lc++` in DictlyMac's `OTHER_LDFLAGS` to resolve C++ standard library symbols from the static library.
+- **Version defines:** Must define `WHISPER_VERSION`, `GGML_VERSION`, and `GGML_COMMIT` as they're not auto-generated without CMake.
 
 ### Existing Code to Reuse / Extend
 
@@ -217,6 +221,8 @@ Files to modify:
 DictlyKit/Sources/DictlyModels/DictlyError.swift  # Add new TranscriptionError cases
 .gitignore                                          # Add model file patterns
 .gitmodules                                         # Created by git submodule add
+DictlyMac/project.yml                               # WhisperLib target + Metal build script
+DictlyMac/Resources/Info.plist                      # Add required CFBundle* keys
 ```
 
 ### References
@@ -234,8 +240,45 @@ DictlyKit/Sources/DictlyModels/DictlyError.swift  # Add new TranscriptionError c
 
 ### Agent Model Used
 
+claude-sonnet-4-6
+
 ### Debug Log References
+
+- Build error: `WHISPER_VERSION` undeclared — added `-DWHISPER_VERSION=\"1.8.4\"` to compiler flags (CMake generates this automatically)
+- Build error: `GGML_VERSION`/`GGML_COMMIT` undeclared — added version defines (0.9.8, 9386f239)
+- Build error: Metal ObjC files use MRC — disabled ARC (`CLANG_ENABLE_OBJC_ARC = NO`) for WhisperLib target
+- Build error: ggml-metal.metal `ggml-common.h` not found — Metal compiler uses different search paths; replaced with post-compile build script using `xcrun metal`/`xcrun metallib`
+- Build error: linker missing C++ symbols — added `-lc++` to DictlyMac `OTHER_LDFLAGS`
+- Build error: linker missing `ggml_vec_dot_*` — added ARM64-specific sources from `ggml-cpu/arch/arm/`
+- Test runner error: `CFBundleIdentifier not found in Info.plist` — added required `CFBundle*` keys to Resources/Info.plist
 
 ### Completion Notes List
 
+- ✅ whisper.cpp v1.8.4 added as git submodule at `Vendor/whisper.cpp`
+- ✅ `WhisperLib` static library target created in project.yml with 27 C/C++/ObjC source files from whisper.cpp
+- ✅ Metal shader compiled to `default.metallib` via post-compile build script (xcrun metal/metallib) with correct include paths; bundled in app resources
+- ✅ All 5 required frameworks linked: Metal, MetalKit, MetalPerformanceShaders, CoreML, Accelerate
+- ✅ `WhisperBridge.swift` implemented as `@Observable` class with lazy model loading, async transcription, and full PCM conversion pipeline
+- ✅ `WhisperBridge-Bridging-Header.h` created at `DictlyMac/Transcription/`
+- ✅ `DictlyError.TranscriptionError` extended with 3 new cases: `modelCorrupted`, `audioConversionFailed`, `audioFileNotFound`
+- ✅ 6 WhisperBridge unit tests passing (integration test 6.7 skipped if model not present — by design)
+- ✅ DictlyKit: 245 tests passing, 0 regressions
+- ✅ DictlyMacTests: WhisperBridgeTests 6/6 pass; 2 pre-existing failures from Epic 4 (stories 4-5/4-6) unrelated to this story
+- ✅ Model download: `cd Vendor/whisper.cpp && bash models/download-ggml-model.sh base.en`; place at `~/Library/Application Support/Dictly/Models/ggml-base.en.bin`; add `**/ggml-*.bin` to .gitignore (done)
+
 ### File List
+
+- `Vendor/whisper.cpp/` — git submodule (new, v1.8.4)
+- `.gitmodules` — created by `git submodule add`
+- `DictlyMac/Transcription/WhisperBridge.swift` — new
+- `DictlyMac/Transcription/WhisperBridge-Bridging-Header.h` — new
+- `DictlyMac/project.yml` — modified (WhisperLib target, post-compile Metal shader script, bridging header, framework deps)
+- `DictlyMac/DictlyMac.xcodeproj/project.pbxproj` — regenerated by xcodegen
+- `DictlyKit/Sources/DictlyModels/DictlyError.swift` — modified (3 new TranscriptionError cases)
+- `DictlyMac/Resources/Info.plist` — modified (added CFBundle* keys)
+- `.gitignore` — modified (added whisper model file patterns)
+- `DictlyMacTests/TranscriptionTests/WhisperBridgeTests.swift` — new
+
+## Change Log
+
+- 2026-04-03: Story 5.1 implemented — whisper.cpp v1.8.4 integration, WhisperBridge @Observable class, PCM audio conversion, DictlyError extension, unit tests, Metal shader build pipeline, model download documentation

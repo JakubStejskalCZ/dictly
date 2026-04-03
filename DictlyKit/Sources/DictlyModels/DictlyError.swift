@@ -61,12 +61,18 @@ public enum DictlyError: Error, LocalizedError, Equatable {
 
     public enum TranscriptionError: Error, LocalizedError, Equatable {
         case modelNotFound
+        case modelCorrupted
         case processingFailed
+        case audioConversionFailed
+        case audioFileNotFound
 
         public var errorDescription: String? {
             switch self {
             case .modelNotFound: return "Transcription model not found."
+            case .modelCorrupted: return "Transcription model file exists but could not be loaded."
             case .processingFailed: return "Transcription processing failed."
+            case .audioConversionFailed: return "Failed to convert audio to PCM format for transcription."
+            case .audioFileNotFound: return "Audio file not found for transcription."
             }
         }
     }
