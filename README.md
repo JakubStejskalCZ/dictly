@@ -18,7 +18,7 @@ Sessions transfer between devices via AirDrop or local network (Bonjour TCP). Ta
 │   DictlyiOS  │                                    │   DictlyMac  │
 │              │                                    │              │
 │  Record audio│     AirDrop / Bonjour TCP          │  Import      │
-│  Place tags  │ ──────────────────────────────────> │  Review      │
+│  Place tags  │ ─────────────────────────────────> │  Review      │
 │  Manage      │     .dictly bundle                 │  Transcribe  │
 │  campaigns   │     (audio + session JSON)         │  Search      │
 │              │                                    │  Export      │

@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import DictlyModels
+import DictlyStorage
 import DictlyTheme
 
 struct TagFormSheet: View {
@@ -9,6 +10,7 @@ struct TagFormSheet: View {
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Environment(CategorySyncService.self) private var syncService
 
     @State private var label: String
 
@@ -49,6 +51,7 @@ struct TagFormSheet: View {
 
         if let existing = tag {
             existing.label = trimmedLabel
+            syncService.markTagModified(existing)
         } else {
             let newTag = Tag(
                 label: trimmedLabel,
@@ -57,7 +60,9 @@ struct TagFormSheet: View {
                 rewindDuration: 0
             )
             modelContext.insert(newTag)
+            syncService.markTagModified(newTag)
         }
+        syncService.pushTagsToCloud()
         dismiss()
     }
 }
@@ -65,4 +70,5 @@ struct TagFormSheet: View {
 #Preview("Create") {
     TagFormSheet(tag: nil, categoryName: "Story")
         .modelContainer(for: Tag.self, inMemory: true)
+        .environment(CategorySyncService())
 }

@@ -1,23 +1,30 @@
 import SwiftUI
 import SwiftData
 import DictlyModels
+import DictlyStorage
 import DictlyTheme
 
 struct TagListScreen: View {
     let category: TagCategory
 
     @Environment(\.modelContext) private var modelContext
-    @Query private var tags: [Tag]
+    @Environment(CategorySyncService.self) private var syncService
+    @Query private var allTags: [Tag]
 
     @State private var isShowingCreateSheet = false
     @State private var tagToEdit: Tag?
     @State private var tagToDelete: Tag?
     @State private var isShowingDeleteConfirmation = false
 
+    /// Template tags only — excludes session tags to prevent accidental data loss.
+    private var tags: [Tag] {
+        allTags.filter { $0.session == nil }
+    }
+
     init(category: TagCategory) {
         self.category = category
         let name = category.name
-        _tags = Query(filter: #Predicate<Tag> { $0.categoryName == name })
+        _allTags = Query(filter: #Predicate<Tag> { $0.categoryName == name })
     }
 
     var body: some View {
@@ -83,6 +90,7 @@ struct TagListScreen: View {
                 if let tag = tagToDelete {
                     modelContext.delete(tag)
                     tagToDelete = nil
+                    syncService.pushTagsToCloud()
                 }
             }
             Button("Cancel", role: .cancel) {
@@ -119,4 +127,5 @@ private struct TagRowView: View {
         TagListScreen(category: TagCategory(name: "Story", colorHex: "#D97706", iconName: "book.pages"))
     }
     .modelContainer(try! ModelContainer(for: Schema(DictlySchema.all), configurations: ModelConfiguration(isStoredInMemoryOnly: true)))
+    .environment(CategorySyncService())
 }
