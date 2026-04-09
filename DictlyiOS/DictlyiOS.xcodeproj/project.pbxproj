@@ -26,6 +26,7 @@
 		87A2B544278BCD7C5AB9AA94 /* CampaignListScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A34CAC83B9783FE002294049 /* CampaignListScreen.swift */; };
 		8854FF6C9D361829ACF29674 /* RecordingScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9666E2F7C32949BAE2ABF2D9 /* RecordingScreen.swift */; };
 		99FF4C6FC40557A21A43F80D /* RecordingStatusBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1981874591B00DCDD63972A /* RecordingStatusBar.swift */; };
+		9E8A8D2D368641A5F28B9E40 /* TagPackPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C813033D4284B19B771146E2 /* TagPackPickerView.swift */; };
 		9FE3AAFF02149FB90750BC86 /* TagFormSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25083852435AB1C24830FBC3 /* TagFormSheet.swift */; };
 		A0143385A6B4295D7E173921 /* SessionListRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70DEB959750632939DBA599F /* SessionListRow.swift */; };
 		AFF7496D2EA43AA3D1A40D54 /* CampaignFormSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1140D16A3FA3BF0E382A17B9 /* CampaignFormSheet.swift */; };
@@ -94,6 +95,7 @@
 		B218093E2C301C2CF79D2D48 /* TagCategoryFormSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagCategoryFormSheet.swift; sourceTree = "<group>"; };
 		B438FB1963EC9745237CDEFE /* TagCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagCard.swift; sourceTree = "<group>"; };
 		BBEC881D4003B706B4E6BEA6 /* LiveWaveform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveWaveform.swift; sourceTree = "<group>"; };
+		C813033D4284B19B771146E2 /* TagPackPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagPackPickerView.swift; sourceTree = "<group>"; };
 		CC16A18F932FD4A32FFC2733 /* TaggingServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaggingServiceTests.swift; sourceTree = "<group>"; };
 		D0105A022422D16EDE58A347 /* SessionRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionRecorder.swift; sourceTree = "<group>"; };
 		D49059690121CB6D8430EB53 /* .gitkeep */ = {isa = PBXFileReference; path = .gitkeep; sourceTree = "<group>"; };
@@ -159,6 +161,7 @@
 				25083852435AB1C24830FBC3 /* TagFormSheet.swift */,
 				73F0ABBEE9F20F6D89AAB3AC /* TaggingService.swift */,
 				218663D6D95E12A07825370C /* TagListScreen.swift */,
+				C813033D4284B19B771146E2 /* TagPackPickerView.swift */,
 				E36BCB0AD9121F4398559958 /* TagPalette.swift */,
 			);
 			path = Tagging;
@@ -400,6 +403,7 @@
 				57884EC1179A9C26DDB5C2F9 /* TagCategoryListScreen.swift in Sources */,
 				9FE3AAFF02149FB90750BC86 /* TagFormSheet.swift in Sources */,
 				50223616BDCB96EA9222C2E4 /* TagListScreen.swift in Sources */,
+				9E8A8D2D368641A5F28B9E40 /* TagPackPickerView.swift in Sources */,
 				C68F87ED17A55C2191F4DE38 /* TagPalette.swift in Sources */,
 				F8515BD4C7618243956A2D5C /* TaggingService.swift in Sources */,
 				EDF51B31EF250DCD582A2095 /* TransferPrompt.swift in Sources */,
