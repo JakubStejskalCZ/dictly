@@ -20,6 +20,9 @@ struct DictlyMacApp: App {
     @State private var networkReceiver = LocalNetworkReceiver()
     @State private var importService = ImportService()
     @State private var transcriptionEngine = TranscriptionEngine()
+    @AppStorage("hasChosenTagPacks") private var hasChosenTagPacks = false
+    @AppStorage("didMigrateToTagPacks") private var didMigrateToTagPacks = false
+    @State private var showPackPicker = false
 
     /// Tracks whether the current import originated from the network receiver,
     /// so we can call `networkReceiver.reset()` after the import settles.
@@ -35,16 +38,33 @@ struct DictlyMacApp: App {
                 .environment(transcriptionEngine.modelManager)
                 .environment(transcriptionEngine.whisperBridge)
                 .frame(minWidth: 900, minHeight: 500)
+                .sheet(isPresented: $showPackPicker) {
+                    TagPackPickerView(isOnboarding: true) {
+                        hasChosenTagPacks = true
+                    }
+                    .environment(syncService)
+                }
                 .task {
                     do {
                         try DefaultTagSeeder.deduplicateCategories(context: container.mainContext)
-                        try DefaultTagSeeder.seedIfNeeded(context: container.mainContext)
                     } catch {
-                        logger.error("Failed to seed default tags: \(error)")
+                        logger.error("Failed to deduplicate categories: \(error)")
+                    }
+                    if !didMigrateToTagPacks {
+                        do {
+                            try DefaultTagSeeder.removeAllDefaultData(context: container.mainContext)
+                            hasChosenTagPacks = false
+                            didMigrateToTagPacks = true
+                        } catch {
+                            logger.error("Failed to migrate tag data: \(error)")
+                        }
                     }
                     removeOrphanedSessions(context: container.mainContext)
                     syncService.startObserving(context: container.mainContext)
                     networkReceiver.startListening()
+                    if !hasChosenTagPacks {
+                        showPackPicker = true
+                    }
                 }
                 // AirDrop / Finder file open
                 .onOpenURL { url in
@@ -78,6 +98,7 @@ struct DictlyMacApp: App {
         Settings {
             PreferencesWindow()
                 .modelContainer(container)
+                .environment(syncService)
                 .environment(transcriptionEngine.modelManager)
                 .environment(transcriptionEngine.whisperBridge)
         }

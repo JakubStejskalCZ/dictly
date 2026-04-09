@@ -18,22 +18,43 @@ struct DictlyiOSApp: App {
 
     @State private var syncService = CategorySyncService()
     @State private var sessionRecorder = SessionRecorder()
+    @AppStorage("hasChosenTagPacks") private var hasChosenTagPacks = false
+    @AppStorage("didMigrateToTagPacks") private var didMigrateToTagPacks = false
+    @State private var showPackPicker = false
 
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .environment(syncService)
                 .environment(sessionRecorder)
+                .sheet(isPresented: $showPackPicker) {
+                    TagPackPickerView(isOnboarding: true) {
+                        hasChosenTagPacks = true
+                    }
+                    .environment(syncService)
+                    .interactiveDismissDisabled()
+                }
                 .task {
                     do {
                         try DefaultTagSeeder.deduplicateCategories(context: container.mainContext)
-                        try DefaultTagSeeder.seedIfNeeded(context: container.mainContext)
                     } catch {
-                        logger.error("Failed to seed default tags: \(error)")
+                        logger.error("Failed to deduplicate categories: \(error)")
+                    }
+                    if !didMigrateToTagPacks {
+                        do {
+                            try DefaultTagSeeder.removeAllDefaultData(context: container.mainContext)
+                            hasChosenTagPacks = false
+                            didMigrateToTagPacks = true
+                        } catch {
+                            logger.error("Failed to migrate tag data: \(error)")
+                        }
                     }
                     removeOrphanedSessions(context: container.mainContext)
                     syncService.startObserving(context: container.mainContext)
                     SessionRecorder.recoverOrphanedRecordings(context: container.mainContext)
+                    if !hasChosenTagPacks {
+                        showPackPicker = true
+                    }
                 }
         }
         .modelContainer(container)
