@@ -31,6 +31,7 @@ public final class CategorySyncService {
     private let store = NSUbiquitousKeyValueStore.default
     private let logger = Logger(subsystem: "com.dictly", category: "storage")
     private static let kvsKey = "tagCategories"
+    private static let packIDsKey = "installedPackIDs"
 
     /// ISO 8601 formatter with fractional seconds for sub-second precision in last-write-wins.
     nonisolated(unsafe) static let iso8601Formatter: ISO8601DateFormatter = {
@@ -82,7 +83,9 @@ public final class CategorySyncService {
 
         store.synchronize()
         pullCategoriesFromCloud()
+        pullPackIDsFromCloud()
         pushCategoriesToCloud()
+        pushPackIDsToCloud()
     }
 
     /// Serialize all local TagCategory objects to JSON and write to iCloud KVS.
@@ -137,6 +140,71 @@ public final class CategorySyncService {
         cachedModifiedAt[category.uuid.uuidString] = Date()
     }
 
+    // MARK: - Pack ID Sync
+
+    /// Serialize locally installed pack IDs to iCloud KVS.
+    /// Call after any pack install/uninstall to propagate changes to other devices.
+    public func pushPackIDsToCloud() {
+        guard let modelContext else {
+            logger.error("CategorySyncService: pushPackIDsToCloud called before startObserving")
+            return
+        }
+
+        do {
+            let localPackIDs = try DefaultTagSeeder.installedPackIDs(context: modelContext)
+            let sorted = Array(localPackIDs).sorted()
+            let data = try JSONEncoder().encode(sorted)
+            store.set(data, forKey: Self.packIDsKey)
+            logger.info("CategorySyncService: pushed \(sorted.count) pack IDs to iCloud KVS: \(sorted)")
+        } catch {
+            logger.error("CategorySyncService: pushPackIDs failed — \(error)")
+        }
+    }
+
+    /// Read installed pack IDs from iCloud KVS and install/uninstall packs to match.
+    func pullPackIDsFromCloud() {
+        guard let modelContext else { return }
+
+        guard let data = store.data(forKey: Self.packIDsKey) else {
+            logger.info("CategorySyncService: no pack IDs in iCloud KVS yet — nothing to pull")
+            return
+        }
+
+        processPackIDsPayload(data, into: modelContext)
+    }
+
+    /// Process a raw pack IDs payload — exposed as internal for unit testing.
+    func processPackIDsPayload(_ data: Data, into context: ModelContext) {
+        do {
+            let remotePackIDs = Set(try JSONDecoder().decode([String].self, from: data))
+            let localPackIDs = try DefaultTagSeeder.installedPackIDs(context: context)
+
+            let toInstall = remotePackIDs.subtracting(localPackIDs)
+            let toUninstall = localPackIDs.subtracting(remotePackIDs)
+
+            var sortOrder = try DefaultTagSeeder.nextSortOrder(context: context)
+            for packID in toInstall {
+                guard let pack = TagPackRegistry.all.first(where: { $0.id == packID }) else {
+                    logger.warning("CategorySyncService: unknown pack ID from cloud: \(packID) — skipping")
+                    continue
+                }
+                try DefaultTagSeeder.installPack(pack, startingSortOrder: sortOrder, context: context)
+                sortOrder += pack.categories.count
+                logger.info("CategorySyncService: auto-installed pack '\(packID)' from cloud sync")
+            }
+
+            for packID in toUninstall {
+                guard let pack = TagPackRegistry.all.first(where: { $0.id == packID }) else {
+                    continue
+                }
+                try DefaultTagSeeder.uninstallPack(pack, context: context)
+                logger.info("CategorySyncService: auto-uninstalled pack '\(packID)' from cloud sync")
+            }
+        } catch {
+            logger.error("CategorySyncService: processPackIDsPayload failed — \(error)")
+        }
+    }
+
     // MARK: - Private
 
     private func handleExternalChange(reasonRaw: Int?, changedKeys: [String]) {
@@ -148,8 +216,12 @@ public final class CategorySyncService {
             if changedKeys.contains(Self.kvsKey) || reason == .initialSyncChange {
                 pullCategoriesFromCloud()
             }
+            if changedKeys.contains(Self.packIDsKey) || reason == .initialSyncChange {
+                pullPackIDsFromCloud()
+            }
         case .accountChange:
             pullCategoriesFromCloud()
+            pullPackIDsFromCloud()
         case .quotaViolationChange:
             logger.error("CategorySyncService: iCloud KVS quota violated — sync paused")
         case .unknown:

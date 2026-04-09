@@ -302,6 +302,70 @@ final class CategorySyncMergeTests: XCTestCase {
         XCTAssertEqual(categories.count, 1, "Duplicate UUID should result in a single category")
     }
 
+    // MARK: - Pack ID Sync Tests
+
+    // Pack IDs round-trip through processPackIDsPayload
+    func testPackIDsSyncInstallsMissingPacks() throws {
+        // No packs installed initially
+        let before = try DefaultTagSeeder.installedPackIDs(context: context)
+        XCTAssertTrue(before.isEmpty)
+
+        // Simulate cloud payload with "ttrpg" pack
+        let data = try JSONEncoder().encode(["ttrpg"])
+        service.processPackIDsPayload(data, into: context)
+
+        let after = try DefaultTagSeeder.installedPackIDs(context: context)
+        XCTAssertTrue(after.contains("ttrpg"), "Pack should be auto-installed from cloud sync")
+
+        // Verify template tags were created
+        let tags = try context.fetch(FetchDescriptor<Tag>()).filter { $0.session == nil }
+        XCTAssertFalse(tags.isEmpty, "Template tags should be created for installed pack")
+    }
+
+    // Pack IDs sync uninstalls packs removed on other device
+    func testPackIDsSyncUninstallsRemovedPacks() throws {
+        // Install ttrpg pack locally first
+        let sortOrder = try DefaultTagSeeder.nextSortOrder(context: context)
+        try DefaultTagSeeder.installPack(TagPackRegistry.ttrpg, startingSortOrder: sortOrder, context: context)
+        XCTAssertTrue(try DefaultTagSeeder.installedPackIDs(context: context).contains("ttrpg"))
+
+        // Simulate cloud payload with empty pack list (ttrpg was uninstalled on other device)
+        let data = try JSONEncoder().encode([String]())
+        service.processPackIDsPayload(data, into: context)
+
+        let after = try DefaultTagSeeder.installedPackIDs(context: context)
+        XCTAssertFalse(after.contains("ttrpg"), "Pack should be auto-uninstalled from cloud sync")
+    }
+
+    // Re-syncing an already installed pack is idempotent
+    func testPackIDsSyncIsIdempotent() throws {
+        // Install ttrpg pack locally
+        let sortOrder = try DefaultTagSeeder.nextSortOrder(context: context)
+        try DefaultTagSeeder.installPack(TagPackRegistry.ttrpg, startingSortOrder: sortOrder, context: context)
+
+        let tagsBefore = try context.fetch(FetchDescriptor<Tag>()).filter { $0.session == nil }.count
+        let categoriesBefore = try context.fetch(FetchDescriptor<TagCategory>()).count
+
+        // Simulate cloud payload with same pack — should not duplicate
+        let data = try JSONEncoder().encode(["ttrpg"])
+        service.processPackIDsPayload(data, into: context)
+
+        let tagsAfter = try context.fetch(FetchDescriptor<Tag>()).filter { $0.session == nil }.count
+        let categoriesAfter = try context.fetch(FetchDescriptor<TagCategory>()).count
+
+        XCTAssertEqual(tagsBefore, tagsAfter, "Re-syncing should not duplicate tags")
+        XCTAssertEqual(categoriesBefore, categoriesAfter, "Re-syncing should not duplicate categories")
+    }
+
+    // Unknown pack IDs in cloud payload are skipped gracefully
+    func testPackIDsSyncSkipsUnknownPackIDs() throws {
+        let data = try JSONEncoder().encode(["nonexistent_pack"])
+        service.processPackIDsPayload(data, into: context)
+
+        let installed = try DefaultTagSeeder.installedPackIDs(context: context)
+        XCTAssertTrue(installed.isEmpty, "Unknown pack IDs should not cause any installation")
+    }
+
     // MARK: - Helpers
 
     private func makeSyncable(

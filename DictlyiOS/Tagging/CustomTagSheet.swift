@@ -72,10 +72,5 @@ struct CustomTagSheet: View {
             }
         }
         .presentationDetents([.medium])
-        .onDisappear {
-            if !didSave, !didExplicitlyCancel, !trimmedLabel.isEmpty {
-                onSave(trimmedLabel, categoryName)
-            }
-        }
     }
 }
