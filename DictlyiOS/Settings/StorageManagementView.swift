@@ -110,11 +110,10 @@ struct StorageManagementView: View {
             do {
                 try AudioFileManager.deleteAudioFile(at: resolvedPath)
             } catch {
-                // File may already be missing — proceed to clear metadata
+                // File may already be missing — proceed to delete session
             }
         }
-        session.audioFilePath = nil
-        session.duration = 0
+        modelContext.delete(session)
         try? modelContext.save()
         sessionToDelete = nil
     }

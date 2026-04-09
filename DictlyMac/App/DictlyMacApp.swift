@@ -42,6 +42,7 @@ struct DictlyMacApp: App {
                     } catch {
                         logger.error("Failed to seed default tags: \(error)")
                     }
+                    removeOrphanedSessions(context: container.mainContext)
                     syncService.startObserving(context: container.mainContext)
                     networkReceiver.startListening()
                 }
@@ -81,6 +82,19 @@ struct DictlyMacApp: App {
                 .environment(transcriptionEngine.whisperBridge)
         }
     }
+}
+
+/// Removes sessions left behind by the old deletion logic that only cleared audio metadata.
+private func removeOrphanedSessions(context: ModelContext) {
+    let descriptor = FetchDescriptor<Session>(
+        predicate: #Predicate { $0.audioFilePath == nil && $0.duration == 0 }
+    )
+    guard let orphans = try? context.fetch(descriptor), !orphans.isEmpty else { return }
+    for session in orphans {
+        context.delete(session)
+    }
+    try? context.save()
+    logger.info("Removed \(orphans.count) orphaned session(s)")
 }
 
 private let logger = Logger(subsystem: "com.dictly.mac", category: "tagging")

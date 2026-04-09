@@ -31,12 +31,26 @@ struct DictlyiOSApp: App {
                     } catch {
                         logger.error("Failed to seed default tags: \(error)")
                     }
+                    removeOrphanedSessions(context: container.mainContext)
                     syncService.startObserving(context: container.mainContext)
                     SessionRecorder.recoverOrphanedRecordings(context: container.mainContext)
                 }
         }
         .modelContainer(container)
     }
+}
+
+/// Removes sessions left behind by the old deletion logic that only cleared audio metadata.
+private func removeOrphanedSessions(context: ModelContext) {
+    let descriptor = FetchDescriptor<Session>(
+        predicate: #Predicate { $0.audioFilePath == nil && $0.duration == 0 }
+    )
+    guard let orphans = try? context.fetch(descriptor), !orphans.isEmpty else { return }
+    for session in orphans {
+        context.delete(session)
+    }
+    try? context.save()
+    logger.info("Removed \(orphans.count) orphaned session(s)")
 }
 
 private let logger = Logger(subsystem: "com.dictly.ios", category: "tagging")
