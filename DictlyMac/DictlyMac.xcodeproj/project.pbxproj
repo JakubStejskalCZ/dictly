@@ -89,6 +89,7 @@
 		EEDD3B8DF75416292DCD911D /* ggml-metal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 233ACBAA0A25F9D69515083C /* ggml-metal.cpp */; };
 		F0FB00CC325B605BE9C11202 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C823397DBFDC0DFE6E6C7A5 /* Metal.framework */; };
 		F19B61E9151A4C2670FBD10E /* TagDetailPanelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 645E2356F3721A5B8E80B49A /* TagDetailPanelTests.swift */; };
+		F5AFD0E71197158E762D4C75 /* TagPackPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B1D3461060C52B321F0A83A /* TagPackPickerView.swift */; };
 		F7AD87BC996413380E8411D7 /* TagSidebarFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2768D67AF7F3CE71E9C188F /* TagSidebarFilterTests.swift */; };
 		FC461A24CEE9F5346D9173C0 /* ModelManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F62A922B7D7C15A23BE93475 /* ModelManager.swift */; };
 		FC8D5F2D3E33C77EBCF5702E /* SessionNotesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE5E547187C158D1B74BA811 /* SessionNotesView.swift */; };
@@ -124,6 +125,7 @@
 		1D98EB789BC34226138491C2 /* gguf.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = gguf.cpp; sourceTree = "<group>"; };
 		208F2639D55E84ABF69B3380 /* ModelManagementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelManagementView.swift; sourceTree = "<group>"; };
 		233ACBAA0A25F9D69515083C /* ggml-metal.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = "ggml-metal.cpp"; sourceTree = "<group>"; };
+		2B1D3461060C52B321F0A83A /* TagPackPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagPackPickerView.swift; sourceTree = "<group>"; };
 		2C4A866F7A62565CBBD1012E /* ggml-metal-context.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "ggml-metal-context.m"; sourceTree = "<group>"; };
 		31EA7A2B90B3B83ED8A5A68C /* AudioPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlayer.swift; sourceTree = "<group>"; };
 		37E0598116A25B1CDE9AD437 /* WaveformDataProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveformDataProvider.swift; sourceTree = "<group>"; };
@@ -563,6 +565,7 @@
 			children = (
 				A8885E926145C865765F63DE /* .gitkeep */,
 				3B010B705AA06A5BD1749B44 /* PreferencesWindow.swift */,
+				2B1D3461060C52B321F0A83A /* TagPackPickerView.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -812,6 +815,7 @@
 				40816E881BE86220CA30874C /* SessionWaveformTimeline.swift in Sources */,
 				49A335A68D56F9B968ED3F3E /* TagDetailPanel.swift in Sources */,
 				97DB1175FB96FD8E6F73ED1F /* TagMarkerShape.swift in Sources */,
+				F5AFD0E71197158E762D4C75 /* TagPackPickerView.swift in Sources */,
 				80EA11780778E4779BFD34F8 /* TagSidebar.swift in Sources */,
 				4129E7F111CE793CD064507F /* TagSidebarRow.swift in Sources */,
 				1A13A14DB5130A27BD6A2611 /* TranscriptionEngine.swift in Sources */,

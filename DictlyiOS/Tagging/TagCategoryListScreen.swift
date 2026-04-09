@@ -175,12 +175,9 @@ private struct CategoryRowView: View {
 }
 
 #Preview {
-    let config = ModelConfiguration(isStoredInMemoryOnly: true)
-    let container = try! ModelContainer(for: Schema(DictlySchema.all), configurations: config)
-    try! DefaultTagSeeder.seedIfNeeded(context: container.mainContext)
-    return NavigationStack {
+    NavigationStack {
         TagCategoryListScreen()
     }
-    .modelContainer(container)
+    .modelContainer(try! ModelContainer(for: Schema(DictlySchema.all), configurations: ModelConfiguration(isStoredInMemoryOnly: true)))
     .environment(CategorySyncService())
 }

@@ -115,12 +115,8 @@ private struct TagRowView: View {
 }
 
 #Preview {
-    let config = ModelConfiguration(isStoredInMemoryOnly: true)
-    let container = try! ModelContainer(for: Schema(DictlySchema.all), configurations: config)
-    try! DefaultTagSeeder.seedIfNeeded(context: container.mainContext)
-    let category = try! container.mainContext.fetch(FetchDescriptor<TagCategory>()).first!
-    return NavigationStack {
-        TagListScreen(category: category)
+    NavigationStack {
+        TagListScreen(category: TagCategory(name: "Story", colorHex: "#D97706", iconName: "book.pages"))
     }
-    .modelContainer(container)
+    .modelContainer(try! ModelContainer(for: Schema(DictlySchema.all), configurations: ModelConfiguration(isStoredInMemoryOnly: true)))
 }

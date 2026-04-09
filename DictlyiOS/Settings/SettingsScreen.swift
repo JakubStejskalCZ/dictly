@@ -47,6 +47,11 @@ struct SettingsScreen: View {
             } footer: {
                 Text("Applies to future recordings. Higher quality uses more storage.")
             }
+            Section("Tags") {
+                NavigationLink(destination: TagPackPickerView(isOnboarding: false)) {
+                    Label("Tag Packs", systemImage: "tag")
+                }
+            }
             Section("Storage") {
                 NavigationLink(destination: StorageManagementView()) {
                     HStack {

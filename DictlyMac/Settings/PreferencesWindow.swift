@@ -7,6 +7,10 @@ import DictlyTheme
 struct PreferencesWindow: View {
     var body: some View {
         TabView {
+            TagPackPickerView(isOnboarding: false)
+                .tabItem {
+                    Label("Tags", systemImage: "tag")
+                }
             StoragePreferencesTab()
                 .tabItem {
                     Label("Storage", systemImage: "internaldrive")
