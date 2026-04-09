@@ -14,3 +14,9 @@ If a pack ID was pushed from an older app version that included a pack since rem
 
 ## R3: Partial pack install in installSelected() doesn't push
 If `DefaultTagSeeder.installPack` throws midway through the batch loop in `TagPackPickerView.installSelected()`, successfully installed packs are never pushed to cloud. Pre-existing issue in both iOS and Mac TagPackPickerView.
+
+## R4: TagListScreen shows and can delete session tags
+`TagListScreen` queries all tags by `categoryName` without filtering `session == nil`. Session tags for the same category appear in the management list and can be swipe-deleted, causing permanent data loss. Pre-existing issue — the new tag sync code only adds `pushTagsToCloud()` after delete.
+
+## R5: Logger as instance property in CategorySyncService
+Project convention requires `private let logger` at file scope, but `CategorySyncService` declares it as an instance property. Pre-existing pattern — cosmetic inconsistency.

@@ -1,12 +1,14 @@
 import SwiftUI
 import SwiftData
 import DictlyModels
+import DictlyStorage
 import DictlyTheme
 
 struct TagListScreen: View {
     let category: TagCategory
 
     @Environment(\.modelContext) private var modelContext
+    @Environment(CategorySyncService.self) private var syncService
     @Query private var tags: [Tag]
 
     @State private var isShowingCreateSheet = false
@@ -83,6 +85,7 @@ struct TagListScreen: View {
                 if let tag = tagToDelete {
                     modelContext.delete(tag)
                     tagToDelete = nil
+                    syncService.pushTagsToCloud()
                 }
             }
             Button("Cancel", role: .cancel) {
@@ -119,4 +122,5 @@ private struct TagRowView: View {
         TagListScreen(category: TagCategory(name: "Story", colorHex: "#D97706", iconName: "book.pages"))
     }
     .modelContainer(try! ModelContainer(for: Schema(DictlySchema.all), configurations: ModelConfiguration(isStoredInMemoryOnly: true)))
+    .environment(CategorySyncService())
 }

@@ -101,6 +101,44 @@ final class SyncableCategoryTests: XCTestCase {
         XCTAssertNil(json["icon_name"], "Keys must be camelCase, not snake_case")
     }
 
+    // SyncableTag round-trip encoding/decoding
+    func testSyncableTagEncodingDecodingRoundTrip() throws {
+        let date = Date(timeIntervalSince1970: 1_700_000_000.456)
+        let original = SyncableTag(
+            uuid: "660e8400-e29b-41d4-a716-446655440000",
+            label: "Grimthor",
+            categoryName: "Story",
+            modifiedAt: date
+        )
+
+        let data = try encode(original)
+        let decoded = try decode(SyncableTag.self, from: data)
+
+        XCTAssertEqual(decoded.uuid, original.uuid)
+        XCTAssertEqual(decoded.label, original.label)
+        XCTAssertEqual(decoded.categoryName, original.categoryName)
+        XCTAssertEqual(decoded.modifiedAt.timeIntervalSince1970, original.modifiedAt.timeIntervalSince1970, accuracy: 0.01)
+    }
+
+    // SyncableTag payload contains only expected fields
+    func testSyncableTagPayloadContainsOnlyExpectedFields() throws {
+        let tag = SyncableTag(
+            uuid: UUID().uuidString,
+            label: "Test",
+            categoryName: "Story",
+            modifiedAt: Date()
+        )
+
+        let data = try encode(tag)
+        let json = try XCTUnwrap(try JSONSerialization.jsonObject(with: data) as? [String: Any])
+        let keys = Set(json.keys)
+
+        let allowedKeys: Set<String> = ["uuid", "label", "categoryName", "modifiedAt"]
+        let unexpectedKeys = keys.subtracting(allowedKeys)
+        XCTAssertTrue(unexpectedKeys.isEmpty, "Payload contains unexpected keys: \(unexpectedKeys)")
+        XCTAssertEqual(keys.count, 4)
+    }
+
     // MARK: - Helpers
 
     private func encode<T: Encodable>(_ value: T) throws -> Data {
@@ -366,6 +404,140 @@ final class CategorySyncMergeTests: XCTestCase {
         XCTAssertTrue(installed.isEmpty, "Unknown pack IDs should not cause any installation")
     }
 
+    // MARK: - Template Tag Sync Tests
+
+    // Insert new template tag from cloud payload
+    func testTagMergeInsertsNewTagFromCloud() throws {
+        let tagsBefore = try context.fetch(FetchDescriptor<Tag>())
+        XCTAssertEqual(tagsBefore.count, 0)
+
+        let cloudUUID = UUID()
+        let payload = makeTagPayload([
+            makeSyncableTag(uuid: cloudUUID, label: "Grimthor", categoryName: "Story")
+        ])
+        service.processTagsPayload(payload, into: context)
+
+        let tagsAfter = try context.fetch(FetchDescriptor<Tag>())
+        XCTAssertEqual(tagsAfter.count, 1)
+        XCTAssertEqual(tagsAfter[0].label, "Grimthor")
+        XCTAssertEqual(tagsAfter[0].categoryName, "Story")
+        XCTAssertEqual(tagsAfter[0].uuid, cloudUUID)
+        XCTAssertNil(tagsAfter[0].session, "Synced tag must be a template tag (no session)")
+        XCTAssertEqual(tagsAfter[0].anchorTime, 0)
+        XCTAssertEqual(tagsAfter[0].rewindDuration, 0)
+    }
+
+    // Update existing template tag when cloud has newer modifiedAt
+    func testTagMergeUpdatesExistingTagWhenCloudIsNewer() throws {
+        let sharedUUID = UUID()
+        let tag = Tag(uuid: sharedUUID, label: "Old Label", categoryName: "Story", anchorTime: 0, rewindDuration: 0)
+        context.insert(tag)
+        try context.save()
+
+        service.markTagModified(tag)
+
+        let futureDate = Date(timeIntervalSinceNow: 60)
+        let payload = makeTagPayload([
+            makeSyncableTag(uuid: sharedUUID, label: "New Label", categoryName: "Combat", modifiedAt: futureDate)
+        ])
+        service.processTagsPayload(payload, into: context)
+
+        let tags = try context.fetch(FetchDescriptor<Tag>())
+        XCTAssertEqual(tags.count, 1)
+        XCTAssertEqual(tags[0].label, "New Label")
+        XCTAssertEqual(tags[0].categoryName, "Combat")
+    }
+
+    // Local tag NOT updated when cloud has older modifiedAt
+    func testTagMergeKeepsLocalWhenCloudIsOlder() throws {
+        let sharedUUID = UUID()
+        let tag = Tag(uuid: sharedUUID, label: "Local Label", categoryName: "Story", anchorTime: 0, rewindDuration: 0)
+        context.insert(tag)
+        try context.save()
+
+        service.markTagModified(tag)
+
+        let pastDate = Date(timeIntervalSinceNow: -120)
+        let payload = makeTagPayload([
+            makeSyncableTag(uuid: sharedUUID, label: "Stale Cloud Label", categoryName: "Combat", modifiedAt: pastDate)
+        ])
+        service.processTagsPayload(payload, into: context)
+
+        let tags = try context.fetch(FetchDescriptor<Tag>())
+        XCTAssertEqual(tags.count, 1)
+        XCTAssertEqual(tags[0].label, "Local Label", "Local should be preserved when cloud modifiedAt is older")
+        XCTAssertEqual(tags[0].categoryName, "Story")
+    }
+
+    // Local template tag absent from cloud is preserved (no deletion on pull)
+    func testTagMergeKeepsLocalTagAbsentFromCloud() throws {
+        let localOnly = Tag(uuid: UUID(), label: "Local Only", categoryName: "Story", anchorTime: 0, rewindDuration: 0)
+        context.insert(localOnly)
+        try context.save()
+
+        let cloudOnlyUUID = UUID()
+        let payload = makeTagPayload([
+            makeSyncableTag(uuid: cloudOnlyUUID, label: "Cloud Only", categoryName: "Combat")
+        ])
+        service.processTagsPayload(payload, into: context)
+
+        let tags = try context.fetch(FetchDescriptor<Tag>())
+        XCTAssertEqual(tags.count, 2, "Both local-only and cloud-only tags must be preserved")
+        let labels = Set(tags.map(\.label))
+        XCTAssertTrue(labels.contains("Local Only"))
+        XCTAssertTrue(labels.contains("Cloud Only"))
+    }
+
+    // Duplicate UUIDs in cloud tag payload — keeps last occurrence
+    func testTagMergeSurvivesDuplicateUUIDsInCloudPayload() throws {
+        let sharedUUID = UUID()
+        let payload = makeTagPayload([
+            makeSyncableTag(uuid: sharedUUID, label: "First", categoryName: "Story"),
+            makeSyncableTag(uuid: sharedUUID, label: "Second", categoryName: "Combat")
+        ])
+        service.processTagsPayload(payload, into: context)
+
+        let tags = try context.fetch(FetchDescriptor<Tag>())
+        XCTAssertEqual(tags.count, 1, "Duplicate UUID should result in a single tag")
+        XCTAssertEqual(tags[0].label, "Second", "Last occurrence in payload should win")
+        XCTAssertEqual(tags[0].categoryName, "Combat")
+    }
+
+    // Invalid UUID strings in cloud payload are skipped
+    func testTagMergeSkipsInvalidUUIDs() throws {
+        let validUUID = UUID()
+        let payload: Data = {
+            let tags = [
+                SyncableTag(uuid: "not-a-uuid", label: "Bad", categoryName: "Story", modifiedAt: Date()),
+                SyncableTag(uuid: validUUID.uuidString, label: "Good", categoryName: "Story", modifiedAt: Date())
+            ]
+            let encoder = JSONEncoder()
+            encoder.dateEncodingStrategy = .custom { date, encoder in
+                var container = encoder.singleValueContainer()
+                try container.encode(CategorySyncService.iso8601Formatter.string(from: date))
+            }
+            return try! encoder.encode(tags)
+        }()
+        service.processTagsPayload(payload, into: context)
+
+        let tags = try context.fetch(FetchDescriptor<Tag>())
+        XCTAssertEqual(tags.count, 1, "Invalid UUID tag should be skipped")
+        XCTAssertEqual(tags[0].label, "Good")
+    }
+
+    // Multiple template tags round-trip through merge without data loss
+    func testTagMergeHandlesMultipleTagsCorrectly() throws {
+        let uuids = (0..<5).map { _ in UUID() }
+        let syncables = uuids.enumerated().map { i, uuid in
+            makeSyncableTag(uuid: uuid, label: "Tag \(i)", categoryName: "Story")
+        }
+        let payload = makeTagPayload(syncables)
+        service.processTagsPayload(payload, into: context)
+
+        let tags = try context.fetch(FetchDescriptor<Tag>())
+        XCTAssertEqual(tags.count, 5)
+    }
+
     // MARK: - Helpers
 
     private func makeSyncable(
@@ -395,5 +567,28 @@ final class CategorySyncMergeTests: XCTestCase {
             try container.encode(CategorySyncService.iso8601Formatter.string(from: date))
         }
         return try! encoder.encode(categories)
+    }
+
+    private func makeSyncableTag(
+        uuid: UUID,
+        label: String,
+        categoryName: String = "Story",
+        modifiedAt: Date = Date()
+    ) -> SyncableTag {
+        SyncableTag(
+            uuid: uuid.uuidString,
+            label: label,
+            categoryName: categoryName,
+            modifiedAt: modifiedAt
+        )
+    }
+
+    private func makeTagPayload(_ tags: [SyncableTag]) -> Data {
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .custom { date, encoder in
+            var container = encoder.singleValueContainer()
+            try container.encode(CategorySyncService.iso8601Formatter.string(from: date))
+        }
+        return try! encoder.encode(tags)
     }
 }

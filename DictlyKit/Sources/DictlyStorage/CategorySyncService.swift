@@ -4,7 +4,7 @@ import Observation
 import os
 import DictlyModels
 
-// MARK: - Sync Payload
+// MARK: - Sync Payloads
 
 /// Codable representation of a TagCategory for iCloud Key-Value Store sync.
 /// Contains only metadata — no session, tag, or audio data.
@@ -15,6 +15,15 @@ struct SyncableCategory: Codable {
     var iconName: String
     var sortOrder: Int
     var isDefault: Bool
+    var modifiedAt: Date
+}
+
+/// Codable representation of a template Tag for iCloud Key-Value Store sync.
+/// Only template tags (session == nil) are synced — session tags are excluded.
+struct SyncableTag: Codable {
+    var uuid: String
+    var label: String
+    var categoryName: String
     var modifiedAt: Date
 }
 
@@ -32,6 +41,7 @@ public final class CategorySyncService {
     private let logger = Logger(subsystem: "com.dictly", category: "storage")
     private static let kvsKey = "tagCategories"
     private static let packIDsKey = "installedPackIDs"
+    private static let templateTagsKey = "templateTags"
 
     /// ISO 8601 formatter with fractional seconds for sub-second precision in last-write-wins.
     nonisolated(unsafe) static let iso8601Formatter: ISO8601DateFormatter = {
@@ -44,6 +54,7 @@ public final class CategorySyncService {
     /// Used by merge to implement last-write-wins: only apply cloud fields if cloud modifiedAt
     /// is newer than the locally cached timestamp.
     private var cachedModifiedAt: [String: Date] = [:]
+    private var cachedTagModifiedAt: [String: Date] = [:]
 
     // nonisolated(unsafe) required so deinit (which is nonisolated in Swift 6) can access this
     nonisolated(unsafe) private var observation: NSObjectProtocol?
@@ -84,8 +95,10 @@ public final class CategorySyncService {
         store.synchronize()
         pullCategoriesFromCloud()
         pullPackIDsFromCloud()
+        pullTagsFromCloud()
         pushCategoriesToCloud()
         pushPackIDsToCloud()
+        pushTagsToCloud()
     }
 
     /// Serialize all local TagCategory objects to JSON and write to iCloud KVS.
@@ -138,6 +151,55 @@ public final class CategorySyncService {
     /// Call this before pushCategoriesToCloud when a category has been mutated.
     public func markModified(_ category: TagCategory) {
         cachedModifiedAt[category.uuid.uuidString] = Date()
+    }
+
+    // MARK: - Template Tag Sync
+
+    /// Serialize all local template tags (session == nil) to JSON and write to iCloud KVS.
+    /// Call after any local template tag mutation to propagate changes to other devices.
+    public func pushTagsToCloud() {
+        guard let modelContext else {
+            logger.error("CategorySyncService: pushTagsToCloud called before startObserving")
+            return
+        }
+
+        do {
+            let allTags = try modelContext.fetch(FetchDescriptor<Tag>())
+            let templateTags = allTags.filter { $0.session == nil }
+            let now = Date()
+            let payload = templateTags.map { tag in
+                let uuidStr = tag.uuid.uuidString
+                let lastKnown = cachedTagModifiedAt[uuidStr]
+                let modifiedAt = lastKnown ?? now
+                return SyncableTag(
+                    uuid: uuidStr,
+                    label: tag.label,
+                    categoryName: tag.categoryName,
+                    modifiedAt: modifiedAt
+                )
+            }
+
+            let encoder = JSONEncoder()
+            encoder.dateEncodingStrategy = .custom { date, encoder in
+                var container = encoder.singleValueContainer()
+                try container.encode(Self.iso8601Formatter.string(from: date))
+            }
+            let data = try encoder.encode(payload)
+            store.set(data, forKey: Self.templateTagsKey)
+
+            for tag in payload {
+                cachedTagModifiedAt[tag.uuid] = tag.modifiedAt
+            }
+
+            logger.info("CategorySyncService: pushed \(payload.count) template tags to iCloud KVS")
+        } catch {
+            logger.error("CategorySyncService: pushTags failed — \(error)")
+        }
+    }
+
+    /// Mark a template tag as locally modified so the next push stamps it with the current time.
+    public func markTagModified(_ tag: Tag) {
+        cachedTagModifiedAt[tag.uuid.uuidString] = Date()
     }
 
     // MARK: - Pack ID Sync
@@ -219,9 +281,13 @@ public final class CategorySyncService {
             if changedKeys.contains(Self.packIDsKey) || reason == .initialSyncChange {
                 pullPackIDsFromCloud()
             }
+            if changedKeys.contains(Self.templateTagsKey) || reason == .initialSyncChange {
+                pullTagsFromCloud()
+            }
         case .accountChange:
             pullCategoriesFromCloud()
             pullPackIDsFromCloud()
+            pullTagsFromCloud()
         case .quotaViolationChange:
             logger.error("CategorySyncService: iCloud KVS quota violated — sync paused")
         case .unknown:
@@ -345,6 +411,91 @@ public final class CategorySyncService {
         }
         if !tags.isEmpty {
             logger.info("CategorySyncService: updated \(tags.count) tags from category '\(oldName)' → '\(newName)'")
+        }
+    }
+
+    // MARK: - Template Tag Pull
+
+    /// Read template tag payload from iCloud KVS and merge into local SwiftData store.
+    func pullTagsFromCloud() {
+        guard let modelContext else { return }
+
+        guard let data = store.data(forKey: Self.templateTagsKey) else {
+            logger.info("CategorySyncService: no template tags in iCloud KVS yet — nothing to pull")
+            return
+        }
+
+        processTagsPayload(data, into: modelContext)
+    }
+
+    /// Process a raw template tags KVS payload — exposed as internal for unit testing.
+    func processTagsPayload(_ data: Data, into context: ModelContext) {
+        do {
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .custom { decoder in
+                let container = try decoder.singleValueContainer()
+                let dateString = try container.decode(String.self)
+                if let date = Self.iso8601Formatter.date(from: dateString) {
+                    return date
+                }
+                let fallback = ISO8601DateFormatter()
+                if let date = fallback.date(from: dateString) {
+                    return date
+                }
+                throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid ISO 8601 date: \(dateString)")
+            }
+            let cloudTags = try decoder.decode([SyncableTag].self, from: data)
+            try mergeCloudTags(cloudTags, into: context)
+            logger.info("CategorySyncService: merged \(cloudTags.count) template tags from payload")
+        } catch {
+            logger.error("CategorySyncService: processTagsPayload failed — \(error)")
+        }
+    }
+
+    /// Merge strategy (mirrors category merge):
+    /// - UUID match, cloud newer → update local fields (label, categoryName)
+    /// - UUID match, local newer or equal → keep local
+    /// - UUID not in local → insert as template tag
+    /// - UUID not in cloud → keep local (no deletion on pull)
+    private func mergeCloudTags(_ cloudTags: [SyncableTag], into context: ModelContext) throws {
+        let allTags = try context.fetch(FetchDescriptor<Tag>())
+        let templateTags = allTags.filter { $0.session == nil }
+        let localByUUID = Dictionary(templateTags.map { ($0.uuid.uuidString, $0) }, uniquingKeysWith: { first, _ in first })
+
+        // Deduplicate cloud payload by UUID (keep last occurrence)
+        var seenUUIDs = Set<String>()
+        var uniqueCloud: [SyncableTag] = []
+        for tag in cloudTags.reversed() {
+            if seenUUIDs.insert(tag.uuid).inserted {
+                uniqueCloud.append(tag)
+            }
+        }
+
+        for remote in uniqueCloud {
+            if let local = localByUUID[remote.uuid] {
+                let localModifiedAt = cachedTagModifiedAt[remote.uuid] ?? .distantPast
+                guard remote.modifiedAt > localModifiedAt else {
+                    continue
+                }
+
+                local.label = remote.label
+                local.categoryName = remote.categoryName
+                cachedTagModifiedAt[remote.uuid] = remote.modifiedAt
+            } else {
+                guard let uuid = UUID(uuidString: remote.uuid) else {
+                    logger.error("CategorySyncService: invalid tag UUID in cloud payload: \(remote.uuid)")
+                    continue
+                }
+                let newTag = Tag(
+                    uuid: uuid,
+                    label: remote.label,
+                    categoryName: remote.categoryName,
+                    anchorTime: 0,
+                    rewindDuration: 0
+                )
+                context.insert(newTag)
+                cachedTagModifiedAt[remote.uuid] = remote.modifiedAt
+            }
         }
     }
 }

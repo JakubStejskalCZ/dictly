@@ -114,6 +114,7 @@ struct TagPackPickerView: View {
             }
             syncService.pushCategoriesToCloud()
             syncService.pushPackIDsToCloud()
+            syncService.pushTagsToCloud()
         } catch {
             logger.error("Failed to toggle pack \(pack.id): \(error)")
         }
@@ -128,6 +129,7 @@ struct TagPackPickerView: View {
             }
             syncService.pushCategoriesToCloud()
             syncService.pushPackIDsToCloud()
+            syncService.pushTagsToCloud()
         } catch {
             logger.error("Failed to install packs: \(error)")
         }
