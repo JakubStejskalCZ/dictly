@@ -99,7 +99,7 @@ Dictly/
 
 ```bash
 # Clone and pull whisper.cpp submodule
-git clone <repo-url> Dictly
+git clone https://github.com/JakubStejskalCZ/dictly.git Dictly
 cd Dictly
 git submodule update --init --recursive
 

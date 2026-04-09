@@ -22,7 +22,7 @@
 ### 1. Clone and initialize submodules
 
 ```bash
-git clone <repo-url> Dictly
+git clone https://github.com/JakubStejskalCZ/dictly.git Dictly
 cd Dictly
 git submodule update --init --recursive
 ```
