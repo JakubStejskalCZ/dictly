@@ -194,12 +194,8 @@ struct CampaignDetailScreen: View {
 }
 
 #Preview {
-    let config = ModelConfiguration(isStoredInMemoryOnly: true)
-    let container = try! ModelContainer(for: Campaign.self, configurations: config)
-    let campaign = Campaign(name: "The Lost Mines", descriptionText: "A classic D&D adventure")
-    container.mainContext.insert(campaign)
-    return NavigationStack {
-        CampaignDetailScreen(campaign: campaign)
+    NavigationStack {
+        CampaignDetailScreen(campaign: Campaign(name: "The Lost Mines", descriptionText: "A classic D&D adventure"))
     }
-    .modelContainer(container)
+    .modelContainer(try! ModelContainer(for: Schema(DictlySchema.all), configurations: ModelConfiguration(isStoredInMemoryOnly: true)))
 }
