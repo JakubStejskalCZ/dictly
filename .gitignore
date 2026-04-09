@@ -38,3 +38,14 @@ Pods/
 **/ggml-*.bin
 **/ggml-*.gguf
 Models/
+
+# Build artifacts
+build-sim/
+
+# Tool configurations
+.agents/
+.claude/
+.opencode/
+
+# BMAD auto dev-loop logs
+.scripts/bmad-auto/
