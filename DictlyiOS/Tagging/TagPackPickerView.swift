@@ -128,12 +128,12 @@ struct TagPackPickerView: View {
                 try DefaultTagSeeder.installPack(pack, startingSortOrder: sortOrder, context: modelContext)
                 sortOrder += pack.categories.count
             }
-            syncService.pushCategoriesToCloud()
-            syncService.pushPackIDsToCloud()
-            syncService.pushTagsToCloud()
         } catch {
             logger.error("Failed to install packs: \(error)")
         }
+        syncService.pushCategoriesToCloud()
+        syncService.pushPackIDsToCloud()
+        syncService.pushTagsToCloud()
         onComplete?()
         dismiss()
     }

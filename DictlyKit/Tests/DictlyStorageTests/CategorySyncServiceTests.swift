@@ -5,6 +5,7 @@ import SwiftData
 
 // MARK: - SyncableCategory Codable Tests
 
+@MainActor
 final class SyncableCategoryTests: XCTestCase {
 
     // 7.1 — Round-trip encoding/decoding with fractional-second ISO 8601

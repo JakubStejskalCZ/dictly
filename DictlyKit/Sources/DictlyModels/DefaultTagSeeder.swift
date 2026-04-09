@@ -5,6 +5,7 @@ import SwiftData
 /// Manages tag pack installation and removal.
 /// Uses deterministic UUIDs so both iOS and Mac generate identical records,
 /// preventing duplicates when iCloud KVS sync merges.
+@MainActor
 public struct DefaultTagSeeder {
 
     /// Namespace UUID for generating deterministic UUIDs from category/tag names.

@@ -27,6 +27,8 @@ struct SyncableTag: Codable {
     var modifiedAt: Date
 }
 
+private let logger = Logger(subsystem: "com.dictly", category: "CategorySync")
+
 // MARK: - CategorySyncService
 
 /// Syncs TagCategory metadata between devices via iCloud Key-Value Store.
@@ -38,7 +40,6 @@ public final class CategorySyncService {
 
     private var modelContext: ModelContext?
     private let store = NSUbiquitousKeyValueStore.default
-    private let logger = Logger(subsystem: "com.dictly", category: "storage")
     private static let kvsKey = "tagCategories"
     private static let packIDsKey = "installedPackIDs"
     private static let templateTagsKey = "templateTags"
