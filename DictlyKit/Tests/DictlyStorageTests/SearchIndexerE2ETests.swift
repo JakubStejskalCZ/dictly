@@ -18,6 +18,7 @@ import SwiftData
 
 // MARK: - Indexer Lifecycle Tests (async, non-@MainActor)
 
+@MainActor
 final class SearchIndexerE2ETests: XCTestCase {
 
     var indexer: SearchIndexer!

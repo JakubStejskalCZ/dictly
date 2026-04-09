@@ -1,6 +1,7 @@
 import AVFoundation
 import os
 import DictlyModels
+import DictlyStorage
 
 // MARK: - AudioPlayer
 
@@ -81,12 +82,14 @@ final class AudioPlayer {
             playbackStartPosition = 0
         }
 
-        guard FileManager.default.fileExists(atPath: filePath) else {
-            logger.error("Audio file not found: \(filePath, privacy: .sensitive)")
+        let resolvedPath = AudioFileManager.resolvedAudioPath(filePath)
+
+        guard FileManager.default.fileExists(atPath: resolvedPath) else {
+            logger.error("Audio file not found: \(resolvedPath, privacy: .sensitive)")
             throw DictlyError.storage(.fileNotFound)
         }
 
-        let url = URL(fileURLWithPath: filePath)
+        let url = URL(fileURLWithPath: resolvedPath)
         let file = try AVAudioFile(forReading: url)
         audioFile = file
         duration = Double(file.length) / file.processingFormat.sampleRate

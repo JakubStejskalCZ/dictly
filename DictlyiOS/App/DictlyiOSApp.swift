@@ -26,6 +26,7 @@ struct DictlyiOSApp: App {
                 .environment(sessionRecorder)
                 .task {
                     do {
+                        try DefaultTagSeeder.deduplicateCategories(context: container.mainContext)
                         try DefaultTagSeeder.seedIfNeeded(context: container.mainContext)
                     } catch {
                         logger.error("Failed to seed default tags: \(error)")

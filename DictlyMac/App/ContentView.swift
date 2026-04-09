@@ -15,28 +15,30 @@ struct ContentView: View {
     private let logger = Logger(subsystem: "com.dictly.mac", category: "search")
 
     var body: some View {
-        NavigationSplitView {
+        HSplitView {
             sessionList
-                .navigationTitle("Sessions")
-                .navigationSplitViewColumnWidth(min: 200, ideal: 260)
-        } detail: {
-            if let session = selectedSession {
-                SessionReviewScreen(
-                    session: session,
-                    pendingTagID: $pendingTagID,
-                    onResultSelected: { result in
-                        handleSearchResultSelected(result)
-                    },
-                    onRelatedTagSelected: { result in
-                        handleSearchResultSelected(result)
-                    }
-                )
-            } else {
-                Text("Select a session to review")
-                    .font(DictlyTypography.body)
-                    .foregroundStyle(DictlyColors.textSecondary)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .frame(minWidth: 200, idealWidth: 260, maxWidth: 320)
+
+            Group {
+                if let session = selectedSession {
+                    SessionReviewScreen(
+                        session: session,
+                        pendingTagID: $pendingTagID,
+                        onResultSelected: { result in
+                            handleSearchResultSelected(result)
+                        },
+                        onRelatedTagSelected: { result in
+                            handleSearchResultSelected(result)
+                        }
+                    )
+                } else {
+                    Text("Select a session to review")
+                        .font(DictlyTypography.body)
+                        .foregroundStyle(DictlyColors.textSecondary)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
             }
+            .frame(minWidth: 500, maxWidth: .infinity)
         }
         .frame(minWidth: 900, minHeight: 500)
         .overlay(alignment: .top) {

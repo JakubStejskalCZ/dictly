@@ -138,9 +138,15 @@ final class TransferService {
             throw DictlyError.transfer(.bundleCorrupted)
         }
 
-        let audioURL = URL(fileURLWithPath: audioFilePath)
+        let audioURL: URL
+        if audioFilePath.hasPrefix("/") {
+            audioURL = URL(fileURLWithPath: audioFilePath)
+        } else {
+            let dir = (try? AudioFileManager.audioStorageDirectory()) ?? FileManager.default.temporaryDirectory
+            audioURL = dir.appendingPathComponent(audioFilePath)
+        }
         guard FileManager.default.fileExists(atPath: audioURL.path) else {
-            logger.error("TransferService: audio file not found at \(audioFilePath)")
+            logger.error("TransferService: audio file not found at \(audioURL.path)")
             throw DictlyError.transfer(.bundleCorrupted)
         }
 

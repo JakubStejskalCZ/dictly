@@ -183,7 +183,7 @@ final class ImportService {
 
             // 5. Store audio file
             let storageDir = try AudioFileManager.audioStorageDirectory()
-            let audioDestination = storageDir.appendingPathComponent("\(session.uuid).aac")
+            let audioDestination = storageDir.appendingPathComponent("\(session.uuid).m4a")
             try audioData.write(to: audioDestination)
             session.audioFilePath = audioDestination.path
             logger.info("ImportService: audio stored at \(audioDestination.lastPathComponent)")

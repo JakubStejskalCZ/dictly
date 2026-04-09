@@ -23,6 +23,25 @@ public struct AudioFileManager {
         return recordingsDir
     }
 
+    // MARK: - Path Resolution
+
+    /// Resolves legacy `.aac` paths to `.m4a`.
+    /// iOS records M4A content that was historically saved with `.aac` extension on Mac import.
+    /// `AVAudioFile` uses the extension to infer format, so `.aac` fails for M4A content.
+    /// Renames the file on disk if needed and returns the valid path.
+    public static func resolvedAudioPath(_ path: String) -> String {
+        guard path.hasSuffix(".aac") else { return path }
+        let m4aPath = String(path.dropLast(4)) + ".m4a"
+        if FileManager.default.fileExists(atPath: m4aPath) {
+            return m4aPath
+        }
+        if FileManager.default.fileExists(atPath: path) {
+            try? FileManager.default.moveItem(atPath: path, toPath: m4aPath)
+            return m4aPath
+        }
+        return path
+    }
+
     // MARK: - Size
 
     private nonisolated(unsafe) static let sizeFormatter: ByteCountFormatter = {

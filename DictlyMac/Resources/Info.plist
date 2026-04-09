@@ -18,6 +18,8 @@
 	<string>6.0</string>
 	<key>CFBundlePackageType</key>
 	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
+	<key>LSMultipleInstancesProhibited</key>
+	<true/>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Dictly uses the local network to receive sessions from your iPhone.</string>
 	<key>NSBonjourServices</key>
@@ -30,14 +32,14 @@
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
-			<string>Default</string>
+			<string>Owner</string>
 			<key>LSItemContentTypes</key>
 			<array>
 				<string>com.dictly.dictly-bundle</string>
 			</array>
 		</dict>
 	</array>
-	<key>UTImportedTypeDeclarations</key>
+	<key>UTExportedTypeDeclarations</key>
 	<array>
 		<dict>
 			<key>UTTypeIdentifier</key>
@@ -46,7 +48,7 @@
 			<string>Dictly Session Bundle</string>
 			<key>UTTypeConformsTo</key>
 			<array>
-				<string>public.data</string>
+				<string>com.apple.package</string>
 			</array>
 			<key>UTTypeTagSpecification</key>
 			<dict>

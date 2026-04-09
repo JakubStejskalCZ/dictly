@@ -11,6 +11,7 @@ private let logger = Logger(subsystem: "com.dictly", category: "search")
 /// Stateless utility — all methods use `CSSearchableIndex.default()` (the only index
 /// that surfaces items in macOS system Spotlight). Call sites use fire-and-forget `Task {}`
 /// and must catch errors so indexing never blocks or fails user operations.
+@MainActor
 public final class SearchIndexer {
 
     private static let domainIdentifier = "com.dictly.tags"

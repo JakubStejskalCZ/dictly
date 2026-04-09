@@ -51,8 +51,6 @@ struct RecordingScreen: View {
                     }
                 }
 
-                Spacer()
-
                 // Tag palette (Story 2.4)
                 if let vm = viewModel, let ts = taggingService {
                     TagPalette(

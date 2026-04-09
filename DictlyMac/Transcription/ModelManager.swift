@@ -44,7 +44,7 @@ final class ModelManager {
             fileName: "ggml-base.en.bin",
             size: 147_964_211,
             quality: "Good quality",
-            isBundled: true
+            isBundled: false
         ),
         WhisperModel(
             id: "small.en",

@@ -1,6 +1,7 @@
 import Foundation
 import AVFoundation
 import os
+import DictlyStorage
 
 /// Extracts normalized waveform amplitude samples from an audio file.
 ///
@@ -28,11 +29,12 @@ struct WaveformDataProvider {
     // MARK: - Private Extraction
 
     private static func extractSync(from audioFilePath: String, sampleCount: Int) -> [Float] {
-        guard FileManager.default.fileExists(atPath: audioFilePath) else {
-            logger.error("Audio file not found at path: \(audioFilePath, privacy: .sensitive)")
+        let resolvedPath = AudioFileManager.resolvedAudioPath(audioFilePath)
+        guard FileManager.default.fileExists(atPath: resolvedPath) else {
+            logger.error("Audio file not found at path: \(resolvedPath, privacy: .sensitive)")
             return []
         }
-        let url = URL(fileURLWithPath: audioFilePath)
+        let url = URL(fileURLWithPath: resolvedPath)
         do {
             let audioFile = try AVAudioFile(forReading: url)
             return extractFromFile(audioFile, sampleCount: sampleCount)

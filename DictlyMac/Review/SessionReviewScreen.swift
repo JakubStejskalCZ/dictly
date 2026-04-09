@@ -55,19 +55,6 @@ struct SessionReviewScreen: View {
                 .frame(minWidth: 500, maxWidth: .infinity)
         }
         .background(DictlyColors.background)
-        .toolbar {
-            ToolbarItem(placement: .navigation) {
-                Button {
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        isSidebarVisible.toggle()
-                    }
-                } label: {
-                    Image(systemName: "sidebar.left")
-                }
-                .help(isSidebarVisible ? "Hide sidebar" : "Show sidebar")
-                .accessibilityLabel(isSidebarVisible ? "Hide sidebar" : "Show sidebar")
-            }
-        }
         // Task 2.2: Load audio when session appears (or re-fires when audioFilePath changes).
         // Binding id to audioFilePath ensures the task re-fires if a different session is shown
         // via view recycling (e.g. NavigationStack identity reuse).
@@ -180,6 +167,18 @@ struct SessionReviewScreen: View {
 
     private var sessionToolbar: some View {
         HStack(alignment: .center, spacing: DictlySpacing.md) {
+            // Tag sidebar toggle
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    isSidebarVisible.toggle()
+                }
+            } label: {
+                Image(systemName: "sidebar.left")
+            }
+            .buttonStyle(.borderless)
+            .help(isSidebarVisible ? "Hide sidebar" : "Show sidebar")
+            .accessibilityLabel(isSidebarVisible ? "Hide sidebar" : "Show sidebar")
+
             // Leading: session metadata
             VStack(alignment: .leading, spacing: DictlySpacing.xs) {
                 Text(session.title)
@@ -305,7 +304,7 @@ struct SessionReviewScreen: View {
             .help(audioPlayer.isPlaying ? "Pause playback" : "Play session audio")
 
             // Task 3.2: Current position / total duration timestamp
-            Text("\(formatTimestamp(audioPlayer.currentTime)) / \(formatTimestamp(audioPlayer.duration))")
+            Text("\(formatTimestamp(audioPlayer.currentTime)) / \(formatTimestamp(audioPlayer.isLoaded ? audioPlayer.duration : session.duration))")
                 .font(DictlyTypography.caption)
                 .foregroundStyle(DictlyColors.textSecondary)
                 .monospacedDigit()
@@ -320,8 +319,12 @@ func formatDuration(_ seconds: TimeInterval) -> String {
     let totalSeconds = max(0, Int(seconds))
     let hours = totalSeconds / 3600
     let minutes = (totalSeconds % 3600) / 60
+    let secs = totalSeconds % 60
     if hours > 0 {
         return "\(hours)h \(minutes)m"
     }
-    return "\(minutes)m"
+    if minutes > 0 {
+        return "\(minutes)m"
+    }
+    return "\(secs)s"
 }

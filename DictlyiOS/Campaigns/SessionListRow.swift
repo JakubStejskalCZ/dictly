@@ -42,11 +42,16 @@ struct SessionListRow: View {
     }
 
     private func formatDuration(_ duration: TimeInterval) -> String {
-        let hours = Int(duration) / 3600
-        let minutes = (Int(duration) % 3600) / 60
+        let totalSeconds = max(0, Int(duration))
+        let hours = totalSeconds / 3600
+        let minutes = (totalSeconds % 3600) / 60
+        let seconds = totalSeconds % 60
         if hours > 0 {
             return "\(hours)h \(minutes)m"
         }
-        return "\(minutes)m"
+        if minutes > 0 {
+            return "\(minutes)m"
+        }
+        return "\(seconds)s"
     }
 }

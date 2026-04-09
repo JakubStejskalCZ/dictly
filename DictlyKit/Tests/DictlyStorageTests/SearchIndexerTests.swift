@@ -5,6 +5,7 @@ import CoreSpotlight
 
 // MARK: - SearchIndexer Unit Tests
 
+@MainActor
 final class SearchIndexerTests: XCTestCase {
 
     var indexer: SearchIndexer!

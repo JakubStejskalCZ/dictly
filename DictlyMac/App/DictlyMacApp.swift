@@ -37,6 +37,7 @@ struct DictlyMacApp: App {
                 .frame(minWidth: 900, minHeight: 500)
                 .task {
                     do {
+                        try DefaultTagSeeder.deduplicateCategories(context: container.mainContext)
                         try DefaultTagSeeder.seedIfNeeded(context: container.mainContext)
                     } catch {
                         logger.error("Failed to seed default tags: \(error)")

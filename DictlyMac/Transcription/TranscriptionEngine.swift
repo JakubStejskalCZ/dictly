@@ -185,10 +185,11 @@ final class TranscriptionEngine {
 
     private func runTranscription(tag: Tag, session: Session) async throws -> String {
         // Validate audio path on @MainActor before hopping off
-        guard let audioPath = session.audioFilePath else {
+        guard let rawAudioPath = session.audioFilePath else {
             logger.error("TranscriptionEngine: session '\(session.title)' has no audioFilePath")
             throw DictlyError.transcription(.audioFileNotFound)
         }
+        let audioPath = AudioFileManager.resolvedAudioPath(rawAudioPath)
         guard FileManager.default.fileExists(atPath: audioPath) else {
             logger.error("TranscriptionEngine: audio file missing at \(audioPath)")
             throw DictlyError.transcription(.audioFileNotFound)

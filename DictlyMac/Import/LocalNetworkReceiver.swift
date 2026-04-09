@@ -60,6 +60,7 @@ final class LocalNetworkReceiver {
     // MARK: - Private
 
     private var listener: NWListener?
+    private var pendingData = Data()
 
     // MARK: - Public API
 
@@ -204,13 +205,13 @@ final class LocalNetworkReceiver {
     }
 
     private func receivePayload(on connection: NWConnection, expectedLength: Int) {
-        var accumulated = Data()
-        accumulated.reserveCapacity(expectedLength)
+        pendingData = Data()
+        pendingData.reserveCapacity(expectedLength)
 
         func receiveChunk() {
-            let remaining = expectedLength - accumulated.count
+            let remaining = expectedLength - self.pendingData.count
             guard remaining > 0 else {
-                processPayload(accumulated, connection: connection)
+                processPayload(self.pendingData, connection: connection)
                 return
             }
 
@@ -227,15 +228,15 @@ final class LocalNetworkReceiver {
                     }
 
                     if let data {
-                        accumulated.append(data)
-                        let progress = Double(accumulated.count) / Double(expectedLength)
+                        self.pendingData.append(data)
+                        let progress = Double(self.pendingData.count) / Double(expectedLength)
                         self.receiverState = .receiving(progress: progress)
                     }
 
-                    if accumulated.count >= expectedLength {
-                        self.processPayload(accumulated, connection: connection)
+                    if self.pendingData.count >= expectedLength {
+                        self.processPayload(self.pendingData, connection: connection)
                     } else if isComplete {
-                        self.logger.error("LocalNetworkReceiver: connection closed early — received \(accumulated.count)/\(expectedLength) bytes")
+                        self.logger.error("LocalNetworkReceiver: connection closed early — received \(self.pendingData.count)/\(expectedLength) bytes")
                         self.receiverState = .failed(DictlyError.transfer(.transferInterrupted))
                         connection.cancel()
                     } else {

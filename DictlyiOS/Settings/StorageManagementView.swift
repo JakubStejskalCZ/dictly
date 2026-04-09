@@ -99,9 +99,16 @@ struct StorageManagementView: View {
     // MARK: - Actions
 
     private func deleteRecording(for session: Session) {
-        if let path = session.audioFilePath {
+        if let filename = session.audioFilePath {
+            let resolvedPath: String
+            if filename.hasPrefix("/") {
+                resolvedPath = filename
+            } else {
+                let dir = (try? AudioFileManager.audioStorageDirectory())?.path ?? ""
+                resolvedPath = dir.isEmpty ? filename : (dir + "/" + filename)
+            }
             do {
-                try AudioFileManager.deleteAudioFile(at: path)
+                try AudioFileManager.deleteAudioFile(at: resolvedPath)
             } catch {
                 // File may already be missing — proceed to clear metadata
             }
@@ -119,8 +126,15 @@ private struct SessionStorageRow: View {
     let session: Session
 
     private var fileSizeText: String {
-        guard let path = session.audioFilePath else { return "—" }
-        guard let size = try? AudioFileManager.fileSize(at: path) else { return "File missing" }
+        guard let filename = session.audioFilePath else { return "—" }
+        let resolvedPath: String
+        if filename.hasPrefix("/") {
+            resolvedPath = filename
+        } else {
+            let dir = (try? AudioFileManager.audioStorageDirectory())?.path ?? ""
+            resolvedPath = dir.isEmpty ? filename : (dir + "/" + filename)
+        }
+        guard let size = try? AudioFileManager.fileSize(at: resolvedPath) else { return "File missing" }
         return AudioFileManager.formattedSize(size)
     }
 

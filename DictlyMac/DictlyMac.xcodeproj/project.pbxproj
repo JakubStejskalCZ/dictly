@@ -35,6 +35,7 @@
 		64A2669EA23F14BB5745BAA3 /* ImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4BEB495884ED9C7CAD7C2F2 /* ImportService.swift */; };
 		68F862B146C911436B19E8EE /* ggml-threading.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B581E8845D2D75E9747FB2F2 /* ggml-threading.cpp */; };
 		693ED22DC6258ED0BC79C31B /* ggml-metal-ops.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2B435948CFAD6264F3E85E84 /* ggml-metal-ops.cpp */; };
+		6C79E45E144857DDE7CBBD1B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F857947F0E710A9300A47104 /* Assets.xcassets */; };
 		6E52A9688ABD53A2D5CCCB88 /* LocalNetworkReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 630711832B38B9EA2231CB37 /* LocalNetworkReceiverTests.swift */; };
 		70D461518FC61E077B575F17 /* ExportSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43E0016CFBE669F4A2BB44EA /* ExportSheet.swift */; };
 		781FE5A7A296C225D26A0740 /* ggml-metal-common.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C88DD007FF38B33A69877B0B /* ggml-metal-common.cpp */; };
@@ -82,6 +83,7 @@
 		E89B3FAB32A9A61B34328160 /* DictlyKit in Frameworks */ = {isa = PBXBuildFile; productRef = 6D779627DD09B4C0A1B8FA61 /* DictlyKit */; };
 		EB113796D499E2B4A330D046 /* WhisperBridgeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 070CD852F413FD4AFC2D0C5F /* WhisperBridgeTests.swift */; };
 		F0FB00CC325B605BE9C11202 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C823397DBFDC0DFE6E6C7A5 /* Metal.framework */; };
+		F18BB1D4598DF94FB5012016 /* Epic7E2ETests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AF80E464BFB9E8B0B1887A7 /* Epic7E2ETests.swift */; };
 		F292C87D2E124E72CC56FBF0 /* TagSidebarFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F6374291370DD5930374CA1 /* TagSidebarFilterTests.swift */; };
 		F4A20228D9C9A06557D23293 /* hbm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 71D8FDE1ECAB27E242F3309A /* hbm.cpp */; };
 		F4F3492A52C73AD6E109335E /* ImportServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BD4B11F67071DA75BD374EC /* ImportServiceTests.swift */; };
@@ -141,6 +143,7 @@
 		43E0016CFBE669F4A2BB44EA /* ExportSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportSheet.swift; sourceTree = "<group>"; };
 		451A0E0AFA5C65057119CDBD /* DictlyMac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DictlyMac.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		458695DF0DBDB0A4ACDE750E /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Accelerate.framework; sourceTree = "<group>"; };
+		4AF80E464BFB9E8B0B1887A7 /* Epic7E2ETests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Epic7E2ETests.swift; sourceTree = "<group>"; };
 		555F88CE53E1A251EE8F1446 /* SidebarCampaignGroupingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarCampaignGroupingTests.swift; sourceTree = "<group>"; };
 		5869C7AAD8B8767004BE13EB /* repack.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = repack.cpp; sourceTree = "<group>"; };
 		59F65E68A1AE0ABC255509BE /* AudioPlayerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlayerTests.swift; sourceTree = "<group>"; };
@@ -203,6 +206,7 @@
 		EE11F1976DE6A82DADBBEDAD /* RelatedTagsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RelatedTagsView.swift; sourceTree = "<group>"; };
 		EFC45DC8E7A131783015B5C5 /* ggml-cpu.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = "ggml-cpu.cpp"; sourceTree = "<group>"; };
 		F62A922B7D7C15A23BE93475 /* ModelManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelManager.swift; sourceTree = "<group>"; };
+		F857947F0E710A9300A47104 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		F895FADB439548125B64C15C /* CoreML.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = CoreML.framework; sourceTree = "<group>"; };
 		F99799ADDC35F183C7A44D98 /* TagDetailPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagDetailPanel.swift; sourceTree = "<group>"; };
 		FCB4BCE2FFDCDE2484B1D85B /* ggml-backend.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = "ggml-backend.cpp"; sourceTree = "<group>"; };
@@ -256,6 +260,7 @@
 				777DA888D953213E321D9A65 /* Export */,
 				6DC0A1320FC0A6B2DAB877F0 /* Import */,
 				9B444FB2F46D61DBB2B657F6 /* Packages */,
+				70DA77C6F815D856DA1849B0 /* Resources */,
 				7778336A3D11F9CBF315B031 /* Review */,
 				CACCB923AD674455BB2398BB /* Search */,
 				F7C55C541B7F24ACC93E0963 /* Settings */,
@@ -377,6 +382,14 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		70DA77C6F815D856DA1849B0 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				F857947F0E710A9300A47104 /* Assets.xcassets */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
 		7778336A3D11F9CBF315B031 /* Review */ = {
 			isa = PBXGroup;
 			children = (
@@ -477,6 +490,7 @@
 				BDF7D3897CDA9EBD16A7E287 /* CrossSessionBrowsingE2ETests.swift */,
 				7CDCB851020E207A507FD5A1 /* CrossSessionBrowsingTests.swift */,
 				9AAD34E9934EB9CE2C48094E /* Epic4E2ETests.swift */,
+				4AF80E464BFB9E8B0B1887A7 /* Epic7E2ETests.swift */,
 				943DCAF14A9E49CD2AF0147B /* RetroactiveTagTests.swift */,
 				E8E83175BC0B860D8AFE2B7A /* SessionReviewScreenTests.swift */,
 				FEE608B627F0CCABABD1F365 /* TagDetailPanelTests.swift */,
@@ -587,6 +601,7 @@
 			buildPhases = (
 				D7B6126F378A7EE9844A0B02 /* Sources */,
 				95909D4E16ADBE4029DEB49E /* Compile whisper.cpp Metal Shader */,
+				307AAB9A66B0BC9E8A3D80E0 /* Resources */,
 				6F4F8BBFC7918469196445B8 /* Frameworks */,
 			);
 			buildRules = (
@@ -632,15 +647,15 @@
 				LastUpgradeCheck = 1600;
 				TargetAttributes = {
 					3CAC782FA2DDF35F09AC7FD8 = {
-						DevelopmentTeam = "";
+						DevelopmentTeam = 9H8L6QA868;
 						ProvisioningStyle = Automatic;
 					};
 					62761C5198395EC9CF834280 = {
-						DevelopmentTeam = "";
+						DevelopmentTeam = 9H8L6QA868;
 						ProvisioningStyle = Automatic;
 					};
 					F43878420F28469110FD34CC = {
-						DevelopmentTeam = "";
+						DevelopmentTeam = 9H8L6QA868;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -668,6 +683,17 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		307AAB9A66B0BC9E8A3D80E0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6C79E45E144857DDE7CBBD1B /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
 		95909D4E16ADBE4029DEB49E /* Compile whisper.cpp Metal Shader */ = {
@@ -704,6 +730,7 @@
 				92DBF6409F0C0D5F820C9204 /* CrossSessionBrowsingTests.swift in Sources */,
 				815BFEDA3DA7708495726387 /* Epic4E2ETests.swift in Sources */,
 				7E1ADC46A8D6A4CB7A2EA14C /* Epic5E2ETests.swift in Sources */,
+				F18BB1D4598DF94FB5012016 /* Epic7E2ETests.swift in Sources */,
 				35E1E0F0D09026D0F07A4747 /* ExportSheetTests.swift in Sources */,
 				F4F3492A52C73AD6E109335E /* ImportServiceTests.swift in Sources */,
 				6E52A9688ABD53A2D5CCCB88 /* LocalNetworkReceiverTests.swift in Sources */,
@@ -879,7 +906,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = Resources/DictlyMac.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Resources/DictlyMac.debug.entitlements;
 				COMBINE_HIDPI_IMAGES = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -964,7 +991,7 @@
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 9H8L6QA868;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -1024,7 +1051,7 @@
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 9H8L6QA868;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
