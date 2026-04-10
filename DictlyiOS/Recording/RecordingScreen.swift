@@ -86,7 +86,7 @@ struct RecordingScreen: View {
             await checkMicrophonePermission()
         }
         .alert("Recording Failed", isPresented: $recordingFailed) {
-            Button("OK", role: .cancel) {}
+            Button("OK", role: .cancel) { dismiss() }
         } message: {
             Text("Unable to start recording. Please try again.")
         }
