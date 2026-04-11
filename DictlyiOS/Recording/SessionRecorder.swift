@@ -67,10 +67,24 @@ final class SessionRecorder {
             throw DictlyError.recording(.audioSessionSetupFailed(error.localizedDescription))
         }
 
-        // Log the active input port
-        if let portName = audioSession.currentRoute.inputs.first?.portName {
-            logger.info("Audio input: \(portName, privacy: .public)")
+        // Set up engine and read the input node's native format. We must derive the
+        // output file's sample rate and channel count from this format — otherwise
+        // external mics (e.g. DJI Mic 2 RX over USB-C, typically stereo @ 48 kHz)
+        // mismatch a hardcoded mono/44.1 kHz file and every tap write fails.
+        let engine = AVAudioEngine()
+        let inputNode = engine.inputNode
+        let inputFormat = inputNode.outputFormat(forBus: 0)
+
+        // Validate input format
+        guard inputFormat.channelCount > 0, inputFormat.sampleRate > 0 else {
+            logger.error("Invalid audio input format: channels=\(inputFormat.channelCount), sampleRate=\(inputFormat.sampleRate, privacy: .public)")
+            deactivateAudioSession()
+            throw DictlyError.recording(.audioSessionSetupFailed("No valid audio input available"))
         }
+
+        // Log the active input port together with its native format for diagnostics.
+        let portName = audioSession.currentRoute.inputs.first?.portName ?? "unknown"
+        logger.info("Audio input: \(portName, privacy: .public) channels=\(inputFormat.channelCount, privacy: .public) sampleRate=\(inputFormat.sampleRate, privacy: .public)")
 
         // Create output file
         let filename = "\(session.uuid.uuidString).m4a"
@@ -87,8 +101,8 @@ final class SessionRecorder {
         let bitRate = SessionRecorder.bitrate(for: UserDefaults.standard.string(forKey: "audioQuality") ?? "standard")
         let settings: [String: Any] = [
             AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
-            AVSampleRateKey: 44100.0,
-            AVNumberOfChannelsKey: 1,
+            AVSampleRateKey: inputFormat.sampleRate,
+            AVNumberOfChannelsKey: Int(inputFormat.channelCount),
             AVEncoderBitRateKey: bitRate
         ]
 
@@ -101,19 +115,7 @@ final class SessionRecorder {
             throw DictlyError.recording(.fileCreationFailed(error.localizedDescription))
         }
 
-        // Set up engine and tap
-        let engine = AVAudioEngine()
-        let inputNode = engine.inputNode
-        let inputFormat = inputNode.outputFormat(forBus: 0)
-
-        // Validate input format
-        guard inputFormat.channelCount > 0, inputFormat.sampleRate > 0 else {
-            logger.error("Invalid audio input format: channels=\(inputFormat.channelCount), sampleRate=\(inputFormat.sampleRate, privacy: .public)")
-            deactivateAudioSession()
-            throw DictlyError.recording(.audioSessionSetupFailed("No valid audio input available"))
-        }
-
-        // Buffer size ~4096 frames ≈ 0.093s at 44100 Hz — flushes to disk every tap
+        // 4096 frames per tap (~85 ms at 48 kHz) — flushes to disk every callback
         let bufferSize: AVAudioFrameCount = 4096
 
         tapState.isStopping = false
