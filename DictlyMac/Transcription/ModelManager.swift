@@ -14,6 +14,7 @@ struct WhisperModel: Identifiable, Equatable, Sendable {
     let size: Int64
     let quality: String
     let isBundled: Bool
+    let isMultilingual: Bool
 
     var downloadURL: URL {
         let encoded = fileName.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? fileName
@@ -22,6 +23,34 @@ struct WhisperModel: Identifiable, Equatable, Sendable {
         }
         return url
     }
+}
+
+// MARK: - Supported Languages
+
+struct WhisperLanguage: Identifiable, Hashable, Sendable {
+    let id: String   // whisper language code (e.g. "en", "cs", "auto")
+    let name: String  // display name (e.g. "English", "Czech", "Auto-detect")
+
+    static let auto = WhisperLanguage(id: "auto", name: "Auto-detect")
+
+    static let supported: [WhisperLanguage] = [
+        .auto,
+        WhisperLanguage(id: "en", name: "English"),
+        WhisperLanguage(id: "cs", name: "Czech"),
+        WhisperLanguage(id: "de", name: "German"),
+        WhisperLanguage(id: "es", name: "Spanish"),
+        WhisperLanguage(id: "fr", name: "French"),
+        WhisperLanguage(id: "it", name: "Italian"),
+        WhisperLanguage(id: "ja", name: "Japanese"),
+        WhisperLanguage(id: "ko", name: "Korean"),
+        WhisperLanguage(id: "nl", name: "Dutch"),
+        WhisperLanguage(id: "pl", name: "Polish"),
+        WhisperLanguage(id: "pt", name: "Portuguese"),
+        WhisperLanguage(id: "ru", name: "Russian"),
+        WhisperLanguage(id: "sk", name: "Slovak"),
+        WhisperLanguage(id: "uk", name: "Ukrainian"),
+        WhisperLanguage(id: "zh", name: "Chinese"),
+    ]
 }
 
 // MARK: - ModelManager
@@ -34,17 +63,20 @@ final class ModelManager {
 
     static let defaultModelId = "base.en"
     private static let userDefaultsKey = "activeWhisperModel"
+    private static let languageKey = "selectedWhisperLanguage"
 
     // MARK: - Model Registry
 
     static let registry: [WhisperModel] = [
+        // English-only models (faster, smaller)
         WhisperModel(
             id: "base.en",
             name: "base.en",
             fileName: "ggml-base.en.bin",
             size: 147_964_211,
             quality: "Good quality",
-            isBundled: false
+            isBundled: false,
+            isMultilingual: false
         ),
         WhisperModel(
             id: "small.en",
@@ -52,7 +84,8 @@ final class ModelManager {
             fileName: "ggml-small.en.bin",
             size: 487_601_520,
             quality: "Better quality",
-            isBundled: false
+            isBundled: false,
+            isMultilingual: false
         ),
         WhisperModel(
             id: "medium.en",
@@ -60,13 +93,43 @@ final class ModelManager {
             fileName: "ggml-medium.en.bin",
             size: 1_528_088_332,
             quality: "Best quality",
-            isBundled: false
-        )
+            isBundled: false,
+            isMultilingual: false
+        ),
+        // Multilingual models (support all languages)
+        WhisperModel(
+            id: "base",
+            name: "base",
+            fileName: "ggml-base.bin",
+            size: 147_964_211,
+            quality: "Good quality",
+            isBundled: false,
+            isMultilingual: true
+        ),
+        WhisperModel(
+            id: "small",
+            name: "small",
+            fileName: "ggml-small.bin",
+            size: 487_601_520,
+            quality: "Better quality",
+            isBundled: false,
+            isMultilingual: true
+        ),
+        WhisperModel(
+            id: "medium",
+            name: "medium",
+            fileName: "ggml-medium.bin",
+            size: 1_528_088_332,
+            quality: "Best quality",
+            isBundled: false,
+            isMultilingual: true
+        ),
     ]
 
     // MARK: - Observable State
 
     private(set) var activeModel: String = ModelManager.defaultModelId
+    private(set) var selectedLanguage: String = "auto"
     var downloadProgress: Double = 0.0
     var isDownloading: Bool = false
     var downloadingModelId: String? = nil
@@ -115,6 +178,7 @@ final class ModelManager {
             activeModel = Self.defaultModelId
             UserDefaults.standard.set(Self.defaultModelId, forKey: Self.userDefaultsKey)
         }
+        selectedLanguage = UserDefaults.standard.string(forKey: Self.languageKey) ?? "auto"
         copyBundledModelIfNeeded()
     }
 
@@ -149,6 +213,21 @@ final class ModelManager {
         activeModel = model.id
         UserDefaults.standard.set(model.id, forKey: Self.userDefaultsKey)
         logger.info("ModelManager: selected model '\(model.id)'")
+    }
+
+    // MARK: - Language
+
+    func selectLanguage(_ language: String) {
+        selectedLanguage = language
+        UserDefaults.standard.set(language, forKey: Self.languageKey)
+        logger.info("ModelManager: selected language '\(language)'")
+    }
+
+    /// Returns true when a non-English language is selected but an English-only model is active.
+    var hasLanguageMismatch: Bool {
+        let isEnglishOnly = Self.registry.first(where: { $0.id == activeModel })?.isMultilingual == false
+        let isNonEnglishLanguage = selectedLanguage != "auto" && selectedLanguage != "en"
+        return isEnglishOnly && isNonEnglishLanguage
     }
 
     // MARK: - Download
