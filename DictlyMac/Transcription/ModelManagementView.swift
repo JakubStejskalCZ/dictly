@@ -12,9 +12,22 @@ struct ModelManagementView: View {
     @State private var operationErrorTitle: String = "Failed"
     @State private var isShowingErrorAlert = false
 
+    private var englishModels: [WhisperModel] {
+        ModelManager.registry.filter { !$0.isMultilingual }
+    }
+
+    private var multilingualModels: [WhisperModel] {
+        ModelManager.registry.filter { $0.isMultilingual }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             header
+            Divider()
+            languagePicker
+            if modelManager.hasLanguageMismatch {
+                languageMismatchWarning
+            }
             Divider()
             modelList
         }
@@ -52,27 +65,77 @@ struct ModelManagementView: View {
         .background(DictlyColors.surface)
     }
 
+    // MARK: - Language Picker
+
+    private var languagePicker: some View {
+        HStack {
+            Text("Language")
+                .font(DictlyTypography.body)
+            Spacer()
+            Picker("Language", selection: Binding(
+                get: { modelManager.selectedLanguage },
+                set: { modelManager.selectLanguage($0) }
+            )) {
+                ForEach(WhisperLanguage.supported) { lang in
+                    Text(lang.name).tag(lang.id)
+                }
+            }
+            .labelsHidden()
+            .frame(width: 180)
+        }
+        .padding(.horizontal, DictlySpacing.md)
+        .padding(.vertical, DictlySpacing.sm)
+    }
+
+    // MARK: - Language Mismatch Warning
+
+    private var languageMismatchWarning: some View {
+        HStack(spacing: DictlySpacing.sm) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .foregroundStyle(.orange)
+            Text("An English-only model is selected. For non-English transcription, switch to a multilingual model below.")
+                .font(DictlyTypography.caption)
+                .foregroundStyle(DictlyColors.textSecondary)
+        }
+        .padding(.horizontal, DictlySpacing.md)
+        .padding(.vertical, DictlySpacing.sm)
+        .background(.orange.opacity(0.1))
+    }
+
     // MARK: - Model List
 
     private var modelList: some View {
-        List(ModelManager.registry) { model in
-            ModelRowView(
-                model: model,
-                isActive: modelManager.activeModel == model.id,
-                isDownloaded: modelManager.isDownloaded(model),
-                isDownloading: modelManager.isDownloading && modelManager.downloadingModelId == model.id,
-                downloadProgress: modelManager.downloadProgress,
-                onSelect: { modelManager.selectModel(model) },
-                onDownload: { handleDownload(model) },
-                onCancel: { modelManager.cancelDownload() },
-                onDelete: {
-                    modelToDelete = model
-                    isShowingDeleteAlert = true
+        List {
+            Section("English-only") {
+                ForEach(englishModels) { model in
+                    modelRow(for: model)
                 }
-            )
-            .listRowSeparator(.visible)
+            }
+            Section("Multilingual") {
+                ForEach(multilingualModels) { model in
+                    modelRow(for: model)
+                }
+            }
         }
         .listStyle(.inset)
+    }
+
+    private func modelRow(for model: WhisperModel) -> some View {
+        ModelRowView(
+            model: model,
+            isActive: modelManager.activeModel == model.id,
+            isDownloaded: modelManager.isDownloaded(model),
+            isDownloading: modelManager.isDownloading && modelManager.downloadingModelId == model.id,
+            downloadProgress: modelManager.downloadProgress,
+            onSelect: { modelManager.selectModel(model) },
+            onDownload: { handleDownload(model) },
+            onCancel: { modelManager.cancelDownload() },
+            onDelete: {
+                modelToDelete = model
+                isShowingDeleteAlert = true
+            }
+        )
+        .listRowSeparator(.visible)
     }
 
     // MARK: - Actions

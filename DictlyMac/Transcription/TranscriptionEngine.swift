@@ -199,6 +199,7 @@ final class TranscriptionEngine {
         let anchorTime = tag.anchorTime
         let rewindDuration = tag.rewindDuration
         let modelURL = modelManager.activeModelURL
+        let language = modelManager.selectedLanguage
         let bridge = whisperBridge   // WhisperBridge is @unchecked Sendable
 
         logger.debug("TranscriptionEngine: dispatch transcription off main — anchor=\(anchorTime), rewind=\(rewindDuration)")
@@ -221,7 +222,7 @@ final class TranscriptionEngine {
                 logger.debug("TranscriptionEngine: cleaned up segment \(segmentURL.lastPathComponent)")
             }
 
-            return try await bridge.transcribe(audioURL: segmentURL, modelURL: modelURL)
+            return try await bridge.transcribe(audioURL: segmentURL, modelURL: modelURL, language: language)
         }.value
     }
 

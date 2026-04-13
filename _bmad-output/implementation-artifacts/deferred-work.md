@@ -28,3 +28,20 @@ Analyzed: `installedPackIDs` only returns IDs from `TagPackRegistry.all`. Unknow
 - **R3**: Moved push calls after do/catch in `installSelected()` (iOS + Mac)
 - **R4**: Filtered `TagListScreen` to only show template tags (`session == nil`)
 - **R5**: Moved logger to file scope in `CategorySyncService`
+
+---
+
+## From transcription improvements (split 2026-04-13)
+
+### Full session transcription with inline tags
+Transcribe the entire recording session (not just ~30s segments around tags). In markdown export, output the full transcript with tags embedded inline at their anchor positions. This changes the transcription scope from per-tag segments to whole-session, enabling complete session review.
+
+---
+
+## From spec-multilingual-whisper-models review (2026-04-13)
+
+### TOCTOU window on model/language switch during transcription
+`TranscriptionEngine.runTranscription` reads `activeModelURL` and `selectedLanguage` on `@MainActor`, then uses them in a `Task.detached`. If the user switches model between read and use, `WhisperBridge.loadContext` handles the swap under lock, but there's a theoretical TOCTOU window. Pre-existing pattern — not introduced by multilingual change.
+
+### Default model fallback may not exist on disk
+`ModelManager.init` falls back to `defaultModelId = "base.en"` when the stored model isn't found, without verifying `base.en` itself exists on disk. If the bundled copy fails and no download occurred, `activeModelURL` points to a nonexistent file. Pre-existing.

@@ -43,7 +43,7 @@ final class WhisperBridge: @unchecked Sendable {
 
     // MARK: - Transcription
 
-    func transcribe(audioURL: URL, modelURL: URL) async throws -> String {
+    func transcribe(audioURL: URL, modelURL: URL, language: String = "auto") async throws -> String {
         assert(!Thread.isMainThread, "WhisperBridge.transcribe must not run on the main thread")
 
         logger.info("WhisperBridge: starting transcription of \(audioURL.lastPathComponent)")
@@ -62,7 +62,6 @@ final class WhisperBridge: @unchecked Sendable {
         }
 
         // Configure transcription params
-        // Note: whisper_full_default_params already sets language = "en"; no withCString needed.
         var params = whisper_full_default_params(WHISPER_SAMPLING_GREEDY)
         params.n_threads = Int32(min(ProcessInfo.processInfo.activeProcessorCount, 8))
         params.translate = false
@@ -70,6 +69,11 @@ final class WhisperBridge: @unchecked Sendable {
         params.print_progress = false
         params.print_special = false
         params.no_timestamps = true
+
+        // Set language — "auto" enables auto-detection, otherwise use the specific language code.
+        let langCString = strdup(language) ?? strdup("auto")
+        defer { free(langCString) }
+        params.language = UnsafePointer(langCString)
 
         logger.debug("WhisperBridge: running whisper_full with \(params.n_threads) threads")
 
